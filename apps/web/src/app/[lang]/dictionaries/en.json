@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "title": "vela — land connected.",
+    "description": "Travel eSIM data plans for India and the Gulf. Buy before you fly, land connected, top up anytime.",
+    "destinationTitle": "{{name}} eSIM — data plans from {{price}}",
+    "destinationDescription": "Prepaid {{name}} eSIM data plans with instant QR delivery. Keep your number for calls."
+  },
+  "nav": {
+    "destinations": "Destinations",
+    "how": "How it works",
+    "account": "Account",
+    "getApp": "Get the app",
+    "language": "العربية",
+    "skip": "Skip to content",
+    "home": "vela home"
+  },
+  "hero": {
+    "title": "land connected.",
+    "body": "Travel data plans you buy before you fly. Your eSIM switches on the moment you land. No SIM swap, no roaming bill.",
+    "searchLabel": "Where are you going?",
+    "searchPlaceholder": "Country or region",
+    "noResults": "Nothing found. Try a country or a region.",
+    "points": [
+      "Instant QR delivery",
+      "Keep your number for calls",
+      "Top up anytime"
+    ]
+  },
+  "home": {
+    "popular": "Popular destinations",
+    "regions": "Regional plans",
+    "offers": "Offers",
+    "howTitle": "three steps to data.",
+    "steps": [
+      {
+        "title": "Pick your destination",
+        "body": "Country, regional and global plans, from a week to a month."
+      },
+      {
+        "title": "Install in one tap",
+        "body": "Scan the QR, or tap Install on iPhone. It takes about a minute."
+      },
+      {
+        "title": "Land connected",
+        "body": "Data starts when you connect at your destination. Top up from the app."
+      }
+    ],
+    "appTitle": "your trips, in your pocket.",
+    "appBody": "Watch your data, top up in one tap and get a nudge before you run low.",
+    "ios": "Download for iPhone",
+    "android": "Get it for Android",
+    "appSoon": "App links go live at launch."
+  },
+  "destination": {
+    "back": "All destinations",
+    "dataOnly": "Data only · keep your number for calls and WhatsApp",
+    "plans": "Choose a plan",
+    "bestValue": "Best value",
+    "perGb": "{{price}} / GB",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "networks": "Networks",
+    "compatibleTitle": "Works on eSIM phones",
+    "compatibleBody": "iPhone XS and newer, Pixel 3 and newer, Galaxy S20 and newer. Your phone must be carrier unlocked.",
+    "instant": "Instant activation",
+    "fiveG": "5G",
+    "hotspot": "Hotspot",
+    "continue": "Continue",
+    "countries_one": "{{count}} country",
+    "countries_other": "{{count}} countries",
+    "from": "from {{price}}",
+    "faqTitle": "Good to know",
+    "faq": [
+      {
+        "q": "When does my plan start?",
+        "a": "When your phone first connects to a network at your destination. Buying early doesn't use up days."
+      },
+      {
+        "q": "Can I keep WhatsApp and my number?",
+        "a": "Yes. Your main SIM stays on for calls and SMS. vela only handles data."
+      },
+      {
+        "q": "What if I run out?",
+        "a": "Top up from the vela app in one tap. No new QR, no reinstall."
+      }
+    ]
+  },
+  "checkout": {
+    "title": "checkout",
+    "summary": "Your plan",
+    "startsWhenLand": "Starts when you land",
+    "email": "Email for your receipt and QR",
+    "emailPlaceholder": "you@example.com",
+    "emailInvalid": "Enter a valid email address.",
+    "coupon": "Coupon",
+    "couponPlaceholder": "Enter code",
+    "apply": "Apply",
+    "applied": "{{code}} applied",
+    "remove": "Remove",
+    "couponInvalid": "This code isn't valid.",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "gst": "Includes GST (18%)",
+    "total": "Total",
+    "pay": "Pay {{amount}}",
+    "paying": "Paying…",
+    "failed": "Payment didn't go through. You haven't been charged.",
+    "demo": "Demo checkout. No card is charged. Try GULF20 or FIRSTSAIL.",
+    "notFound": "This plan isn't available any more."
+  },
+  "success": {
+    "title": "you're connected.",
+    "body": "Order {{order}} · {{plan}}",
+    "qrLabel": "eSIM QR code",
+    "qrHint": "Scan with the phone you're travelling with. Each code installs once.",
+    "installIphone": "Install on this iPhone",
+    "installHint": "On iPhone with iOS 17.4 or later, open this page on the phone and tap Install.",
+    "manual": "Manual install",
+    "smdp": "SM-DP+ address",
+    "code": "Activation code",
+    "copy": "Copy",
+    "copied": "Copied",
+    "stepsTitle": "install in four steps.",
+    "iphone": "iPhone",
+    "android": "Android",
+    "iphoneSteps": [
+      "Open Settings › Cellular › Add eSIM",
+      "Choose Use QR Code and scan the code above",
+      "Name the line vela and use it for Cellular Data",
+      "Turn on Data Roaming for the vela line when you land"
+    ],
+    "androidSteps": [
+      "Open Settings › Network & internet › SIMs",
+      "Tap Add eSIM, then scan the code above",
+      "Set vela as the mobile data SIM",
+      "Turn on Roaming for the vela SIM when you land"
+    ],
+    "missingTitle": "order not found.",
+    "missingBody": "Open the link from your receipt email, or find your eSIM in your account.",
+    "toAccount": "Go to account",
+    "home": "Back to home"
+  },
+  "account": {
+    "title": "your account.",
+    "signInTitle": "sign in.",
+    "signInBody": "We'll email you a sign-in link. Demo: any email works.",
+    "email": "Email",
+    "send": "Send sign-in link",
+    "signedInAs": "Signed in as {{email}}",
+    "signOut": "Sign out",
+    "esims": "Your eSIMs",
+    "emptyTitle": "no eSIMs yet.",
+    "emptyBody": "Pick a destination and you'll be connected the moment you land.",
+    "browse": "Browse destinations",
+    "left": "{{left}} left of {{total}}",
+    "notStarted": "Starts when you land",
+    "expired": "Expired",
+    "active": "Active",
+    "low": "Low data",
+    "validUntil": "Valid until {{date}}",
+    "topUpInApp": "Top up in the vela app",
+    "loading": "Loading your eSIMs…",
+    "error": "We couldn't load your eSIMs. Try again.",
+    "retry": "Try again"
+  },
+  "footer": {
+    "tagline": "land connected.",
+    "prices": "Prices in INR and include GST.",
+    "rights": "© {{year}} vela"
+  },
+  "notFound": {
+    "title": "lost at sea.",
+    "body": "This page doesn't exist.",
+    "home": "Back to home"
+  }
+}

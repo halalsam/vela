@@ -47,3 +47,17 @@ source of truth. Resolved as follows:
   low data and expired.
 - Language can be set in Profile. Switching between English and Arabic flips the layout on the next
   launch, as React Native requires.
+
+## 2026-11-20 · Phase 7 (web)
+
+- The site lives under `/en` and `/ar`. `proxy.ts` sends `/` to the visitor's language from
+  `Accept-Language`. Arabic pages render `dir="rtl"` and switch to IBM Plex Sans Arabic.
+- Home, all 26 destination pages (countries and regions) and account are prerendered. Checkout and
+  success render on request.
+- Checkout and account run on the same mock API as the app, in the browser. The order is handed to
+  the success page through `sessionStorage`; sign-in is a demo that stores the email in
+  `localStorage`. Both get replaced by the backend.
+- App Store and Play buttons are disabled until the listings exist. Use Apple's and Google's official
+  badges when they go live.
+- The hero mark builds with the same sail → signal → name beats as the app, in pure CSS (an animated
+  conic mask on the original paths). It is skipped under `prefers-reduced-motion`.

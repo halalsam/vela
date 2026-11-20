@@ -59,13 +59,21 @@
       "surfaces": "Cards and lists",
       "inputs": "Inputs",
       "navigation": "Tabs and progress",
-      "payment": "Swipe to pay and sheets"
+      "payment": "Swipe to pay and sheets",
+      "splash": "Splash and loader",
+      "usage": "Usage, validity and price",
+      "plans": "Plans and destinations",
+      "esimCards": "Offers and eSIM cards",
+      "qr": "QR and manual install",
+      "install": "Install steps"
     },
     "notes": {
       "typography": "Display is Instrument Serif, lowercase. Data numbers use tabular figures.",
       "otp": "Type 000000 to see the error state.",
       "toast": "Toasts drop from the top and clear after 1.2 s.",
-      "swipe": "Release before the end and the thumb springs back."
+      "swipe": "Release before the end and the thumb springs back.",
+      "splash": "Intro builds sail, signal, then name. Build is for success. Loop is the processing loader.",
+      "odometer": "Each digit rolls to its new value."
     },
     "samples": {
       "display": "land connected.",
@@ -90,7 +98,11 @@
       "share": "Share",
       "back": "Back",
       "close": "Close",
-      "add": "Add eSIM"
+      "add": "Add eSIM",
+      "replay": "Replay",
+      "nextPrice": "Next price",
+      "flip": "Flip",
+      "nextStep": "Next step"
     },
     "pills": {
       "active": "Active",
@@ -166,6 +178,54 @@
       "sheetTitle": "checkout",
       "sheetBody": "Sheet scaffold: title, close button, scrolling body and a footer that clears the home indicator.",
       "summary": "Japan · 10 GB · 15 days"
+    },
+    "install": {
+      "s1": "Open Settings › Cellular",
+      "b1": "Leave vela open. We'll be here when you come back.",
+      "s2": "Tap Add eSIM",
+      "b2": "Choose Use QR Code, or tap the install link.",
+      "s3": "Name it vela Japan",
+      "b3": "Keep your main line for calls. Use vela for data.",
+      "s4": "Turn on Data Roaming",
+      "b4": "Only for the vela line. No roaming charges on your main SIM."
     }
+  },
+  "esim": {
+    "ringLabel": "{{left}} of {{total}} left",
+    "ofTotal": "of {{total}}",
+    "left": "left",
+    "timeLeft": "left",
+    "expired": "Expired",
+    "notStarted": "Starts when you land",
+    "dayUnit": "d",
+    "hourUnit": "h",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "perGb": "{{price}} / GB",
+    "bestValue": "Best value",
+    "fiveG": "5G",
+    "hotspot": "Hotspot",
+    "from": "from {{price}}",
+    "topUp": "Top up",
+    "details": "Details",
+    "active": "Active",
+    "low": "Low data",
+    "statusExpired": "Expired",
+    "statusNotStarted": "Not started",
+    "validUntil": "Valid until {{date}}",
+    "countries_one": "{{count}} country",
+    "countries_other": "{{count}} countries",
+    "copy": "Copy",
+    "copied": "Copied",
+    "smdp": "SM-DP+ address",
+    "activationCode": "Activation code",
+    "qrLabel": "eSIM QR code",
+    "qrHint": "Scan with another phone's camera. Each code installs once.",
+    "revealQr": "Show QR code",
+    "step": "Step {{number}}",
+    "stepDone": "Done",
+    "offerEnds": "Ends in {{time}}",
+    "useCode": "Use code {{code}}",
+    "processing": "Setting up your eSIM"
   }
 }

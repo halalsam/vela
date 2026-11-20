@@ -32,3 +32,5 @@ source of truth. Resolved as follows:
   iOS, Android and the web.
 - Inline styles are allowed only for animated values (Reanimated, Skia). Everything else uses
   classes.
+- Country flags render as emoji in a circle for now. Swap in a flag asset set before launch.
+- Prices and data always use Latin digits, in Arabic too. Number strings stay left-to-right.

@@ -77,3 +77,10 @@ source of truth. Resolved as follows:
   font; Manrope is not bundled into the extension.
 - Before the first device build: set `ios.appleTeamId` in `app.config.ts`, and register the App Group
   for both bundle IDs (`com.vela.app`, `com.vela.app.VelaWidgets`) in the Apple Developer portal.
+
+## 2026-11-20 · Backend
+
+- Custom TypeScript backend (`apps/server`: Hono, Drizzle, Postgres, pg-boss, better-auth) instead
+  of Medusa v2. vela sells one digital item and then manages a long eSIM lifecycle; a commerce
+  framework would cover the smaller part and fight us on carts and shipping. The shared zod schemas
+  in `packages/api` stay the contract. Full plan: `docs/backend-plan.md`.

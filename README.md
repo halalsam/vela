@@ -13,6 +13,7 @@ Travel eSIM app (iOS + Android) and website. land connected.
 | `design/` | Claude Design export (layouts and flows reference) |
 | `docs/decisions.md` | Product and design decisions |
 | `docs/motion-qa.md` | Device checklist for every animation and haptic |
+| `docs/backend-plan.md` | Backend architecture, data model, API and milestones |
 
 ## Commands
 

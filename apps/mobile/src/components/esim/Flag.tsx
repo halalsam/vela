@@ -2,13 +2,14 @@ import { flagEmoji } from '@vela/utils';
 import { Text, View } from 'react-native';
 import { cn } from '@/lib/cn';
 
-export type FlagSize = 'sm' | 'md' | 'lg' | 'xl';
+export type FlagSize = 'sm' | 'md' | 'lg' | 'xl' | 'hero';
 
 const frame: Record<FlagSize, string> = {
   sm: 'h-5 w-5',
   md: 'h-7 w-7',
   lg: 'h-10 w-10',
   xl: 'h-14 w-14',
+  hero: 'h-28 w-28',
 };
 
 const glyph: Record<FlagSize, string> = {
@@ -16,6 +17,7 @@ const glyph: Record<FlagSize, string> = {
   md: 'text-[34px] leading-[40px]',
   lg: 'text-[48px] leading-[56px]',
   xl: 'text-[68px] leading-[78px]',
+  hero: 'text-[136px] leading-[156px]',
 };
 
 export type FlagProps = {

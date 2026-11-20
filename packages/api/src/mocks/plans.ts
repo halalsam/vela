@@ -1,5 +1,5 @@
 import type { Plan } from '../schemas';
-import { countries } from './countries';
+import { countries, regions } from './countries';
 
 const networksByCountry: Record<string, string[]> = {
   JP: ['NTT Docomo', 'SoftBank'],
@@ -32,6 +32,28 @@ export const plans: Plan[] = countries.flatMap((country) =>
     currency: country.currency,
     networks: networksByCountry[country.code] ?? ['Partner network'],
     is_5g: ['JP', 'AE', 'SG', 'GB', 'US', 'SA', 'QA'].includes(country.code),
+    hotspot: true,
+    activation: 'on_first_connection' as const,
+  })),
+);
+
+const regionTiers = [
+  { gb: 5, days: 15, multiplier: 1 },
+  { gb: 10, days: 30, multiplier: 1.7 },
+  { gb: 20, days: 30, multiplier: 2.8 },
+];
+
+export const regionPlans: Plan[] = regions.flatMap((region) =>
+  regionTiers.map((tier) => ({
+    id: `${region.id}-${tier.gb}gb-${tier.days}d`,
+    type: region.id === 'global' ? ('global' as const) : ('regional' as const),
+    country_codes: region.country_codes,
+    data_mb: tier.gb * 1024,
+    validity_days: tier.days,
+    price: tier.multiplier === 1 ? region.from_price : round9(region.from_price * tier.multiplier),
+    currency: region.currency,
+    networks: ['Best local network in each country'],
+    is_5g: false,
     hotspot: true,
     activation: 'on_first_connection' as const,
   })),

@@ -87,3 +87,58 @@ export type Offer = z.infer<typeof offerSchema>;
 export type TopUpPack = z.infer<typeof topUpPackSchema>;
 export type DailyUsage = z.infer<typeof dailyUsageSchema>;
 export type Localized = { en: string; ar: string };
+
+export const couponSchema = z.object({
+  code: z.string(),
+  discount_pct: z.number().min(0).max(100).nullable(),
+  discount_amount: z.number().nonnegative().nullable(),
+  currency: currencySchema,
+});
+
+export const orderSchema = z.object({
+  order_id: z.string(),
+  plan_id: z.string(),
+  iccid: z.string(),
+  subtotal: z.number().nonnegative(),
+  discount: z.number().nonnegative(),
+  tax: z.number().nonnegative(),
+  total: z.number().nonnegative(),
+  currency: currencySchema,
+});
+
+export const referralSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  status: z.enum(['joined', 'travelled']),
+  reward: z.number().nonnegative(),
+});
+
+export const rewardsSchema = z.object({
+  code: z.string(),
+  balance: z.number().nonnegative(),
+  currency: currencySchema,
+  trips: z.number().int().nonnegative(),
+  referrals: z.array(referralSchema),
+});
+
+export const supportMessageSchema = z.object({
+  id: z.string(),
+  from: z.enum(['agent', 'user']),
+  text: z.string(),
+  sent_at: z.iso.datetime(),
+  install_step: z.number().int().min(1).max(4).nullable(),
+});
+
+export const profileSchema = z.object({
+  name: z.string(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  provider: z.enum(['apple', 'google', 'phone']),
+});
+
+export type Coupon = z.infer<typeof couponSchema>;
+export type Order = z.infer<typeof orderSchema>;
+export type Referral = z.infer<typeof referralSchema>;
+export type Rewards = z.infer<typeof rewardsSchema>;
+export type SupportMessage = z.infer<typeof supportMessageSchema>;
+export type Profile = z.infer<typeof profileSchema>;

@@ -34,3 +34,16 @@ source of truth. Resolved as follows:
   classes.
 - Country flags render as emoji in a circle for now. Swap in a flag asset set before launch.
 - Prices and data always use Latin digits, in Arabic too. Number strings stay left-to-right.
+
+## 2026-11-20 · Phase 5
+
+- The iOS launch screen is plain matte black, so `<VelaSplash />` can build the mark from nothing
+  on first frame. Android 12+ keeps its system splash with the symbol.
+- Sign-in, payments and notifications are mocked. Apple, Google and phone sign-in all succeed after a
+  short delay; OTP `000000` is the wrong-code path. The real Apple sheet, Razorpay and the
+  notifications permission arrive with the backend.
+- Every screen reads data through TanStack Query from the mock API. In dev builds, Profile →
+  Developer → Data scenario switches all screens between default, loading, empty, error, offline,
+  low data and expired.
+- Language can be set in Profile. Switching between English and Arabic flips the layout on the next
+  launch, as React Native requires.

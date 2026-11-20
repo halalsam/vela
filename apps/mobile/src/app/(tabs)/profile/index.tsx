@@ -1,16 +1,28 @@
-import { ScreenPlaceholder } from '@/components/sections/ScreenPlaceholder';
+import { Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { ScrollView } from 'react-native';
+import {
+  AccountCard,
+  AccountGroup,
+  DeveloperGroup,
+  HelpGroup,
+  PreferencesGroup,
+  SignOutRow,
+} from '@/components/sections/profile/ProfileSections';
+import { OfflineBanner } from '@/components/sections/states/StateViews';
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   return (
-    <ScreenPlaceholder
-      titleKey="screens.profile"
-      links={[
-        { href: '/rewards', labelKey: 'screens.rewards' },
-        { href: '/support', labelKey: 'screens.support' },
-        { href: '/onboarding', labelKey: 'screens.onboarding' },
-        { href: '/sign-in', labelKey: 'screens.signIn' },
-        ...(__DEV__ ? [{ href: '/dev/components' as const, labelKey: 'dev.title' }] : []),
-      ]}
-    />
+    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-6 px-gutter pb-16 pt-2">
+      <Stack.Screen options={{ title: t('screens.profile') }} />
+      <OfflineBanner />
+      <AccountCard />
+      <PreferencesGroup />
+      <AccountGroup />
+      <HelpGroup />
+      <DeveloperGroup />
+      <SignOutRow />
+    </ScrollView>
   );
 }

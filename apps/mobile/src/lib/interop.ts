@@ -1,5 +1,6 @@
 import { Canvas } from '@shopify/react-native-skia';
 import { VelaLockup, VelaSymbol, VelaWordmark } from '@vela/brand/native';
+import { AppleAuthenticationButton } from 'expo-apple-authentication';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import { cssInterop } from 'nativewind';
@@ -21,3 +22,5 @@ cssInterop(Animated.Text, { className: 'style' });
 cssInterop(BlurView, { className: 'style' });
 cssInterop(Canvas, { className: 'style' });
 cssInterop(SymbolView, { className: 'style' });
+cssInterop(AppleAuthenticationButton, { className: 'style' });
+cssInterop(Animated.ScrollView, { className: 'style', contentContainerClassName: 'contentContainerStyle' });

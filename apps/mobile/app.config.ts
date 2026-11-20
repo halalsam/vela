@@ -30,6 +30,7 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: 'com.vela.app',
     supportsTablet: false,
+    usesAppleSignIn: true,
     icon: {
       light: './assets/brand/icon.png',
       dark: './assets/brand/icon-ios-dark.png',
@@ -52,14 +53,17 @@ const config: ExpoConfig = {
     [
       'expo-splash-screen',
       {
-        image: './assets/brand/splash-icon.png',
-        imageWidth: 84,
-        resizeMode: 'contain',
         backgroundColor: MATTE_BLACK,
+        android: {
+          image: './assets/brand/splash-icon.png',
+          imageWidth: 84,
+          backgroundColor: MATTE_BLACK,
+        },
       },
     ],
     ['expo-localization', { supportsRTL: true, supportedLocales: ['en', 'ar'] }],
     'expo-image',
+    'expo-apple-authentication',
   ],
   experiments: {
     typedRoutes: true,

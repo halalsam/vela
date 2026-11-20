@@ -1,5 +1,6 @@
 import { Canvas, LinearGradient, RadialGradient, Rect, vec } from '@shopify/react-native-skia';
 import type { Offer } from '@vela/api';
+import { durations } from '@vela/tokens';
 import { countdownParts } from '@vela/utils';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,8 +46,8 @@ export function OfferCard({ offer, onPress }: OfferCardProps) {
     sweep.set(
       withRepeat(
         withSequence(
-          withTiming(1, { duration: 1400, easing: Easing.inOut(Easing.quad) }),
-          withTiming(1, { duration: 3200 }),
+          withTiming(1, { duration: durations.sweep, easing: Easing.inOut(Easing.quad) }),
+          withTiming(1, { duration: durations.sweepRest }),
           withTiming(0, { duration: 0 }),
         ),
         -1,

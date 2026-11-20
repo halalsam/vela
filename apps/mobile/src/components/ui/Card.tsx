@@ -18,6 +18,7 @@ export type CardProps = {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   className?: string;
+  containerClassName?: string;
 };
 
 const variantClass: Record<CardVariant, string> = {
@@ -43,6 +44,7 @@ export function Card({
   accessibilityLabel,
   accessibilityHint,
   className,
+  containerClassName,
 }: CardProps) {
   const { onPressIn, onPressOut, animatedStyle } = usePressScale({ brightenBorder: !selected });
   const surface = cn(
@@ -53,7 +55,7 @@ export function Card({
   );
 
   if (!onPress) {
-    return <View className={surface}>{children}</View>;
+    return <View className={cn(surface, containerClassName)}>{children}</View>;
   }
 
   function handlePress() {
@@ -70,6 +72,7 @@ export function Card({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ selected }}
+      className={containerClassName}
     >
       <Animated.View style={animatedStyle} className={surface}>
         {children}

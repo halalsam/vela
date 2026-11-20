@@ -41,18 +41,19 @@ function qrPath(text: string): string {
 export type QrCardProps = {
   value: string;
   revealed?: boolean;
+  flipOnMount?: boolean;
   onReveal?: () => void;
 };
 
-export function QrCard({ value, revealed = true, onReveal }: QrCardProps) {
+export function QrCard({ value, revealed = true, flipOnMount = false, onReveal }: QrCardProps) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const path = useMemo(() => qrPath(value), [value]);
-  const flip = useSharedValue(revealed ? 1 : 0);
+  const flip = useSharedValue(revealed && !flipOnMount ? 1 : 0);
 
   useEffect(() => {
     const target = revealed ? 1 : 0;
-    flip.set(reduceMotion ? withTiming(target, timing(durations.base)) : withSpring(target, { duration: 700, dampingRatio: 0.85 }));
+    flip.set(reduceMotion ? withTiming(target, timing(durations.base)) : withSpring(target, { duration: durations.flip, dampingRatio: 0.85 }));
   }, [revealed, reduceMotion, flip]);
 
   const backStyle = useAnimatedStyle(() =>

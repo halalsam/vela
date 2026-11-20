@@ -12,6 +12,7 @@ Travel eSIM app (iOS + Android) and website. land connected.
 | `packages/brand` | Logo masters, fonts, `<VelaSymbol />`, `<VelaWordmark />`, `<VelaLockup />` |
 | `design/` | Claude Design export (layouts and flows reference) |
 | `docs/decisions.md` | Product and design decisions |
+| `docs/motion-qa.md` | Device checklist for every animation and haptic |
 
 ## Commands
 

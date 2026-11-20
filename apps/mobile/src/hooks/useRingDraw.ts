@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { velaEasing } from '@/lib/motion';
 
-export function useRingDraw(target: number, { delay = 0, duration = durations.slow * 2 } = {}) {
+export function useRingDraw(target: number, { delay = 0, duration = durations.ringDraw } = {}) {
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(reduceMotion ? target : 0);
 

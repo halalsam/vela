@@ -8,7 +8,7 @@ import { ManualCodeRow } from '@/components/esim';
 import { Button, Icon, ListGroup, Text } from '@/components/ui';
 import { reducedFadeIn } from '@/lib/motion';
 
-const STEP_MS = 900;
+const STEP_MS = durations.processingStep;
 const stepKeys = ['processing.step1', 'processing.step2', 'processing.step3'] as const;
 
 export function ProcessingSteps({ onDone }: { onDone: () => void }) {

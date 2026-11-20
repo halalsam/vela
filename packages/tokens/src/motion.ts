@@ -22,8 +22,24 @@ export const durations = {
   base: 280,
   slow: 450,
   splash: 1400,
+  splashLoop: 1700,
+  splashHold: 250,
+  splashReduced: 400,
+  ringDraw: 900,
+  flip: 700,
+  stagger: 50,
+  shake: 50,
   toast: 1200,
   shimmer: 1200,
+  sweep: 1400,
+  sweepRest: 3200,
+  processingStep: 900,
+  ripple: 800,
+} as const;
+
+export const distances = {
+  pullToRefresh: 80,
+  riseOffset: 12,
 } as const;
 
 export const scales = {

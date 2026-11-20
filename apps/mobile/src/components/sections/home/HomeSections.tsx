@@ -10,6 +10,7 @@ import { useCountryName } from '@/hooks/useCountryName';
 import { useStaggerIn } from '@/hooks/useStaggerIn';
 import { useLocalized } from '@/i18n/useLocalized';
 import { useCountries, useEsims, useOffers, useRegions } from '@/queries';
+import { DestinationLink } from '../explore/ExploreSections';
 import { SectionHeader } from '../SectionHeader';
 import { CardSkeleton, EmptyState, ErrorState } from '../states/StateViews';
 
@@ -159,23 +160,19 @@ export function ExploreGridSection() {
       ) : (
         <View className="flex-row flex-wrap justify-between gap-y-card-gap">
           {popular.map((country) => (
-            <Card
-              key={country.code}
-              padding="md"
-              className="w-[48%] gap-4"
-              accessibilityLabel={localized(country.name)}
-              onPress={() => router.push({ pathname: '/country/[code]', params: { code: country.code } })}
-            >
-              <Flag code={country.code} size="xl" />
-              <View className="gap-0.5">
-                <Text weight="semibold" numberOfLines={1}>
-                  {localized(country.name)}
-                </Text>
-                <Text variant="caption" tone="tertiary">
-                  {t('esim.from', { price: formatPrice(country.from_price, country.currency) })}
-                </Text>
-              </View>
-            </Card>
+            <DestinationLink key={country.code} code={country.code}>
+              <Card padding="md" containerClassName="w-[48%]" className="gap-4" accessibilityLabel={localized(country.name)}>
+                <Flag code={country.code} size="xl" />
+                <View className="gap-0.5">
+                  <Text weight="semibold" numberOfLines={1}>
+                    {localized(country.name)}
+                  </Text>
+                  <Text variant="caption" tone="tertiary">
+                    {t('esim.from', { price: formatPrice(country.from_price, country.currency) })}
+                  </Text>
+                </View>
+              </Card>
+            </DestinationLink>
           ))}
         </View>
       )}

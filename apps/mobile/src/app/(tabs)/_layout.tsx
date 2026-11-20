@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 export default function TabsLayout() {
   const { t } = useTranslation();
   return (
-    <NativeTabs tintColor={colors.fg.DEFAULT} iconColor={colors.fg.tertiary} indicatorColor={colors.surface[3]}>
+    <NativeTabs
+      tintColor={colors.fg.DEFAULT}
+      iconColor={colors.fg.tertiary}
+      indicatorColor={colors.surface[3]}
+      minimizeBehavior="onScrollDown"
+    >
       <NativeTabs.Trigger name="(home)">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>{t('tabs.home')}</NativeTabs.Trigger.Label>

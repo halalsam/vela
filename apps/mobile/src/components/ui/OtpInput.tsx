@@ -1,3 +1,4 @@
+import { durations } from '@vela/tokens';
 import { useEffect, useRef, useState } from 'react';
 import { TextInput, View, type TextInputInstance } from 'react-native';
 import Animated, {
@@ -23,7 +24,7 @@ export type OtpInputProps = {
 };
 
 const SHAKE = 8;
-const SHAKE_STEP = 50;
+const SHAKE_STEP = durations.shake;
 
 export function OtpInput({
   value,

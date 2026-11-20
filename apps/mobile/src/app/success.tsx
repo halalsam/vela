@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { QrCard, QrHint, VelaSplash } from '@/components/esim';
+import { QrCard, QrHint, SignalRipple, VelaSplash } from '@/components/esim';
 import { InstallActions } from '@/components/sections/purchase/PurchaseSections';
 import { ErrorState } from '@/components/sections/states/StateViews';
 import { Button, Skeleton, Text } from '@/components/ui';
@@ -31,7 +31,10 @@ export default function SuccessScreen() {
         ) : (
           <>
             {revealed ? (
-              <QrCard value={esim.data.lpa_string} revealed />
+              <View className="items-center justify-center">
+                <SignalRipple />
+                <QrCard value={esim.data.lpa_string} revealed flipOnMount />
+              </View>
             ) : (
               <View className="h-[232px] justify-center">
                 <VelaSplash

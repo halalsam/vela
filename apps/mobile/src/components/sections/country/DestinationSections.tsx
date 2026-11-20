@@ -1,6 +1,7 @@
 import type { Plan } from '@vela/api';
 import { bestValuePlanId, dataParts } from '@vela/utils';
 import { BlurView } from 'expo-blur';
+import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -21,7 +22,11 @@ export function DestinationHero({ destination, plans }: { destination: Destinati
   const hotspot = plans.some((plan) => plan.hotspot);
   return (
     <View className="items-center gap-5 pb-2 pt-4">
-      {destination.isRegion ? <FlagStack codes={destination.codes} size="xl" max={4} /> : <Flag code={destination.codes[0] ?? ''} size="hero" />}
+      <Link.AppleZoomTarget>
+        <View>
+          {destination.isRegion ? <FlagStack codes={destination.codes} size="xl" max={4} /> : <Flag code={destination.codes[0] ?? ''} size="hero" />}
+        </View>
+      </Link.AppleZoomTarget>
       <View className="items-center gap-2">
         <Text variant="display-xl" align="center" accessibilityRole="header">
           {destination.name}

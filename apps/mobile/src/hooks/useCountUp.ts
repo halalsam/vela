@@ -12,7 +12,7 @@ function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 4);
 }
 
-export function useCountUp(target: number, { duration = durations.slow * 2, decimals = 1, from = 0 }: CountUpOptions = {}) {
+export function useCountUp(target: number, { duration = durations.ringDraw, decimals = 1, from = 0 }: CountUpOptions = {}) {
   const reduceMotion = useReducedMotion();
   const [value, setValue] = useState(from);
   const previous = useRef(from);

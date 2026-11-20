@@ -1,0 +1,27 @@
+name: vela-edge
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN}
+      STAGING_API_DOMAIN: ${STAGING_API_DOMAIN:?set STAGING_API_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [edge]
+    restart: unless-stopped
+
+volumes:
+  caddy-data: {}
+  caddy-config: {}
+
+networks:
+  edge:
+    name: edge

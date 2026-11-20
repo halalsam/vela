@@ -84,3 +84,9 @@ source of truth. Resolved as follows:
   of Medusa v2. vela sells one digital item and then manages a long eSIM lifecycle; a commerce
   framework would cover the smaller part and fight us on carts and shipping. The shared zod schemas
   in `packages/api` stay the contract. Full plan: `docs/backend-plan.md`.
+- B2 (2026-11-20): `apps/server` skeleton is in: env validation, pino logs, Sentry, health and
+  readiness, OpenAPI at `/v1/openapi.json`, the full v1 schema as migration `0000_init`, pg-boss
+  worker with a heartbeat job, Docker image, Compose stack for staging and production, Caddy, and
+  CI that builds the image on every push to `main` and deploys to staging once `VPS_HOST` and the
+  SSH secrets are set. better-auth tables arrive in B4, so `user_id` columns are plain text until
+  then.

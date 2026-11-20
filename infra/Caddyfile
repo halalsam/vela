@@ -1,0 +1,27 @@
+{
+	email {$ACME_EMAIL}
+}
+
+(api) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+	request_body {
+		max_size 1MB
+	}
+}
+
+{$API_DOMAIN} {
+	import api
+	reverse_proxy vela-production-api:8787 {
+		lb_policy round_robin
+		fail_duration 10s
+	}
+}
+
+{$STAGING_API_DOMAIN} {
+	import api
+	reverse_proxy vela-staging-api:8787
+}

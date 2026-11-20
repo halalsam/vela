@@ -413,7 +413,11 @@
     "expiredBody": "Buy the same plan again, or pick a new one.",
     "lowTitle": "Running low",
     "lowBody": "Top up now so you don't lose data mid-trip.",
-    "copied": "ICCID copied"
+    "copied": "ICCID copied",
+    "trackOn": "Show on Lock Screen",
+    "trackOff": "Remove from Lock Screen",
+    "trackStarted": "On your Lock Screen and Dynamic Island",
+    "trackFailed": "Couldn't start. Check Live Activities in Settings."
   },
   "topUp": {
     "title": "top up",

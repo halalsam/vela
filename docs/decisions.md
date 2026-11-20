@@ -61,3 +61,19 @@ source of truth. Resolved as follows:
   badges when they go live.
 - The hero mark builds with the same sail → signal → name beats as the app, in pure CSS (an animated
   conic mask on the original paths). It is skipped under `prefers-reduced-motion`.
+
+## 2026-11-20 · Phase 8 (widgets and Live Activity)
+
+- One widget extension, `apps/mobile/targets/widget`, built by `@bacons/apple-targets` on prebuild.
+  It holds the usage widget (small, medium, Lock Screen ring, rectangular and inline) and the trip
+  Live Activity with its Dynamic Island layouts. Minimum iOS 16.4, same as the app.
+- The app writes a JSON snapshot of the user's eSIMs to the App Group `group.com.vela.app` every time
+  the eSIM list loads, then reloads the widget timelines. Strings are localised by the app before
+  they are written, so the widget follows the app language.
+- Live Activities start from Usage › "Show on Lock Screen" through the local module
+  `apps/mobile/modules/vela-live-activity`. Running activities update whenever the eSIM list
+  refreshes and end when the plan expires. Remote push updates come with the backend.
+- The widget uses the vela symbol as a template image (rendered from the kit SVG) and the system
+  font; Manrope is not bundled into the extension.
+- Before the first device build: set `ios.appleTeamId` in `app.config.ts`, and register the App Group
+  for both bundle IDs (`com.vela.app`, `com.vela.app.VelaWidgets`) in the Apple Developer portal.

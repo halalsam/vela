@@ -10,9 +10,12 @@ import { ToastViewport } from '@/components/ui';
 import { useLanguageSync } from '@/i18n/useLanguageSync';
 import { baseStackOptions, largeTitleStackOptions, sheetOptions } from '@/lib/navigation';
 import { queryClient } from '@/lib/queryClient';
+import { startWidgetSync } from '@/lib/widgetSync';
 import { useSession } from '@/stores/session';
 
 const fullScreen = { headerShown: false, gestureEnabled: false } as const;
+
+startWidgetSync();
 
 export default function RootLayout() {
   useLanguageSync();

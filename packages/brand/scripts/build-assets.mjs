@@ -10,6 +10,7 @@ const iconsDir = join(logoDir, 'icons');
 const fontsDir = join(brandRoot, 'fonts');
 const mobileOut = join(repoRoot, 'apps/mobile/assets/brand');
 const webOut = join(repoRoot, 'apps/web/public');
+const widgetOut = join(repoRoot, 'apps/mobile/targets/widget/assets');
 
 const MATTE_BLACK = '#0A0A0A';
 
@@ -64,6 +65,13 @@ async function buildMobile() {
     await copyFile(join(iconsDir, from), join(mobileOut, to));
   }
   await svgToPng(join(logoDir, 'vela-symbol-white.svg'), 512, join(mobileOut, 'splash-icon.png'));
+}
+
+async function buildWidget() {
+  await mkdir(widgetOut, { recursive: true });
+  await svgToPng(join(logoDir, 'vela-symbol-white.svg'), 168, join(widgetOut, 'vela-symbol.png'));
+  await svgToPng(join(logoDir, 'vela-symbol-small-white.svg'), 66, join(widgetOut, 'vela-symbol-small.png'));
+  await copyFile(join(iconsDir, 'ios/vela-ios-light-1024.png'), join(widgetOut, 'icon.png'));
 }
 
 async function buildOgImage(outPath) {
@@ -126,4 +134,5 @@ async function buildWeb() {
 await writeGeometry();
 await buildMobile();
 await buildWeb();
-console.log('Brand assets written to packages/brand/src, apps/mobile/assets/brand and apps/web/public');
+await buildWidget();
+console.log('Brand assets written to packages/brand/src, apps/mobile/assets/brand, apps/mobile/targets/widget/assets and apps/web/public');

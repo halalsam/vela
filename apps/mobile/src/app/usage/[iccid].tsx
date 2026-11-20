@@ -3,6 +3,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { UsageRing, ValidityCountdown, ringStateFor } from '@/components/esim';
+import { LiveActivityToggle } from '@/components/sections/usage/LiveActivityToggle';
 import { UsageBars, UsageDetails } from '@/components/sections/usage/UsageSections';
 import { CardSkeleton, ErrorState, OfflineBanner } from '@/components/sections/states/StateViews';
 import { Banner, Button, Card } from '@/components/ui';
@@ -43,6 +44,7 @@ export default function UsageScreen() {
               />
               <ValidityCountdown expiresAt={data.expires_at} variant="pill" />
             </Card>
+            <LiveActivityToggle esim={data} />
             {data.status === 'active' && usage.data ? <UsageBars days={usage.data} /> : null}
             <UsageDetails esim={data} />
           </>

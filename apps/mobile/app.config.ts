@@ -1,6 +1,7 @@
 import type { ExpoConfig } from 'expo/config';
 
 const MATTE_BLACK = '#0A0A0A';
+const APP_GROUP = 'group.com.vela.app';
 
 const fontsDir = '../../packages/brand/fonts';
 const fontFiles = [
@@ -31,6 +32,12 @@ const config: ExpoConfig = {
     bundleIdentifier: 'com.vela.app',
     supportsTablet: false,
     usesAppleSignIn: true,
+    entitlements: {
+      'com.apple.security.application-groups': [APP_GROUP],
+    },
+    infoPlist: {
+      NSSupportsLiveActivities: true,
+    },
     icon: {
       light: './assets/brand/icon.png',
       dark: './assets/brand/icon-ios-dark.png',
@@ -64,6 +71,7 @@ const config: ExpoConfig = {
     ['expo-localization', { supportsRTL: true, supportedLocales: ['en', 'ar'] }],
     'expo-image',
     'expo-apple-authentication',
+    '@bacons/apple-targets',
   ],
   experiments: {
     typedRoutes: true,

@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { baseStackOptions, sheetOptions } from '@/lib/navigation';
+import { ToastViewport } from '@/components/ui';
+import { baseStackOptions, largeTitleStackOptions, sheetOptions } from '@/lib/navigation';
 
 const queryClient = new QueryClient();
 
@@ -29,7 +30,10 @@ export default function RootLayout() {
           <Stack.Screen name="top-up" options={sheetOptions} />
           <Stack.Screen name="rewards" />
           <Stack.Screen name="support" />
+          <Stack.Screen name="dev/components" options={largeTitleStackOptions} />
+          <Stack.Screen name="dev/sheet" options={sheetOptions} />
         </Stack>
+        <ToastViewport />
         <StatusBar style="light" />
       </QueryClientProvider>
     </GestureHandlerRootView>

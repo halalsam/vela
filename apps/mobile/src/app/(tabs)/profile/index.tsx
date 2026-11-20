@@ -9,6 +9,7 @@ export default function ProfileScreen() {
         { href: '/support', labelKey: 'screens.support' },
         { href: '/onboarding', labelKey: 'screens.onboarding' },
         { href: '/sign-in', labelKey: 'screens.signIn' },
+        ...(__DEV__ ? [{ href: '/dev/components' as const, labelKey: 'dev.title' }] : []),
       ]}
     />
   );

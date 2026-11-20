@@ -1,8 +1,8 @@
 import { Link, Stack, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { useDirection } from '@/i18n/useDirection';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Icon, Text } from '@/components/ui';
 
 export type PlaceholderLink = {
   href: Href;
@@ -20,10 +20,6 @@ type ScreenPlaceholderProps = {
 
 export function ScreenPlaceholder({ titleKey, links = [], showTitleInContent = false, children }: ScreenPlaceholderProps) {
   const { t } = useTranslation();
-  const { isRTL } = useDirection();
-  const displayFont = isRTL ? 'font-arabic-light' : 'font-display';
-  const bodyFont = isRTL ? 'font-arabic' : 'font-sans';
-  const labelFont = isRTL ? 'font-arabic-semibold' : 'font-sans-semibold';
 
   return (
     <ScrollView
@@ -32,20 +28,25 @@ export function ScreenPlaceholder({ titleKey, links = [], showTitleInContent = f
       contentContainerClassName="gap-card-gap px-gutter pb-12 pt-section"
     >
       <Stack.Screen options={{ title: t(titleKey) }} />
-      {showTitleInContent ? (
-        <Text className={`${displayFont} text-display-xl text-fg text-start`}>{t(titleKey)}</Text>
-      ) : null}
+      {showTitleInContent ? <Text variant="display-xl">{t(titleKey)}</Text> : null}
       {children}
-      <Text className={`${bodyFont} text-callout text-fg-secondary text-start`}>{t('placeholder.body')}</Text>
+      <Text variant="callout" tone="secondary">
+        {t('placeholder.body')}
+      </Text>
       <View className="gap-card-gap">
         {links.map((link) => (
           <Link key={`${String(link.href)}-${link.labelKey}`} href={link.href} replace={link.replace} dismissTo={link.dismissTo} asChild>
             <Pressable
               accessibilityRole="link"
-              className="min-h-tap flex-row items-center justify-between rounded-card border border-line bg-surface-1 px-gutter py-4 active:border-line-strong"
+              className="min-h-tap flex-row items-center gap-3 rounded-card border border-line border-t-line-highlight bg-surface-1 px-gutter py-4 active:border-line-strong"
             >
-              <Text className={`${labelFont} text-label uppercase text-fg-tertiary`}>{t('placeholder.next')}</Text>
-              <Text className={`${bodyFont} text-body text-fg`}>{t(link.labelKey)}</Text>
+              <Text variant="label" tone="tertiary">
+                {t('placeholder.next')}
+              </Text>
+              <Text weight="medium" className="flex-1">
+                {t(link.labelKey)}
+              </Text>
+              <Icon name="chevronForward" size={13} tone="quaternary" weight="semibold" />
             </Pressable>
           </Link>
         ))}

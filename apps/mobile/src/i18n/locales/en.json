@@ -41,5 +41,131 @@
     "body": "Manrope for every word you read in the app.",
     "data": "3.80 GB",
     "arabic": "تصل وأنت متصل"
+  },
+  "ui": {
+    "clear": "Clear",
+    "dismiss": "Dismiss",
+    "close": "Close",
+    "pageOf": "Page {{current}} of {{total}}",
+    "stepOf": "Step {{current}} of {{total}}",
+    "swipeHint": "Swipe right, or double tap, to pay"
+  },
+  "dev": {
+    "title": "components",
+    "sections": {
+      "typography": "Typography",
+      "actions": "Buttons",
+      "status": "Pills, chips and banners",
+      "surfaces": "Cards and lists",
+      "inputs": "Inputs",
+      "navigation": "Tabs and progress",
+      "payment": "Swipe to pay and sheets"
+    },
+    "notes": {
+      "typography": "Display is Instrument Serif, lowercase. Data numbers use tabular figures.",
+      "otp": "Type 000000 to see the error state.",
+      "toast": "Toasts drop from the top and clear after 1.2 s.",
+      "swipe": "Release before the end and the thumb springs back."
+    },
+    "samples": {
+      "display": "land connected.",
+      "title": "Japan · 10 GB",
+      "body": "Data starts when you land and connect.",
+      "callout": "Networks: NTT Docomo, SoftBank",
+      "caption": "Expires in 3 days",
+      "label": "My travel",
+      "dataXl": "3.80",
+      "dataMd": "₹1,199",
+      "dataSm": "6d 14:42"
+    },
+    "buttons": {
+      "continue": "Continue",
+      "compare": "Compare plans",
+      "later": "Install later",
+      "claim": "Claim reward",
+      "remove": "Remove eSIM",
+      "loading": "Paying",
+      "disabled": "Unavailable",
+      "topUp": "Top up",
+      "share": "Share",
+      "back": "Back",
+      "close": "Close",
+      "add": "Add eSIM"
+    },
+    "pills": {
+      "active": "Active",
+      "low": "Low data",
+      "expired": "Expired",
+      "best": "Best value",
+      "new": "New",
+      "fiveG": "5G"
+    },
+    "chips": {
+      "countries": "Countries",
+      "regions": "Regions",
+      "global": "Global",
+      "hotspot": "Hotspot",
+      "instant": "Instant activation"
+    },
+    "banners": {
+      "lowTitle": "Running low in Japan",
+      "lowBody": "0.4 GB left · top up to stay online",
+      "offlineTitle": "You're offline",
+      "offlineBody": "Showing usage from 9:12",
+      "paidTitle": "Payment received",
+      "paidBody": "Your eSIM is ready to install",
+      "errorTitle": "Payment didn't go through",
+      "errorBody": "You haven't been charged. Try again.",
+      "retry": "Retry"
+    },
+    "toasts": {
+      "copied": "Activation code copied",
+      "saved": "Saved",
+      "low": "Running low on data",
+      "failed": "Couldn't connect",
+      "showCopied": "Copied toast",
+      "showWarning": "Warning toast",
+      "showError": "Error toast"
+    },
+    "cards": {
+      "default": "Default card",
+      "raised": "Raised card",
+      "outline": "Outline card",
+      "interactive": "Tap me",
+      "selected": "Selected",
+      "hint": "Press to see the scale and border"
+    },
+    "list": {
+      "header": "Settings",
+      "footer": "Changes apply to every device you sign in on.",
+      "language": "Language",
+      "languageValue": "English",
+      "currency": "Currency",
+      "currencyValue": "₹ INR",
+      "faceId": "Face ID for purchases",
+      "notifications": "Notifications",
+      "signOut": "Sign out"
+    },
+    "inputs": {
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "emailHelper": "We'll send your receipt here.",
+      "coupon": "Coupon",
+      "couponError": "This code has expired.",
+      "search": "Country or region",
+      "otpLabel": "Verification code"
+    },
+    "tabs": {
+      "label": "Plan type"
+    },
+    "payment": {
+      "swipe": "swipe to pay",
+      "paid": "paid",
+      "amount": "₹1,199",
+      "openSheet": "Open sheet demo",
+      "sheetTitle": "checkout",
+      "sheetBody": "Sheet scaffold: title, close button, scrolling body and a footer that clears the home indicator.",
+      "summary": "Japan · 10 GB · 15 days"
+    }
   }
 }

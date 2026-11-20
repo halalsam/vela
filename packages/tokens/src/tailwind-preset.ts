@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss';
 import { colors } from './colors';
-import { fontFamilies, typeScale } from './typography';
+import { arabicLineHeightOffset, fontFamilies, typeScale } from './typography';
 import { radii, sizes, spacing } from './layout';
 import { durations, easingCss } from './motion';
 
@@ -24,15 +24,23 @@ const fontFamily = {
   'arabic-bold': [fontFamilies.arabicBold, ...webFallback],
 };
 
-const fontSize = Object.fromEntries(
-  Object.entries(typeScale).map(([name, style]) => {
-    const letterSpacing = 'letterSpacing' in style ? px(style.letterSpacing) : undefined;
-    return [
-      name,
-      [px(style.fontSize), letterSpacing ? { lineHeight: px(style.lineHeight), letterSpacing } : { lineHeight: px(style.lineHeight) }],
-    ];
-  }),
-) as Record<string, [string, { lineHeight: string; letterSpacing?: string }]>;
+type FontSizeEntry = [string, { lineHeight: string; letterSpacing?: string }];
+
+const latinSizes = Object.entries(typeScale).map(([name, style]): [string, FontSizeEntry] => {
+  const meta: FontSizeEntry[1] = { lineHeight: px(style.lineHeight) };
+  if ('letterSpacing' in style) meta.letterSpacing = px(style.letterSpacing);
+  return [name, [px(style.fontSize), meta]];
+});
+
+const arabicSizes = Object.entries(typeScale).map(([name, style]): [string, FontSizeEntry] => [
+  `${name}-ar`,
+  [px(style.fontSize), { lineHeight: px(style.lineHeight + arabicLineHeightOffset), letterSpacing: '0px' }],
+]);
+
+const fontSize: Record<string, FontSizeEntry | string> = {
+  ...Object.fromEntries([...latinSizes, ...arabicSizes]),
+  field: px(16),
+};
 
 export const velaPreset = {
   darkMode: 'class',

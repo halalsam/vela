@@ -22,11 +22,11 @@ export const colors = {
   },
   line: {
     DEFAULT: 'rgba(255,255,255,0.07)',
-    strong: 'rgba(255,255,255,0.14)',
-    highlight: 'rgba(255,255,255,0.06)',
+    highlight: 'rgba(255,255,255,0.11)',
+    strong: 'rgba(255,255,255,0.16)',
   },
   fg: {
-    DEFAULT: 'rgba(255,255,255,1)',
+    DEFAULT: palette.white,
     secondary: 'rgba(255,255,255,0.64)',
     tertiary: 'rgba(255,255,255,0.40)',
     quaternary: 'rgba(255,255,255,0.24)',

@@ -1,0 +1,45 @@
+{
+  "brand": {
+    "tagline": "land connected."
+  },
+  "tabs": {
+    "home": "Home",
+    "explore": "Explore",
+    "esims": "My eSIMs",
+    "profile": "Profile",
+    "search": "Search"
+  },
+  "screens": {
+    "home": "home",
+    "explore": "explore",
+    "esims": "my eSIMs",
+    "profile": "profile",
+    "search": "search",
+    "onboarding": "set sail.",
+    "signIn": "sign in",
+    "country": "country",
+    "checkout": "checkout",
+    "processing": "processing",
+    "success": "you're connected",
+    "install": "install guide",
+    "usage": "usage",
+    "topUp": "top up",
+    "rewards": "rewards",
+    "support": "support",
+    "notFound": "lost at sea"
+  },
+  "search": {
+    "placeholder": "Country or region"
+  },
+  "placeholder": {
+    "body": "Layout lands in Phase 5. This screen only proves the route and its presentation.",
+    "next": "Go to"
+  },
+  "brandCheck": {
+    "label": "Type check",
+    "display": "land connected.",
+    "body": "Manrope for every word you read in the app.",
+    "data": "3.80 GB",
+    "arabic": "تصل وأنت متصل"
+  }
+}

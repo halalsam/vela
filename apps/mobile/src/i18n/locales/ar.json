@@ -1,0 +1,45 @@
+{
+  "brand": {
+    "tagline": "تصل وأنت متصل."
+  },
+  "tabs": {
+    "home": "الرئيسية",
+    "explore": "استكشف",
+    "esims": "شرائحي",
+    "profile": "الحساب",
+    "search": "بحث"
+  },
+  "screens": {
+    "home": "الرئيسية",
+    "explore": "استكشف",
+    "esims": "شرائحي",
+    "profile": "الحساب",
+    "search": "بحث",
+    "onboarding": "أبحِر.",
+    "signIn": "تسجيل الدخول",
+    "country": "الدولة",
+    "checkout": "الدفع",
+    "processing": "جارٍ التنفيذ",
+    "success": "أنت متصل",
+    "install": "دليل التثبيت",
+    "usage": "الاستخدام",
+    "topUp": "إعادة الشحن",
+    "rewards": "المكافآت",
+    "support": "الدعم",
+    "notFound": "الصفحة غير موجودة"
+  },
+  "search": {
+    "placeholder": "دولة أو منطقة"
+  },
+  "placeholder": {
+    "body": "التصميم يصل في المرحلة الخامسة. هذه الشاشة تثبت المسار وطريقة العرض فقط.",
+    "next": "انتقل إلى"
+  },
+  "brandCheck": {
+    "label": "فحص الخطوط",
+    "display": "تصل وأنت متصل.",
+    "body": "خط IBM Plex Sans Arabic لكل نص عربي في التطبيق.",
+    "data": "3.80 GB",
+    "arabic": "تصل وأنت متصل"
+  }
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Top up</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 8px; right: 16px; top: 54px; height: 44px; display: flex; align-items: center">
+    <a href="Usage.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: {{t.card}}; color: {{t.label}}; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 106px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 4px">
+      <h1 style="margin: 0; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.4px">Top up Japan</h1>
+      <span style="font-size: 15px; line-height: 20px; color: {{t.sec}}">Adds to your current eSIM — no reinstall.</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px; background: {{t.card}}">
+      <span style="width: 28px; height: 28px; border-radius: 14px; background: radial-gradient(circle, #BC002D 0 30%, #FFFFFF 31%); box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.15)"></span>
+      <span style="flex-grow: 1; font-size: 15px">Now <strong style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-weight: 600">3.8 GB</strong> left · 6 days</span>
+    </div>
+    <div role="radiogroup" aria-label="Top-up amount" style="display: flex; flex-direction: column; gap: 10px">
+      <sc-for list="{{plans}}" as="p" hint-placeholder-count="3">
+        <button type="button" role="radio" aria-checked="{{p.checked}}" onClick="{{p.pick}}" style="{{p.style}}">
+          <span style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; line-height: 32px; font-weight: 700">+{{p.gb}}<span style="font-size: 17px; font-weight: 600"> GB</span></span>
+            <sc-if value="{{p.best}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 10px; background: {{t.ink}}; color: {{t.onInk}}">Best value</span></sc-if>
+          </span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+            <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600">{{p.price}}</span>
+            <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-size: 13px; color: {{t.sec}}">{{p.per}} / GB</span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+    <label style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; min-height: 52px; border-radius: 14px; background: {{t.card}}">
+      <span style="display: flex; flex-direction: column"><span style="font-size: 17px">Extend by 7 days</span><span style="font-size: 13px; color: {{t.sec}}">+₹149</span></span>
+      <button type="button" role="switch" aria-checked="{{extendStr}}" onClick="{{toggle}}" style="{{switchStyle}}"><span style="{{knob}}"></span></button>
+    </label>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; background: {{t.card}}; box-shadow: 0 -6px 20px rgba(0,0,0,0.06); padding: 8px 16px 34px; display: flex; flex-direction: column; gap: 12px">
+    <div style="align-self: center; width: 36px; height: 5px; border-radius: 3px; background: {{t.ter}}"></div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px">
+      <span style="font-size: 15px; color: {{t.sec}}">{{summary}}</span>
+      <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{total}}</span>
+    </div>
+    <a href="MyEsims.dc.html" aria-label="Pay with Apple Pay" style="height: 50px; border-radius: 14px; background: {{t.payBg}}; color: {{t.payFg}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Apple Pay</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.32)', ink: '#FFFFFF', onInk: '#000000', green: '#30D158', payBg: '#FFFFFF', payFg: '#000000'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(120,120,128,0.16)', ink: '#000000', onInk: '#FFFFFF', green: '#34C759', payBg: '#000000', payFg: '#FFFFFF'
+    };
+    var self = this;
+    var sel = this.state.sel ?? 1;
+    var extend = this.state.extend ?? false;
+    var raw = [['1', 199, '₹199', false], ['3', 449, '₹150', false], ['5', 649, '₹130', true]];
+    var plans = raw.map(function (p, i) {
+      var on = i === sel;
+      return {
+        gb: p[0], price: '₹' + p[1], per: p[2], best: p[3], checked: on ? 'true' : 'false',
+        pick: function () { self.setState({ sel: i }); },
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minHeight: '72px', padding: '12px 18px', borderRadius: '20px', background: t.card, color: t.label, font: 'inherit', textAlign: 'left', boxSizing: 'border-box', border: on ? '2px solid ' + t.ink : '2px solid transparent', cursor: 'pointer' }
+      };
+    });
+    var amount = raw[sel][1] + (extend ? 149 : 0);
+    return {
+      t: t, dark: dark, plans: plans, extendStr: extend ? 'true' : 'false',
+      toggle: function () { self.setState({ extend: !extend }); },
+      switchStyle: { position: 'relative', width: '51px', height: '31px', border: 0, borderRadius: '16px', background: extend ? t.green : t.fill, padding: 0, flexShrink: 0, cursor: 'pointer' },
+      knob: { position: 'absolute', top: '2px', left: extend ? '22px' : '2px', width: '27px', height: '27px', borderRadius: '14px', background: '#FFFFFF', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' },
+      summary: '+' + raw[sel][0] + ' GB' + (extend ? ' · +7 days' : '') + ' · incl. GST',
+      total: '₹' + amount.toLocaleString('en-IN')
+    };
+  }
+}
+</script>
+</body>
+</html>

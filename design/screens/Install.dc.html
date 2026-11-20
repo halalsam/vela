@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Install guide</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 8px; right: 16px; top: 54px; height: 44px; display: flex; align-items: center; justify-content: space-between">
+    <a href="Success.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: {{t.fill}}; color: {{t.label}}; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <span style="font-size: 17px; font-weight: 600">Install guide</span>
+    <a href="Support.dc.html" style="min-height: 44px; display: flex; align-items: center; color: {{t.label}}; font-size: 17px; text-decoration: none">Help</a>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 110px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; align-items: center; gap: 8px" aria-label="{{progressLabel}}">
+      <sc-for list="{{dots}}" as="d" hint-placeholder-count="4"><span style="{{d}}"></span></sc-for>
+      <span style="margin-inline-start: auto; font-size: 13px; color: {{t.sec}}; font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">{{progressLabel}}</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; line-height: 34px; font-weight: 700">{{s.title}}</h1>
+      <p style="margin: 0; font-size: 17px; line-height: 22px; color: {{t.sec}}">{{s.body}}</p>
+    </div>
+
+    <figure style="margin: 0; border-radius: 28px; background: {{t.card}}; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="border-radius: 18px; background: {{t.mockBg}}; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 20px; font-weight: 700; padding: 0 6px">{{s.mockTitle}}</span>
+        <div style="border-radius: 12px; background: {{t.card}}; overflow: hidden">
+          <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="4">
+            <div style="{{r.style}}">
+              <span style="{{r.icon}}"></span>
+              <span style="flex-grow: 1">{{r.label}}</span>
+              <sc-if value="{{r.toggle}}" hint-placeholder-val="{{ false }}"><span style="width: 44px; height: 26px; border-radius: 13px; background: {{t.greenFill}}; position: relative; display: inline-block"><span style="position: absolute; right: 2px; top: 2px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF"></span></span></sc-if>
+              <sc-if value="{{r.chev}}" hint-placeholder-val="{{ true }}"><span style="color: {{t.ter}}; font-size: 15px">{{r.detail}} ›</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <figcaption style="font-size: 12px; color: {{t.sec}}; text-align: center">Screenshot placeholder · replace with real iOS Settings capture</figcaption>
+    </figure>
+
+    <sc-if value="{{s.tip}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid {{t.sep}}; font-size: 15px; line-height: 20px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0; color: {{t.sec}}" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>
+        <span>{{s.tip}}</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 34px; display: flex; gap: 12px">
+    <sc-if value="{{hasPrev}}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{prev}}" style="height: 50px; padding: 0 22px; border: 0; border-radius: 14px; background: {{t.fill}}; color: {{t.label}}; font: inherit; font-size: 17px; font-weight: 600">Back</button>
+    </sc-if>
+    <sc-if value="{{notLast}}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{next}}" style="flex-grow: 1; height: 50px; border: 0; border-radius: 14px; background: {{t.ink}}; color: {{t.onInk}}; font: inherit; font-size: 17px; font-weight: 600">Next step</button>
+    </sc-if>
+    <sc-if value="{{last}}" hint-placeholder-val="{{ false }}">
+      <a href="MyEsims.dc.html" style="flex-grow: 1; height: 50px; border-radius: 14px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">I’m connected</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"step":{"editor":"enum","options":[1,2,3,4],"default":2},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', mockBg: '#000000', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', ink: '#FFFFFF', onInk: '#000000', greenFill: '#30D158', dot: 'rgba(235,235,245,0.3)'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', mockBg: '#F2F2F7', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', ink: '#000000', onInk: '#FFFFFF', greenFill: '#34C759', dot: 'rgba(60,60,67,0.3)'
+    };
+    var self = this;
+    var step = Number(this.state.step ?? this.props.step ?? 2);
+    function row(label, color, hi, last, opts) {
+      opts = opts || {};
+      return {
+        label: label, toggle: !!opts.toggle, chev: !opts.toggle, detail: opts.detail || '',
+        icon: { width: '28px', height: '28px', borderRadius: '7px', background: color, flexShrink: 0 },
+        style: { display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px', padding: '0 12px', fontSize: '17px', borderBottom: last ? '0' : '0.5px solid ' + t.sep, boxShadow: hi ? 'inset 0 0 0 2.5px ' + t.ink : 'none', borderRadius: hi ? '12px' : '0', position: 'relative' }
+      };
+    }
+    var steps = {
+      1: { title: 'Open Settings › Cellular', body: 'Leave this app open — we’ll be here when you come back.', mockTitle: 'Settings',
+        rows: [row('Airplane Mode', '#FF9500'), row('Wi-Fi', '#007AFF', false, false, { detail: 'Home' }), row('Bluetooth', '#007AFF', false, false, { detail: 'On' }), row('Cellular', '#34C759', true, true)] },
+      2: { title: 'Tap Add eSIM', body: 'Choose “Use QR Code” if asked, or tap the install link we sent.', mockTitle: 'Cellular',
+        rows: [row('Cellular Data', '#34C759', false, false, { detail: 'Primary' }), row('Primary', '#8E8E93', false, false, { detail: 'On' }), row('Add eSIM', '#8E8E93', true, true)],
+        tip: 'Stay on Wi-Fi while installing. It takes about a minute.' },
+      3: { title: 'Name it “Landed Japan”', body: 'Keep your primary line for calls and iMessage. Use Landed for Cellular Data.', mockTitle: 'Cellular Plan Labels',
+        rows: [row('Primary', '#8E8E93', false, false, { detail: 'Calls' }), row('Landed Japan', '#000000', true, false, { detail: 'Data' }), row('Cellular Data', '#34C759', false, true, { detail: 'Landed Japan' })] },
+      4: { title: 'Turn on Data Roaming', body: 'Only for the Landed line. Your primary line stays off — no roaming charges.', mockTitle: 'Landed Japan',
+        rows: [row('Turn On This Line', '#34C759', false, false, { toggle: true }), row('Data Roaming', '#34C759', true, true, { toggle: true })],
+        tip: 'Activate after you land. Your plan’s days start counting on first connection.' }
+    };
+    var dots = [1, 2, 3, 4].map(function (i) {
+      return { flexGrow: 1, height: '6px', borderRadius: '3px', background: i <= step ? t.ink : t.dot, maxWidth: '56px' };
+    });
+    return {
+      t: t, dark: dark, s: steps[step], dots: dots, progressLabel: 'Step ' + step + ' of 4',
+      hasPrev: step > 1, notLast: step < 4, last: step === 4,
+      next: function () { self.setState({ step: Math.min(4, step + 1) }); },
+      prev: function () { self.setState({ step: Math.max(1, step - 1) }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

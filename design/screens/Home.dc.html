@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;family=Noto+Sans+Arabic:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div dir="{{dir}}" lang="{{lang}}" style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: {{font}}">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" rtl="{{rtl}}" hint-size="402px,54px"></dc-import></div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 54px; display: flex; flex-direction: column; gap: 16px">
+    <div style="height: 44px; display: flex; justify-content: flex-end; align-items: center">
+      <a href="Profile.dc.html" aria-label="{{c.profile}}" style="width: 44px; height: 44px; border-radius: 22px; background: {{t.card}}; color: {{t.label}}; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 15px; font-weight: 600; font-family: -apple-system, 'SF Pro Text', Inter, sans-serif">SK</a>
+    </div>
+    <h1 style="margin: -12px 0 0; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.4px">{{c.greet}}</h1>
+    <a href="Store.dc.html" style="height: 40px; border-radius: 12px; background: {{t.card}}; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: {{t.sec}}; text-decoration: none; font-size: 17px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>{{c.search}}
+    </a>
+
+    <sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px; border: 1px solid {{t.sep}}; font-size: 15px; color: {{t.sec}}; margin-bottom: -4px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 4-2.4M19 13a10 10 0 0 0-2.3-1.7M2 9.5A15 15 0 0 1 7 6.6M22 9.5a15 15 0 0 0-9.5-3.9M12 20v.5"></path></svg>
+        <span style="flex-grow: 1">{{c.offline}}</span>
+        <button type="button" style="min-height: 32px; border: 0; background: transparent; color: {{t.label}}; font: inherit; font-size: 15px; font-weight: 600">{{c.retry}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="height: 184px; border-radius: 20px; background: {{t.card}}; padding: 20px; box-sizing: border-box; display: flex; gap: 20px; align-items: center">
+          <div style="width: 112px; height: 112px; border-radius: 56px; background: {{t.skel}}; flex-shrink: 0"></div>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px">
+            <div style="height: 16px; width: 80%; border-radius: 8px; background: {{shimmer}}"></div>
+            <div style="height: 12px; width: 60%; border-radius: 6px; background: {{t.skel}}"></div>
+            <div style="height: 32px; width: 50%; border-radius: 10px; background: {{t.skel}}"></div>
+          </div>
+        </div>
+        <div style="height: 18px; width: 50%; border-radius: 9px; background: {{t.skel}}"></div>
+        <div style="display: flex; gap: 12px">
+          <div style="width: 132px; height: 148px; border-radius: 20px; background: {{t.card}}; flex-shrink: 0"></div>
+          <div style="width: 132px; height: 148px; border-radius: 20px; background: {{t.card}}; flex-shrink: 0"></div>
+          <div style="width: 132px; height: 148px; border-radius: 20px; background: {{t.card}}; flex-shrink: 0"></div>
+        </div>
+        <div style="height: 180px; border-radius: 20px; background: {{t.card}}"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+      <a href="Usage.dc.html" style="display: flex; flex-direction: column; gap: 16px; border-radius: 20px; background: {{t.card}}; padding: 20px; color: inherit; text-decoration: none">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="{{flags.jp}}"></span>
+          <div style="display: flex; flex-direction: column; flex-grow: 1">
+            <span style="font-size: 17px; line-height: 22px; font-weight: 600">{{c.activeTitle}}</span>
+            <span style="font-size: 13px; line-height: 18px; color: {{t.sec}}">NTT Docomo · 5G</span>
+          </div>
+          <span style="{{pill}}"><span style="{{pillDot}}"></span>{{pillText}}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px">
+          <div style="position: relative; width: 112px; height: 112px; flex-shrink: 0">
+            <svg width="112" height="112" viewBox="0 0 112 112" role="img" aria-label="{{ringLabel}}">
+              <circle cx="56" cy="56" r="48" fill="none" stroke="{{t.fill}}" stroke-width="11"></circle>
+              <circle cx="56" cy="56" r="48" fill="none" stroke="{{ringColor}}" stroke-width="11" stroke-linecap="round" stroke-dasharray="{{dash}}" transform="rotate(-90 56 56)"></circle>
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center">
+              <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; line-height: 32px; font-weight: 700; color: {{numColor}}">{{gbLeft}}</span>
+              <span style="font-size: 12px; line-height: 16px; color: {{t.sec}}">{{c.of}}</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1">
+            <span style="font-size: 15px; line-height: 20px; color: {{t.sec}}">{{c.validUntil}}</span>
+            <span style="align-self: flex-start; font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: {{t.fill}}">{{c.daysLeft}}</span>
+            <span style="align-self: flex-start; height: 36px; padding: 0 16px; border-radius: 10px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 15px; font-weight: 600; display: flex; align-items: center">{{c.topUp}}</span>
+          </div>
+        </div>
+      </a>
+
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px">
+        <h2 style="margin: 0; font-size: 22px; line-height: 28px; font-weight: 700">{{c.popular}}</h2>
+        <a href="Store.dc.html" style="font-size: 17px; color: {{t.label}}; font-weight: 600; text-decoration: none">{{c.seeAll}}</a>
+      </div>
+      <div style="display: flex; gap: 12px; margin: 0 -16px; padding: 0 16px; overflow: hidden">
+        <sc-for list="{{popular}}" as="p" hint-placeholder-count="4">
+          <a href="Country.dc.html" style="width: 132px; flex-shrink: 0; border-radius: 20px; background: {{t.card}}; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; color: inherit; text-decoration: none">
+            <span style="{{p.flag}}"></span>
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 17px; line-height: 22px; font-weight: 600">{{p.name}}</span>
+              <span style="font-size: 13px; line-height: 18px; color: {{t.sec}}">{{c.from}} <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums" dir="ltr">{{p.from}}</span></span>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+
+      <h2 style="margin: 4px 0 0; font-size: 22px; line-height: 28px; font-weight: 700">{{c.regional}}</h2>
+      <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+        <sc-for list="{{regions}}" as="r" hint-placeholder-count="3">
+          <a href="Store.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 0 16px; min-height: 64px; color: inherit; text-decoration: none">
+            <span style="display: flex; flex-shrink: 0; width: 52px"><span style="{{r.f1}}"></span><span style="{{r.f2}}"></span><span style="{{r.f3}}"></span></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-bottom: {{r.border}}">
+              <span style="font-size: 17px; line-height: 22px">{{r.name}}</span>
+              <span style="font-size: 13px; line-height: 18px; color: {{t.sec}}">{{c.multi}} · {{c.from}} <span dir="ltr" style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">{{r.from}}</span></span>
+            </span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}; transform: {{chev}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+          </a>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{lowData}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 12px; right: 12px; top: 58px; z-index: 4; border-radius: 22px; background: {{t.card}}; border: 0.5px solid {{t.sep}}; box-shadow: 0 10px 30px rgba(0,0,0,0.14); padding: 12px 14px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 38px; height: 38px; border-radius: 10px; background: {{t.orangeTint}}; color: {{t.orange}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v4M12 17.5v.5"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+        <span style="font-size: 15px; line-height: 20px; font-weight: 600">{{c.lowTitle}}</span>
+        <span style="font-size: 13px; line-height: 18px; color: {{t.sec}}">{{c.lowBody}}</span>
+      </div>
+      <a href="TopUp.dc.html" style="height: 32px; padding: 0 12px; border-radius: 10px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 15px; font-weight: 600; text-decoration: none; display: flex; align-items: center">{{c.topUp}}</a>
+    </div>
+  </sc-if>
+
+  <div style="position: absolute; left: 0; bottom: 0; z-index: 3"><dc-import name="TabBar" dark="{{dark}}" rtl="{{rtl}}" active="{{ 0 }}" hint-size="402px,96px"></dc-import></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"rtl":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["default","loading","lowData","offline"],"default":"default"},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var rtl = !!this.props.rtl;
+    var state = this.props.state ?? 'default';
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', ink: '#FFFFFF', onInk: '#000000', skel: '#2C2C2E', skelHi: '#3A3A3C',
+      green: '#30DB5B', greenFill: '#30D158', greenTint: 'rgba(48,209,88,0.18)', orange: '#FFB340', orangeFill: '#FF9F0A', orangeTint: 'rgba(255,159,10,0.18)'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', ink: '#000000', onInk: '#FFFFFF', skel: '#E5E5EA', skelHi: '#F2F2F7',
+      green: '#217D38', greenFill: '#34C759', greenTint: 'rgba(52,199,89,0.15)', orange: '#C93400', orangeFill: '#FF9500', orangeTint: 'rgba(255,149,0,0.15)'
+    };
+    function flag(bg, s, overlap) {
+      s = s || 28;
+      var st = { display: 'inline-block', width: s + 'px', height: s + 'px', borderRadius: (s / 2) + 'px', background: bg, flexShrink: 0, boxShadow: 'inset 0 0 0 0.5px rgba(0,0,0,0.15)' };
+      if (overlap) { st.marginInlineStart = '-10px'; st.border = '2px solid ' + t.card; st.boxSizing = 'content-box'; }
+      return st;
+    }
+    var F = {
+      jp: 'radial-gradient(circle at 50% 50%, #BC002D 0 30%, #FFFFFF 31%)',
+      th: 'linear-gradient(#A51931 0 16.6%, #F4F5F8 16.6% 33.3%, #2D2A4A 33.3% 66.6%, #F4F5F8 66.6% 83.3%, #A51931 83.3%)',
+      ae: 'linear-gradient(to right, #EF3340 0 30%, transparent 30%), linear-gradient(#009739 0 33.3%, #FFFFFF 33.3% 66.6%, #000000 66.6%)',
+      id: 'linear-gradient(#CE1126 0 50%, #FFFFFF 50%)',
+      fr: 'linear-gradient(to right, #002654 0 33.3%, #FFFFFF 33.3% 66.6%, #CE1126 66.6%)',
+      de: 'linear-gradient(#000000 0 33.3%, #DD0000 33.3% 66.6%, #FFCE00 66.6%)',
+      it: 'linear-gradient(to right, #009246 0 33.3%, #FFFFFF 33.3% 66.6%, #CE2B37 66.6%)',
+      qa: 'linear-gradient(to right, #FFFFFF 0 34%, #8A1538 34%)',
+      bh: 'linear-gradient(to right, #FFFFFF 0 32%, #CE1126 32%)'
+    };
+    var en = {
+      profile: 'Profile', greet: 'Good evening, Sam', search: 'Where are you going?', activeTitle: 'Japan · 10 GB', active: 'Active', low: 'Low',
+      of: 'of 10 GB', validUntil: 'Valid until 28 Nov', daysLeft: '6d 14h left', topUp: 'Top up', popular: 'Popular destinations', seeAll: 'See all',
+      from: 'from', regional: 'Regional plans', multi: 'One eSIM', offline: 'Offline · usage from 9:12', retry: 'Retry',
+      lowTitle: 'Running low in Japan', lowBody: '0.4 GB left · top up to stay online',
+      names: ['Thailand', 'UAE', 'Japan', 'Indonesia'], regions: ['Asia', 'Europe', 'Gulf']
+    };
+    var ar = {
+      profile: 'الحساب', greet: 'مساء الخير، سام', search: 'إلى أين تسافر؟', activeTitle: 'اليابان · 10 جيجابايت', active: 'نشطة', low: 'منخفضة',
+      of: 'من 10 جيجابايت', validUntil: 'صالحة حتى 28 نوفمبر', daysLeft: '6 أيام 14 ساعة', topUp: 'إعادة شحن', popular: 'الوجهات الشائعة', seeAll: 'عرض الكل',
+      from: 'من', regional: 'باقات إقليمية', multi: 'شريحة واحدة', offline: 'غير متصل · آخر تحديث 9:12', retry: 'إعادة المحاولة',
+      lowTitle: 'البيانات أوشكت على النفاد', lowBody: 'متبقٍ 0.4 جيجابايت · أعد الشحن',
+      names: ['تايلاند', 'الإمارات', 'اليابان', 'إندونيسيا'], regions: ['آسيا', 'أوروبا', 'الخليج']
+    };
+    var c = rtl ? ar : en;
+    var low = state === 'lowData';
+    var pct = low ? 0.04 : 0.38;
+    var circ = 2 * Math.PI * 48;
+    var popFlags = [F.th, F.ae, F.jp, F.id];
+    var popFrom = ['₹399', '₹699', '₹499', '₹449'];
+    var popular = c.names.map(function (n, i) { return { name: n, from: popFrom[i], flag: flag(popFlags[i], 44) }; });
+    var rf = [[F.jp, F.th, F.id], [F.fr, F.de, F.it], [F.ae, F.qa, F.bh]];
+    var rFrom = ['₹899', '₹1,099', '₹999'];
+    var regions = c.regions.map(function (n, i) {
+      return { name: n, from: rFrom[i], f1: flag(rf[i][0], 26), f2: flag(rf[i][1], 26, true), f3: flag(rf[i][2], 26, true), border: i < 2 ? '0.5px solid ' + t.sep : '0' };
+    });
+    return {
+      t: t, c: c, dark: dark, rtl: rtl, dir: rtl ? 'rtl' : 'ltr', lang: rtl ? 'ar' : 'en',
+      font: rtl ? "'SF Arabic', 'Noto Sans Arabic', -apple-system, sans-serif" : "-apple-system, 'SF Pro Text', Inter, system-ui, sans-serif",
+      loading: state === 'loading', ready: state !== 'loading', lowData: low, offline: state === 'offline',
+      flags: { jp: flag(F.jp, 32) }, popular: popular, regions: regions,
+      gbLeft: low ? '0.4' : '3.8', ringLabel: (low ? '0.4' : '3.8') + ' of 10 GB left',
+      ringColor: low ? t.orangeFill : t.ink, numColor: low ? t.orange : t.label,
+      dash: (pct * circ).toFixed(1) + ' ' + circ.toFixed(1),
+      pill: { display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, padding: '4px 8px', borderRadius: '10px', background: low ? t.orangeTint : t.greenTint, color: low ? t.orange : t.green },
+      pillDot: { width: '6px', height: '6px', borderRadius: '3px', background: low ? t.orangeFill : t.greenFill },
+      pillText: low ? c.low : c.active,
+      chev: rtl ? 'scaleX(-1)' : 'none',
+      shimmer: 'linear-gradient(' + (rtl ? '270deg' : '90deg') + ', ' + t.skel + ' 0%, ' + t.skelHi + ' 50%, ' + t.skel + ' 100%)'
+    };
+  }
+}
+</script>
+</body>
+</html>

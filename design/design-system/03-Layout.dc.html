@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Landed DS — Layout, Radii and Materials</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#000000}a:hover{color:#3A3A3C}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1360px; box-sizing: border-box; padding: 72px 80px; background: #FFFFFF; color: #000000; font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 44px">
+
+  <header style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 32px; border-bottom: 0.5px solid rgba(60,60,67,0.29)">
+    <span style="font-size: 13px; color: rgba(60,60,67,0.6)">Landed · Design System · v0.1</span>
+    <h1 style="margin: 0; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -1.2px">03 Layout, Radii &amp; Materials</h1>
+    <p style="margin: 0; max-width: 720px; font-size: 17px; line-height: 24px; color: rgba(60,60,67,0.6)">iPhone 16 Pro at 402 × 874 pt. 8pt grid, 16pt margins, continuous corners. Liquid Glass belongs to system chrome only.</p>
+  </header>
+
+  <div style="display: flex; gap: 64px; align-items: flex-start">
+
+    <div style="display: flex; flex-direction: column; gap: 16px; flex-shrink: 0">
+      <div style="position: relative; width: 402px; height: 874px; border-radius: 55px; background: #F2F2F7; overflow: hidden; outline: 10px solid #1C1C1E">
+        <div style="position: absolute; left: 0; right: 0; top: 0; height: 54px; background: rgba(255,59,48,0.10); border-bottom: 1px dashed rgba(255,59,48,0.6)"></div>
+        <div style="position: absolute; left: 138px; top: 11px; width: 126px; height: 37px; border-radius: 19px; background: #000000"></div>
+        <span style="position: absolute; left: 24px; top: 18px; font-size: 15px; font-weight: 600">9:41</span>
+        <div style="position: absolute; top: 54px; bottom: 0; left: 0; width: 16px; background: rgba(0,0,0,0.12)"></div>
+        <div style="position: absolute; top: 54px; bottom: 0; right: 0; width: 16px; background: rgba(0,0,0,0.12)"></div>
+
+        <div style="position: absolute; left: 16px; right: 16px; top: 54px; display: flex; flex-direction: column; gap: 20px">
+          <div style="height: 44px; display: flex; align-items: center; justify-content: flex-end; gap: 12px">
+            <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.7); border: 0.5px solid rgba(60,60,67,0.18); display: flex; align-items: center; justify-content: center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
+            </div>
+          </div>
+          <span style="font-size: 34px; line-height: 41px; font-weight: 700; margin-top: -12px">Large Title</span>
+          <div style="height: 180px; border-radius: 20px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(60,60,67,0.6)">Card · radius 20</div>
+          <div style="height: 12px; background: rgba(255,149,0,0.25); border-radius: 2px; margin: -20px 0 -8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #C93400">12</div>
+          <div style="height: 96px; border-radius: 20px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(60,60,67,0.6)">Card</div>
+          <div style="height: 20px; background: rgba(255,149,0,0.25); border-radius: 2px; margin: -20px 0 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #C93400">20 · section</div>
+          <span style="font-size: 22px; line-height: 28px; font-weight: 700; margin-top: -20px">Section</span>
+          <div style="height: 120px; border-radius: 20px; background: #FFFFFF"></div>
+        </div>
+
+        <div style="position: absolute; left: 16px; right: 16px; bottom: 34px; height: 62px; border-radius: 31px; background: rgba(255,255,255,0.62); backdrop-filter: blur(24px) saturate(180%); border: 0.5px solid rgba(255,255,255,0.9); box-shadow: 0 8px 24px rgba(0,0,0,0.08); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; color: {{accent}}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 3 10.5V21h6.5v-6h5v6H21V10.5z"></path></svg>
+            <span style="font-size: 10px; font-weight: 600">Home</span>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(60,60,67,0.6)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1.2 11.2a1 1 0 0 1-1 .8H6.2a1 1 0 0 1-1-.8z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>
+            <span style="font-size: 10px; font-weight: 500">Store</span>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(60,60,67,0.6)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><rect x="9" y="11" width="6" height="6" rx="1"></rect></svg>
+            <span style="font-size: 10px; font-weight: 500">My eSIMs</span>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(60,60,67,0.6)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
+            <span style="font-size: 10px; font-weight: 500">Profile</span>
+          </div>
+        </div>
+
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background: rgba(255,59,48,0.10); border-top: 1px dashed rgba(255,59,48,0.6)"></div>
+        <div style="position: absolute; left: 134px; bottom: 8px; width: 134px; height: 5px; border-radius: 3px; background: #000000"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6); max-width: 402px">
+        <span><span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: rgba(255,59,48,0.35); margin-right: 8px"></span>Safe area: status bar 54pt top, home indicator 34pt bottom</span>
+        <span><span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: rgba(0,0,0,0.3); margin-right: 8px"></span>Side margins 16pt</span>
+        <span><span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: rgba(255,149,0,0.4); margin-right: 8px"></span>12pt between cards · 20pt between sections</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 40px; flex-grow: 1; min-width: 0">
+
+      <section style="display: flex; flex-direction: column; gap: 16px">
+        <span style="font-size: 22px; line-height: 28px; font-weight: 600">Spacing · 8pt grid</span>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{spacing}}" as="s" hint-placeholder-count="8">
+            <div style="display: grid; grid-template-columns: 72px 220px minmax(0, 1fr); gap: 16px; align-items: center">
+              <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">{{s.v}} pt</span>
+              <div style="height: 16px; display: flex; align-items: center"><div style="{{s.bar}}"></div></div>
+              <span style="font-size: 13px; color: rgba(60,60,67,0.6)">{{s.use}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-size: 22px; line-height: 28px; font-weight: 600">Corner radii · continuous</span>
+          <span style="font-size: 13px; color: rgba(60,60,67,0.6)">SwiftUI .continuous · web: smooth-corners fallback to border-radius</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="height: 120px; border-radius: 20px; background: #F2F2F7; border: 1.5px solid {{accent}}"></div>
+            <span style="font-size: 15px; font-weight: 600">Card · 20</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="height: 120px; display: flex; align-items: center"><div style="width: 100%; height: 50px; border-radius: 14px; background: {{accent}}"></div></div>
+            <span style="font-size: 15px; font-weight: 600">Button · 14</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="height: 120px; display: flex; align-items: center; gap: 8px"><div style="width: 64px; height: 32px; border-radius: 10px; background: #F2F2F7; border: 1.5px solid {{accent}}"></div><div style="width: 48px; height: 32px; border-radius: 10px; background: #F2F2F7"></div></div>
+            <span style="font-size: 15px; font-weight: 600">Chip · 10</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="height: 120px; display: flex; align-items: flex-end"><div style="width: 100%; height: 90px; border-radius: 28px 28px 0 0; background: #F2F2F7; border: 1.5px solid {{accent}}; border-bottom: 0"></div></div>
+            <span style="font-size: 15px; font-weight: 600">Sheet · 28 top</span>
+          </div>
+        </div>
+      </section>
+
+      <section style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 24px">
+        <div style="background: #F2F2F7; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+          <span style="font-size: 17px; font-weight: 600">Tap target · 44 × 44</span>
+          <div style="display: flex; align-items: center; gap: 20px">
+            <div style="width: 44px; height: 44px; border: 1px dashed {{accent}}; border-radius: 8px; display: flex; align-items: center; justify-content: center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </div>
+            <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Glyph can be 17–22pt; the hit area never shrinks below 44pt. Chevrons, copy and close icons included.</span>
+          </div>
+        </div>
+        <div style="border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; background: #E5E5EA">
+          <span style="font-size: 17px; font-weight: 600">Liquid Glass · chrome only</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div style="height: 92px; border-radius: 14px; background: #FFFFFF; position: relative; overflow: hidden; padding: 12px; box-sizing: border-box">
+                <div style="height: 10px; width: 70%; border-radius: 5px; background: #D1D1D6"></div>
+                <div style="height: 10px; width: 50%; border-radius: 5px; background: #D1D1D6; margin-top: 8px"></div>
+                <div style="position: absolute; left: 12px; right: 12px; bottom: 10px; height: 36px; border-radius: 18px; background: rgba(255,255,255,0.55); backdrop-filter: blur(16px); border: 0.5px solid rgba(255,255,255,0.9); box-shadow: 0 4px 12px rgba(0,0,0,0.08)"></div>
+              </div>
+              <span style="font-size: 13px; line-height: 18px"><strong style="color: #217D38">Do</strong> · tab bar, nav bar, sheets, floating buttons</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div style="height: 92px; border-radius: 14px; background: rgba(255,255,255,0.4); backdrop-filter: blur(16px); border: 0.5px solid rgba(255,255,255,0.9); padding: 12px; box-sizing: border-box; position: relative">
+                <div style="height: 10px; width: 70%; border-radius: 5px; background: rgba(0,0,0,0.12)"></div>
+                <div style="height: 10px; width: 50%; border-radius: 5px; background: rgba(0,0,0,0.12); margin-top: 8px"></div>
+                <svg style="position: absolute; right: 10px; top: 10px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D70015" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+              </div>
+              <span style="font-size: 13px; line-height: 18px"><strong style="color: #D70015">Don't</strong> · plan cards, lists, any content</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <div style="border: 0.5px solid rgba(60,60,67,0.29); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 15px; font-weight: 600">Elevation</span>
+          <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Flat by default. Contrast between surfaces does the work; shadow only on pressed lift (0 6 16 / 8%) and glass chrome.</span>
+        </div>
+        <div style="border: 0.5px solid rgba(60,60,67,0.29); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 15px; font-weight: 600">Nav bar</span>
+          <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Large title 52pt row + 44pt bar; collapses to an inline 17pt Semibold title. Glass blur ramps with scroll offset.</span>
+        </div>
+        <div style="border: 0.5px solid rgba(60,60,67,0.29); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 15px; font-weight: 600">RTL</span>
+          <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Use leading / trailing, never left / right. Directional symbols mirror (chevrons, arrows, progress); clocks, rings, media stay.</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1360}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var accent = '#000000';
+    var spacing = [
+      [4, 'Icon-to-label, tight stacks'],
+      [8, 'Base unit · inside chips and rows'],
+      [12, 'Between cards'],
+      [16, 'Side margins · card padding'],
+      [20, 'Between sections · large card padding'],
+      [24, 'Hero spacing'],
+      [32, 'Onboarding blocks'],
+      [44, 'Minimum tap target']
+    ].map(function (r) {
+      return { v: r[0], use: r[1], bar: { width: (r[0] * 4) + 'px', height: '16px', borderRadius: '4px', background: accent } };
+    });
+    return { accent: accent, spacing: spacing };
+  }
+}
+</script>
+</body>
+</html>

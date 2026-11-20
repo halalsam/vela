@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab bar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 96px; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <nav dir="{{dir}}" aria-label="Main" style="position: absolute; left: 16px; right: 16px; top: 0; height: 62px; border-radius: 31px; background: {{glass}}; backdrop-filter: blur(24px) saturate(180%); border: 0.5px solid {{rim}}; box-shadow: 0 8px 24px rgba(0,0,0,0.10); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; padding: 0 6px; box-sizing: border-box">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="4">
+      <a href="{{it.href}}" aria-label="{{it.label}}" style="{{it.style}}">
+        <sc-if value="{{it.active}}" hint-placeholder-val="{{ false }}">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{it.fill}}"></path></svg>
+        </sc-if>
+        <sc-if value="{{it.inactive}}" hint-placeholder-val="{{ true }}">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{it.stroke}}"></path></svg>
+        </sc-if>
+        <span style="font-size: 10px; line-height: 12px; font-weight: 600">{{it.label}}</span>
+      </a>
+    </sc-for>
+  </nav>
+  <div style="position: absolute; left: 134px; bottom: 8px; width: 134px; height: 5px; border-radius: 3px; background: {{fg}}"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"rtl":{"editor":"boolean","default":false},"active":{"editor":"enum","options":[0,1,2,3],"default":0},"$preview":{"width":402,"height":96}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var rtl = !!this.props.rtl;
+    var active = Number(this.props.active ?? 0);
+    var fg = dark ? '#FFFFFF' : '#000000';
+    var off = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+    var defs = [
+      { en: 'Home', ar: 'الرئيسية', href: 'Home.dc.html',
+        fill: 'M12 2.8 2.5 10.6V21h7v-6.2h5V21h7V10.6z',
+        stroke: 'M3.5 10.8 12 3.8l8.5 7V20.2h-5.6v-5.8H9.1v5.8H3.5z' },
+      { en: 'Store', ar: 'المتجر', href: 'Store.dc.html',
+        fill: 'M8.2 7.2V6.4a3.8 3.8 0 0 1 7.6 0v.8h3.6l-1.3 12.4a1.6 1.6 0 0 1-1.6 1.4H7.5a1.6 1.6 0 0 1-1.6-1.4L4.6 7.2zm1.8 0h4V6.4a2 2 0 0 0-4 0z',
+        stroke: 'M5 7.8h14l-1.2 11.6a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9zM9 7.8V6.4a3 3 0 0 1 6 0v1.4' },
+      { en: 'My eSIMs', ar: 'شرائحي', href: 'MyEsims.dc.html',
+        fill: 'M7 2.5h7.4l4.6 4.6V20a1.5 1.5 0 0 1-1.5 1.5H7A1.5 1.5 0 0 1 5.5 20V4A1.5 1.5 0 0 1 7 2.5zm2.5 8.5v6h5v-6z',
+        stroke: 'M7 3h7l4.5 4.5V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM9.5 11h5v6h-5z' },
+      { en: 'Profile', ar: 'الحساب', href: 'Profile.dc.html',
+        fill: 'M12 2.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zM3.5 21c.8-4.6 4.2-7.5 8.5-7.5s7.7 2.9 8.5 7.5z',
+        stroke: 'M12 3.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM4.2 20.5c1-4 4-6.5 7.8-6.5s6.8 2.5 7.8 6.5' }
+    ];
+    var items = defs.map(function (d, i) {
+      var on = i === active;
+      return {
+        href: d.href, label: rtl ? d.ar : d.en, fill: d.fill, stroke: d.stroke, active: on, inactive: !on,
+        style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', height: '54px', borderRadius: '27px', textDecoration: 'none', color: on ? fg : off, background: on ? (dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)') : 'transparent', fontFamily: rtl ? "'SF Arabic', 'Noto Sans Arabic', sans-serif" : 'inherit' }
+      };
+    });
+    return {
+      items: items, fg: fg, dir: rtl ? 'rtl' : 'ltr',
+      glass: dark ? 'rgba(30,30,32,0.62)' : 'rgba(255,255,255,0.62)',
+      rim: dark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.9)'
+    };
+  }
+}
+</script>
+</body>
+</html>

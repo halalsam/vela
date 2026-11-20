@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Landed DS — Components</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;family=Noto+Sans+Arabic:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{opacity:0.7}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 2400px; box-sizing: border-box; padding: 72px 80px; background: {{t.bg}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 48px">
+
+  <header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding-bottom: 32px; border-bottom: 0.5px solid {{t.sep}}">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 13px; color: {{t.sec}}">Landed · Design System · v0.1</span>
+      <h1 style="margin: 0; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -1.2px">{{t.title}}</h1>
+      <p style="margin: 0; max-width: 680px; font-size: 17px; line-height: 24px; color: {{t.sec}}">Every component on solid surfaces; glass appears only on the context menu and sheet chrome. Sample prices and plans are placeholders.</p>
+    </div>
+    <span style="font-size: 13px; padding: 6px 12px; border-radius: 10px; background: {{t.card}}; color: {{t.sec}}">{{t.modeLabel}}</span>
+  </header>
+
+  <section style="display: flex; flex-direction: column; gap: 16px">
+    <span style="font-size: 22px; line-height: 28px; font-weight: 600">Actions &amp; controls</span>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+
+      <div style="background: {{t.card}}; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 13px; color: {{t.sec}}">Buttons · 50pt · radius 14</span>
+        <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: {{accent}}; color: {{t.onAccent}}; font: inherit; font-size: 17px; font-weight: 600">Continue</button>
+        <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: {{t.tint}}; color: {{t.accentText}}; font: inherit; font-size: 17px; font-weight: 600">Compare plans</button>
+        <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: transparent; color: {{t.accentText}}; font: inherit; font-size: 17px; font-weight: 400">Install later</button>
+        <button type="button" aria-label="Pay with Apple Pay" style="height: 50px; border: 0; border-radius: 14px; background: {{t.payBg}}; color: {{t.payFg}}; font: inherit; font-size: 17px; font-weight: 600">Apple Pay</button>
+        <span style="font-size: 12px; line-height: 16px; color: {{t.sec}}">Apple Pay uses the system PKPaymentButton — placeholder shown.</span>
+        <button type="button" disabled style="height: 50px; border: 0; border-radius: 14px; background: {{t.fill}}; color: {{t.ter}}; font: inherit; font-size: 17px; font-weight: 600">Disabled</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="background: {{t.card}}; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+          <span style="font-size: 13px; color: {{t.sec}}">Segmented control</span>
+          <div role="tablist" style="height: 36px; border-radius: 10px; background: {{t.fill}}; padding: 2px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); box-sizing: border-box">
+            <button type="button" role="tab" aria-selected="true" style="border: 0; border-radius: 8px; background: {{t.segSel}}; color: {{t.label}}; font: inherit; font-size: 13px; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.12)">Countries</button>
+            <button type="button" role="tab" aria-selected="false" style="border: 0; background: transparent; color: {{t.label}}; font: inherit; font-size: 13px">Regions</button>
+            <button type="button" role="tab" aria-selected="false" style="border: 0; background: transparent; color: {{t.label}}; font: inherit; font-size: 13px">Global</button>
+          </div>
+        </div>
+        <div style="background: {{t.card}}; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+          <span style="font-size: 13px; color: {{t.sec}}">Badges, pills · radius 10</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+            <span style="font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; background: {{t.tint}}; color: {{t.accentText}}">Best value</span>
+            <span style="font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; border: 1px solid {{t.sep}}; color: {{t.label}}">5G</span>
+            <span style="font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; background: {{t.fill}}; color: {{t.sec}}">Hotspot</span>
+          </div>
+          <span style="font-size: 13px; color: {{t.sec}}">Validity countdown</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: {{t.greenTint}}; color: {{t.green}}"><span style="width: 6px; height: 6px; border-radius: 3px; background: {{t.greenFill}}"></span>6d 14h left</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: {{t.orangeTint}}; color: {{t.orange}}"><span style="width: 6px; height: 6px; border-radius: 3px; background: {{t.orangeFill}}"></span>18:42:07</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: {{t.redTint}}; color: {{t.red}}"><span style="width: 6px; height: 6px; border-radius: 3px; background: {{t.redFill}}"></span>Expired</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: {{t.card}}; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 13px; color: {{t.sec}}">Search field · focused</span>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <label style="flex-grow: 1; height: 36px; border-radius: 10px; background: {{t.fill}}; display: flex; align-items: center; gap: 6px; padding: 0 8px; box-sizing: border-box">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: {{t.sec}}" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+            <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search destinations</span>
+            <input type="search" value="Ja" placeholder="Where are you going?" style="flex-grow: 1; border: 0; background: transparent; font: inherit; font-size: 17px; color: {{t.label}}; outline: none; min-width: 0">
+          </label>
+          <button type="button" style="border: 0; background: transparent; color: {{t.accentText}}; font: inherit; font-size: 17px; min-height: 44px">Cancel</button>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: {{t.sec}}; text-transform: uppercase; letter-spacing: 0.3px">Recent</span>
+        <div style="display: flex; flex-direction: column">
+          <sc-for list="{{recent}}" as="r" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 0.5px solid {{t.sep}}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="color: {{t.sec}}" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+              <span style="font-size: 17px; flex-grow: 1">{{r.name}}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: {{t.sec}}; text-transform: uppercase; letter-spacing: 0.3px">Suggested</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{suggested}}" as="s" hint-placeholder-count="4">
+            <span style="display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 6px; border-radius: 10px; background: {{t.fill}}; font-size: 15px"><span style="{{s.flag20}}"></span>{{s.name}}</span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <span style="font-size: 22px; line-height: 28px; font-weight: 600">Plans &amp; destinations</span>
+      <span style="font-size: 13px; color: {{t.sec}}">Plan card · default / selected / best value</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+      <sc-for list="{{plans}}" as="p" hint-placeholder-count="3">
+        <div style="{{p.cardStyle}}">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="{{p.flag}}"></span>
+            <span style="font-size: 17px; font-weight: 600; flex-grow: 1">Japan</span>
+            <span style="font-size: 12px; font-weight: 600; padding: 3px 7px; border-radius: 10px; border: 1px solid {{t.sep}}">5G</span>
+            <sc-if value="{{p.best}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; background: {{t.tint}}; color: {{t.accentText}}">Best value</span>
+            </sc-if>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 34px; line-height: 41px; font-weight: 700">{{p.gb}}<span style="font-size: 20px; font-weight: 600"> GB</span></span>
+            <span style="font-size: 15px; color: {{t.sec}}">{{p.days}} days</span>
+          </div>
+          <div style="height: 0.5px; background: {{t.sep}}"></div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between">
+            <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 600">{{p.price}}</span>
+            <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; color: {{t.sec}}">{{p.perGb}} / GB</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Country rows · inset grouped</span>
+        <div style="background: {{t.card}}; border-radius: 20px; overflow: hidden">
+          <sc-for list="{{countries}}" as="c" hint-placeholder-count="4">
+            <a href="#country" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; color: inherit; text-decoration: none">
+              <span style="{{c.flag}}"></span>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-bottom: 0.5px solid {{t.sep}}">
+                <span style="font-size: 17px">{{c.name}}</span>
+                <span style="font-size: 15px; color: {{t.sec}}">from <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">{{c.from}}</span></span>
+              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+      <div dir="rtl" lang="ar" style="display: flex; flex-direction: column; gap: 8px; font-family: 'SF Arabic', 'Noto Sans Arabic', -apple-system, sans-serif">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-right: 16px">صفوف الدول · RTL معكوس</span>
+        <div style="background: {{t.card}}; border-radius: 20px; overflow: hidden">
+          <sc-for list="{{countriesAr}}" as="c" hint-placeholder-count="4">
+            <a href="#country" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; color: inherit; text-decoration: none">
+              <span style="{{c.flag}}"></span>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-bottom: 0.5px solid {{t.sep}}">
+                <span style="font-size: 17px; line-height: 24px">{{c.name}}</span>
+                <span style="font-size: 15px; color: {{t.sec}}">ابتداءً من <span dir="ltr" style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">{{c.from}}</span></span>
+              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Section index · A–Z</span>
+        <div style="background: {{t.card}}; border-radius: 20px; padding: 16px 12px; display: flex; gap: 16px">
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: {{t.sec}}; line-height: 20px">
+            <span>Trailing index letters jump the country list. Letters 11pt Semibold accent, 16pt row pitch; drag scrubs with a selection haptic per letter.</span>
+            <span>In RTL the index moves to the left edge and shows the Arabic alphabet.</span>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; font-size: 11px; line-height: 16px; font-weight: 600; color: {{t.accentText}}">
+            <sc-for list="{{letters}}" as="l" hint-placeholder-count="14"><span>{{l}}</span></sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 16px">
+    <span style="font-size: 22px; line-height: 28px; font-weight: 600">eSIM &amp; usage</span>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+
+      <div style="background: {{t.card}}; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="{{flagJp}}"></span>
+          <div style="display: flex; flex-direction: column; flex-grow: 1">
+            <span style="font-size: 17px; font-weight: 600">Japan · 10 GB</span>
+            <span style="font-size: 13px; color: {{t.sec}}">NTT Docomo · 5G</span>
+          </div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; background: {{t.greenTint}}; color: {{t.green}}"><span style="width: 6px; height: 6px; border-radius: 3px; background: {{t.greenFill}}"></span>Active</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px">
+          <div style="position: relative; width: 128px; height: 128px; flex-shrink: 0">
+            <svg width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="3.8 of 10 GB left">
+              <circle cx="64" cy="64" r="54" fill="none" stroke="{{t.fill}}" stroke-width="12"></circle>
+              <circle cx="64" cy="64" r="54" fill="none" stroke="{{accent}}" stroke-width="12" stroke-linecap="round" stroke-dasharray="129 340" transform="rotate(-90 64 64)"></circle>
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center">
+              <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; line-height: 32px; font-weight: 700">3.8</span>
+              <span style="font-size: 12px; color: {{t.sec}}">of 10 GB</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 15px; color: {{t.sec}}">Valid until 28 Nov</span>
+            <span style="display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: {{t.greenTint}}; color: {{t.green}}">6d 14h left</span>
+            <button type="button" style="height: 36px; padding: 0 14px; border: 0; border-radius: 10px; background: {{t.tint}}; color: {{t.accentText}}; font: inherit; font-size: 15px; font-weight: 600; align-self: flex-start">Top up</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">eSIM rows · swipe actions</span>
+        <div style="background: {{t.card}}; border-radius: 20px; overflow: hidden">
+          <div style="position: relative; height: 68px; overflow: hidden; border-bottom: 0.5px solid {{t.sep}}">
+            <div style="position: absolute; right: 0; top: 0; bottom: 0; display: flex">
+              <button type="button" style="width: 84px; border: 0; background: {{t.gray}}; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>Details</button>
+              <button type="button" style="width: 84px; border: 0; background: {{accent}}; color: {{t.onAccent}}; font: inherit; font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Top up</button>
+            </div>
+            <div style="position: absolute; left: -168px; top: 0; bottom: 0; width: 100%; background: {{t.card}}; display: flex; align-items: center; gap: 12px; padding: 0 16px; box-sizing: border-box">
+              <span style="{{flagTh}}"></span>
+              <div style="display: flex; flex-direction: column; flex-grow: 1">
+                <span style="font-size: 17px">Thailand · 5 GB</span>
+                <span style="font-size: 13px; color: {{t.sec}}">2.1 GB left</span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 0 16px; min-height: 68px">
+            <span style="{{flagAe}}"></span>
+            <div style="display: flex; flex-direction: column; flex-grow: 1; padding: 12px 0">
+              <span style="font-size: 17px">UAE · 3 GB</span>
+              <span style="font-size: 13px; color: {{t.orange}}">0.4 GB left · low</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+          </div>
+        </div>
+        <span style="font-size: 12px; line-height: 16px; color: {{t.sec}}; padding: 0 16px">Trailing swipe: Details · Top up. Full swipe commits Top up.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Context menu · long-press preview</span>
+        <div style="border-radius: 20px; background: {{t.dimBg}}; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+          <div style="background: {{t.card}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.08)">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span style="{{flagJp}}"></span>
+              <span style="font-size: 17px; font-weight: 600; flex-grow: 1">Japan · 10 GB</span>
+            </div>
+            <span style="font-size: 13px; color: {{t.sec}}">15 days · NTT Docomo, SoftBank · 5G</span>
+          </div>
+          <div style="width: 240px; border-radius: 14px; overflow: hidden; background: {{t.menu}}; backdrop-filter: blur(30px) saturate(180%); border: 0.5px solid {{t.sep}}">
+            <sc-for list="{{menu}}" as="m" hint-placeholder-count="4">
+              <button type="button" style="{{m.style}}">
+                <span>{{m.label}}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{m.icon}}"></path></svg>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 16px">
+    <span style="font-size: 22px; line-height: 28px; font-weight: 600">Sheets &amp; feedback</span>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Checkout sheet · medium detent</span>
+        <div style="background: {{t.sheet}}; border-radius: 28px 28px 20px 20px; padding: 8px 16px 20px; display: flex; flex-direction: column; gap: 14px">
+          <div style="align-self: center; width: 36px; height: 5px; border-radius: 3px; background: {{t.ter}}"></div>
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <span style="font-size: 17px; font-weight: 600">Checkout</span>
+            <button type="button" aria-label="Close" style="width: 30px; height: 30px; border: 0; border-radius: 15px; background: {{t.fill}}; color: {{t.sec}}; display: flex; align-items: center; justify-content: center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+          </div>
+          <div style="background: {{t.card}}; border-radius: 14px; overflow: hidden">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 0.5px solid {{t.sep}}">
+              <span style="{{flagJp}}"></span>
+              <span style="flex-grow: 1; font-size: 17px">Japan · 10 GB · 15 days</span>
+              <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 600">₹1,199</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 0.5px solid {{t.sep}}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.greenFill}}" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>
+              <span style="flex-grow: 1; font-size: 15px">This iPhone supports eSIM</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.sec}}" aria-hidden="true"><path d="M3 9V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a3 3 0 0 0 0 6v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a3 3 0 0 0 0-6z"></path></svg>
+              <span style="flex-grow: 1; font-size: 15px">Add coupon</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+          <button type="button" aria-label="Pay with Apple Pay" style="height: 50px; border: 0; border-radius: 14px; background: {{t.payBg}}; color: {{t.payFg}}; font: inherit; font-size: 17px; font-weight: 600">Apple Pay</button>
+          <span style="font-size: 12px; line-height: 16px; color: {{t.sec}}; text-align: center">Total includes taxes · Instant delivery</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Banner · drops from top</span>
+          <div style="background: {{t.card}}; border-radius: 20px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; border: 0.5px solid {{t.sep}}">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: {{t.orangeTint}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.orange}}" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v4M12 17.5v.5"></path></svg>
+            </div>
+            <div style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+              <span style="font-size: 15px; font-weight: 600">Running low in UAE</span>
+              <span style="font-size: 13px; color: {{t.sec}}">0.4 GB left · expires in 2 days</span>
+            </div>
+            <button type="button" style="height: 32px; padding: 0 12px; border: 0; border-radius: 10px; background: {{accent}}; color: {{t.onAccent}}; font: inherit; font-size: 15px; font-weight: 600; min-width: 44px">Top up</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Toast · 1.2s</span>
+          <div style="align-self: center; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 22px; background: {{t.toastBg}}; color: {{t.toastFg}}; font-size: 15px; font-weight: 600">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Activation code copied
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Skeleton · shimmer 1.2s loop</span>
+          <div style="background: {{t.card}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div style="width: 28px; height: 28px; border-radius: 14px; background: {{t.skel}}"></div>
+              <div style="height: 14px; width: 45%; border-radius: 7px; background: {{t.skel}}"></div>
+            </div>
+            <div style="height: 28px; width: 35%; border-radius: 8px; background: {{t.skelHi}}"></div>
+            <div style="height: 12px; width: 70%; border-radius: 6px; background: {{t.skel}}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: {{t.sec}}; padding-left: 16px">Empty state</span>
+        <div style="background: {{t.card}}; border-radius: 20px; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+          <div style="width: 72px; height: 72px; border-radius: 36px; background: {{t.tint}}; display: flex; align-items: center; justify-content: center">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="color: {{accent}}" aria-hidden="true"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><rect x="9" y="11" width="6" height="6" rx="1"></rect></svg>
+          </div>
+          <span style="font-size: 20px; line-height: 25px; font-weight: 600">No eSIMs yet</span>
+          <span style="font-size: 15px; line-height: 20px; color: {{t.sec}}; max-width: 260px">Pick a destination and you'll be connected the moment you land.</span>
+          <button type="button" style="margin-top: 8px; height: 50px; padding: 0 24px; border: 0; border-radius: 14px; background: {{accent}}; color: {{t.onAccent}}; font: inherit; font-size: 17px; font-weight: 600">Browse destinations</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var accent = dark ? '#FFFFFF' : '#000000';
+    var L = {
+      title: '04 Components · Light', modeLabel: 'Light · systemGroupedBackground',
+      bg: '#F2F2F7', card: '#FFFFFF', sheet: '#F2F2F7', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)',
+      sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', segSel: '#FFFFFF', accentText: '#000000', tint: 'rgba(0,0,0,0.06)', onAccent: '#FFFFFF',
+      green: '#217D38', greenFill: '#34C759', greenTint: 'rgba(52,199,89,0.15)',
+      orange: '#C93400', orangeFill: '#FF9500', orangeTint: 'rgba(255,149,0,0.15)',
+      red: '#D70015', redFill: '#FF3B30', redTint: 'rgba(255,59,48,0.12)',
+      payBg: '#000000', payFg: '#FFFFFF', gray: '#8E8E93', skel: '#E5E5EA', skelHi: '#EDEDF0',
+      menu: 'rgba(249,249,249,0.82)', dimBg: 'rgba(0,0,0,0.06)', toastBg: '#1C1C1E', toastFg: '#FFFFFF'
+    };
+    var D = {
+      title: '05 Components · Dark', modeLabel: 'Dark · true black',
+      bg: '#000000', card: '#1C1C1E', sheet: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)',
+      sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', segSel: '#636366', accentText: '#FFFFFF', tint: 'rgba(255,255,255,0.14)', onAccent: '#000000',
+      green: '#30DB5B', greenFill: '#30D158', greenTint: 'rgba(48,209,88,0.18)',
+      orange: '#FFB340', orangeFill: '#FF9F0A', orangeTint: 'rgba(255,159,10,0.18)',
+      red: '#FF6961', redFill: '#FF453A', redTint: 'rgba(255,69,58,0.18)',
+      payBg: '#FFFFFF', payFg: '#000000', gray: '#636366', skel: '#2C2C2E', skelHi: '#3A3A3C',
+      menu: 'rgba(37,37,37,0.82)', dimBg: 'rgba(255,255,255,0.06)', toastBg: '#FFFFFF', toastFg: '#000000'
+    };
+    var t = dark ? D : L;
+    if (dark) { t.sheet = '#1C1C1E'; t.card = '#1C1C1E'; }
+
+    function flag(bg, size) {
+      var s = size || 28;
+      return { display: 'inline-block', width: s + 'px', height: s + 'px', borderRadius: (s / 2) + 'px', background: bg, flexShrink: 0, boxShadow: 'inset 0 0 0 0.5px rgba(0,0,0,0.12)' };
+    }
+    var F = {
+      jp: 'radial-gradient(circle at 50% 50%, #BC002D 0 30%, #FFFFFF 31%)',
+      th: 'linear-gradient(#A51931 0 16.6%, #F4F5F8 16.6% 33.3%, #2D2A4A 33.3% 66.6%, #F4F5F8 66.6% 83.3%, #A51931 83.3%)',
+      ae: 'linear-gradient(to right, #EF3340 0 30%, transparent 30%), linear-gradient(#009739 0 33.3%, #FFFFFF 33.3% 66.6%, #000000 66.6%)',
+      fr: 'linear-gradient(to right, #002654 0 33.3%, #FFFFFF 33.3% 66.6%, #CE1126 66.6%)',
+      id: 'linear-gradient(#CE1126 0 50%, #FFFFFF 50%)',
+      de: 'linear-gradient(#000000 0 33.3%, #DD0000 33.3% 66.6%, #FFCE00 66.6%)'
+    };
+
+    function card(selected) {
+      return {
+        background: t.card, borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px',
+        border: selected ? '2px solid ' + accent : '2px solid transparent',
+        transform: selected ? 'none' : 'none'
+      };
+    }
+    var plans = [
+      { gb: '3', days: 7, price: '₹499', perGb: '₹166', best: false, cardStyle: card(false), flag: flag(F.jp) },
+      { gb: '10', days: 15, price: '₹1,199', perGb: '₹120', best: false, cardStyle: card(true), flag: flag(F.jp) },
+      { gb: '20', days: 30, price: '₹1,999', perGb: '₹100', best: true, cardStyle: card(false), flag: flag(F.jp) }
+    ];
+    var countries = [
+      { name: 'Japan', from: '₹499', flag: flag(F.jp) },
+      { name: 'Thailand', from: '₹399', flag: flag(F.th) },
+      { name: 'United Arab Emirates', from: '₹699', flag: flag(F.ae) },
+      { name: 'France', from: '₹549', flag: flag(F.fr) }
+    ];
+    var countriesAr = [
+      { name: 'اليابان', from: '₹499', flag: flag(F.jp) },
+      { name: 'تايلاند', from: '₹399', flag: flag(F.th) },
+      { name: 'الإمارات العربية المتحدة', from: '₹699', flag: flag(F.ae) },
+      { name: 'فرنسا', from: '₹549', flag: flag(F.fr) }
+    ];
+    var suggested = [
+      { name: 'Indonesia', flag20: flag(F.id, 24) },
+      { name: 'Thailand', flag20: flag(F.th, 24) },
+      { name: 'Germany', flag20: flag(F.de, 24) },
+      { name: 'France', flag20: flag(F.fr, 24) }
+    ];
+    function mi(red, last) {
+      return {
+        width: '100%', minHeight: '44px', border: 0, borderBottom: last ? '0' : '0.5px solid ' + t.sep, background: 'transparent',
+        color: red ? t.red : t.label, font: 'inherit', fontSize: '17px', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', padding: '0 16px', boxSizing: 'border-box', textAlign: 'left'
+      };
+    }
+    var menu = [
+      { label: 'Buy plan', icon: 'M4 8h16l-1.2 11.2a1 1 0 0 1-1 .8H6.2a1 1 0 0 1-1-.8zM9 8V6a3 3 0 0 1 6 0v2', style: mi(false, false) },
+      { label: 'Compare', icon: 'M8 4v16M16 4v16M4 8h8M12 16h8', style: mi(false, false) },
+      { label: 'Show networks', icon: 'M5 12a10 10 0 0 1 14 0M8 15a6 6 0 0 1 8 0M12 18.5v.5', style: mi(false, false) },
+      { label: 'Share', icon: 'M12 3v12M8 7l4-4 4 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6', style: mi(false, true) }
+    ];
+    return {
+      t: t, accent: accent, plans: plans, countries: countries, countriesAr: countriesAr, suggested: suggested, menu: menu,
+      recent: [{ name: 'Japan' }, { name: 'Jakarta, Indonesia' }],
+      letters: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','#'],
+      flagJp: flag(F.jp), flagTh: flag(F.th), flagAe: flag(F.ae)
+    };
+  }
+}
+</script>
+</body>
+</html>

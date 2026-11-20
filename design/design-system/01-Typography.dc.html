@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Landed DS — Typography</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;family=Noto+Sans+Arabic:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#000000}a:hover{color:#3A3A3C}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1360px; box-sizing: border-box; padding: 72px 80px; background: #FFFFFF; color: #000000; font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 48px">
+
+  <header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding-bottom: 32px; border-bottom: 0.5px solid rgba(60,60,67,0.29)">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18"></path><path d="M12 3a14 14 0 0 0 0 18"></path></svg>
+        </div>
+        <span style="font-size: 17px; font-weight: 600; letter-spacing: -0.2px">Landed</span>
+        <span style="font-size: 13px; color: rgba(60,60,67,0.6)">Design System · v0.1</span>
+      </div>
+      <h1 style="margin: 0; font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -1.2px">01 Typography</h1>
+      <p style="margin: 0; max-width: 640px; font-size: 17px; line-height: 24px; color: rgba(60,60,67,0.6)">SF Pro Text / Display with Dynamic Type, default size Large. SF Pro Rounded with tabular figures for every number the traveller scans — data, prices, countdowns. SF Arabic mirrors the same scale in RTL.</p>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 420px">
+      <span style="font-size: 13px; padding: 6px 12px; border-radius: 10px; background: #F2F2F7">iOS 26 · HIG</span>
+      <span style="font-size: 13px; padding: 6px 12px; border-radius: 10px; background: #F2F2F7">Dynamic Type: Large</span>
+      <span style="font-size: 13px; padding: 6px 12px; border-radius: 10px; background: #F2F2F7">Web: Inter fallback</span>
+    </div>
+  </header>
+
+  <section style="display: flex; flex-direction: column">
+    <div style="display: grid; grid-template-columns: 180px 120px 130px minmax(0, 1fr) minmax(0, 0.8fr); gap: 24px; padding: 0 0 12px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: rgba(60,60,67,0.6); border-bottom: 0.5px solid rgba(60,60,67,0.29)">
+      <span>Style</span><span>Size / Line</span><span>Weight</span><span>SF Pro · English</span><span style="text-align: right">SF Arabic · RTL</span>
+    </div>
+    <sc-for list="{{scale}}" as="t" hint-placeholder-count="11">
+      <div style="display: grid; grid-template-columns: 180px 120px 130px minmax(0, 1fr) minmax(0, 0.8fr); gap: 24px; align-items: center; padding: 18px 0; border-bottom: 0.5px solid rgba(60,60,67,0.18)">
+        <span style="font-size: 15px; line-height: 20px; font-weight: 600">{{t.name}}</span>
+        <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; color: rgba(60,60,67,0.6)">{{t.metrics}}</span>
+        <span style="font-size: 15px; color: rgba(60,60,67,0.6)">{{t.weightLabel}}</span>
+        <span style="{{t.style}}">{{t.en}}</span>
+        <span dir="rtl" lang="ar" style="{{t.arStyle}}">{{t.ar}}</span>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <div style="background: #F2F2F7; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Data left · Rounded 48 Bold</span>
+      <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 48px; line-height: 52px; font-weight: 700; letter-spacing: -0.5px">3.8<span style="font-size: 22px; font-weight: 600; color: rgba(60,60,67,0.6)"> GB</span></span>
+      <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Usage ring centre, widgets, Live Activity</span>
+    </div>
+    <div style="background: #F2F2F7; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Price · Rounded 28 Semibold</span>
+      <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; line-height: 34px; font-weight: 600">₹1,299 <span style="font-size: 15px; font-weight: 500; color: rgba(60,60,67,0.6)">· ₹130/GB</span></span>
+      <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Plan cards, checkout, odometer roll</span>
+    </div>
+    <div style="background: #F2F2F7; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Countdown · Rounded 22 Semibold</span>
+      <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; line-height: 28px; font-weight: 600">2d 06:42:18</span>
+      <span style="font-size: 13px; line-height: 18px; color: rgba(60,60,67,0.6)">Validity pill; tabular so digits never jitter</span>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; font-size: 15px; line-height: 20px; color: rgba(60,60,67,0.6)">
+    <p style="margin: 0"><strong style="color: #000000; font-weight: 600">Dynamic Type.</strong> Every style scales xSmall → AX5. Layouts reflow to a single column at accessibility sizes; numbers never truncate.</p>
+    <p style="margin: 0"><strong style="color: #000000; font-weight: 600">Tracking.</strong> Use SF's built-in optical tracking per size — no manual letter-spacing in the app. Web: −0.02em on 28px and above.</p>
+    <p style="margin: 0"><strong style="color: #000000; font-weight: 600">Arabic.</strong> SF Arabic at the same point sizes, line height +2pt for diacritics. Western digits for prices and data in both languages.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1360}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var base = "-apple-system, 'SF Pro Display', 'SF Pro Text', Inter, system-ui, sans-serif";
+    var ar = "'SF Arabic', 'Noto Sans Arabic', sans-serif";
+    var rows = [
+      ['Large Title', 34, 41, 700, 'Bold', 'Good morning, Sam', 'صباح الخير، سام'],
+      ['Title 1', 28, 34, 400, 'Regular', 'Japan', 'اليابان'],
+      ['Title 2', 22, 28, 400, 'Regular', 'Popular destinations', 'الوجهات الشائعة'],
+      ['Title 3', 20, 25, 400, 'Regular', 'Your active eSIM', 'شريحة eSIM النشطة'],
+      ['Headline', 17, 22, 600, 'Semibold', '5 GB · 7 days', '5 جيجابايت · 7 أيام'],
+      ['Body', 17, 22, 400, 'Regular', 'Data starts when you land and connect.', 'تبدأ البيانات عند وصولك واتصالك.'],
+      ['Callout', 16, 21, 400, 'Regular', 'Works on iPhone XS and later.', 'يعمل على iPhone XS والأحدث.'],
+      ['Subheadline', 15, 20, 400, 'Regular', 'Networks: NTT Docomo, SoftBank', 'الشبكات: NTT Docomo وSoftBank'],
+      ['Footnote', 13, 18, 400, 'Regular', 'Prices include all taxes.', 'الأسعار تشمل جميع الضرائب.'],
+      ['Caption 1', 12, 16, 400, 'Regular', 'Expires in 3 days', 'تنتهي خلال 3 أيام'],
+      ['Caption 2', 11, 13, 400, 'Regular', '5G · Hotspot allowed', '5G · نقطة اتصال مسموحة']
+    ];
+    var scale = rows.map(function (r) {
+      return {
+        name: r[0],
+        metrics: r[1] + ' / ' + r[2],
+        weightLabel: r[4] + ' ' + r[3],
+        en: r[5],
+        ar: r[6],
+        style: { fontFamily: base, fontSize: r[1] + 'px', lineHeight: r[2] + 'px', fontWeight: r[3] },
+        arStyle: { fontFamily: ar, textAlign: 'right', fontSize: r[1] + 'px', lineHeight: (r[2] + 2) + 'px', fontWeight: r[3] }
+      };
+    });
+    return { accent: '#000000', scale: scale };
+  }
+}
+</script>
+</body>
+</html>

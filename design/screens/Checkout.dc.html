@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Checkout sheet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: #000000; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div aria-hidden="true" style="position: absolute; left: 0; top: 0; width: 402px; height: 874px; transform: scale(0.94) translateY(18px); transform-origin: 50% 0; border-radius: 40px; overflow: hidden; background: {{t.grouped}}">
+    <div style="height: 300px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><div style="width: 156px; height: 156px; border-radius: 78px; background: #BC002D; transform: translateY(14px)"></div></div>
+    <div style="padding: 24px 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="height: 36px; width: 40%; border-radius: 8px; background: {{t.card}}"></div>
+      <div style="height: 76px; border-radius: 20px; background: {{t.card}}"></div>
+      <div style="height: 76px; border-radius: 20px; background: {{t.card}}"></div>
+    </div>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.4)"></div>
+  <div style="position: absolute; left: 0; top: 0; z-index: 2"><dc-import name="StatusBar" dark="{{ true }}" hint-size="402px,54px"></dc-import></div>
+
+  <div role="dialog" aria-label="Checkout" style="position: absolute; left: 0; right: 0; top: {{sheetTop}}; bottom: 0; border-radius: 28px 28px 0 0; background: {{t.sheet}}; padding: 8px 16px 34px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+    <div style="align-self: center; width: 36px; height: 5px; border-radius: 3px; background: {{t.ter}}"></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px">
+      <h2 style="margin: 0; font-size: 20px; line-height: 25px; font-weight: 700">Checkout</h2>
+      <a href="Country.dc.html" aria-label="Close" style="width: 30px; height: 30px; border-radius: 15px; background: {{t.fill}}; color: {{t.sec}}; display: flex; align-items: center; justify-content: center; padding: 7px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </a>
+    </div>
+
+    <sc-if value="{{error}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 14px; background: {{t.redTint}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: {{t.red}}; flex-shrink: 0" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.5"></path></svg>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 15px; font-weight: 600; color: {{t.red}}">Payment didn’t go through</span>
+          <span style="font-size: 13px; line-height: 18px; color: {{t.sec}}">Your bank declined the charge. You haven’t been billed — try again or use another method.</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="border-radius: 14px; background: {{t.card}}; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 0.5px solid {{t.sep}}">
+        <span style="width: 32px; height: 32px; border-radius: 16px; background: radial-gradient(circle, #BC002D 0 30%, #FFFFFF 31%); box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.15); flex-shrink: 0"></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 17px; font-weight: 600">Japan · 10 GB</span><span style="font-size: 13px; color: {{t.sec}}">15 days · starts when you land</span></span>
+        <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 600">₹1,199</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid {{t.sep}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.greenFill}}" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>
+        <span style="flex-grow: 1; font-size: 15px">iPhone 16 Pro · eSIM compatible</span>
+      </div>
+      <a href="#coupon" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 44px; box-sizing: border-box; color: inherit; text-decoration: none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.sec}}" aria-hidden="true"><path d="M3 9V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a3 3 0 0 0 0 6v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a3 3 0 0 0 0-6z"></path></svg>
+        <span style="flex-grow: 1; font-size: 15px">Add coupon code</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px; font-size: 15px">
+      <div style="display: flex; justify-content: space-between; color: {{t.sec}}"><span>Subtotal</span><span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">₹1,016</span></div>
+      <div style="display: flex; justify-content: space-between; color: {{t.sec}}"><span>GST (18%)</span><span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">₹183</span></div>
+      <div style="display: flex; justify-content: space-between; font-size: 17px; font-weight: 600; padding-top: 6px; border-top: 0.5px solid {{t.sep}}"><span>Total</span><span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">₹1,199</span></div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+    <a href="Success.dc.html" aria-label="{{payLabel}}" style="height: 50px; border-radius: 14px; background: {{t.payBg}}; color: {{t.payFg}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">{{payText}}</a>
+    <button type="button" style="min-height: 44px; border: 0; background: transparent; color: {{t.label}}; font: inherit; font-size: 17px; margin-top: -6px">Other payment methods</button>
+    <span style="font-size: 12px; line-height: 16px; color: {{t.sec}}; text-align: center; margin-top: -8px">Instant delivery · Apple Pay placeholder uses PKPaymentButton</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["default","error"],"default":"default"},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var error = this.props.state === 'error';
+    var t = dark ? {
+      grouped: '#000000', card: '#2C2C2E', sheet: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', greenFill: '#30D158', red: '#FF6961', redTint: 'rgba(255,69,58,0.18)', payBg: '#FFFFFF', payFg: '#000000'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', sheet: '#F2F2F7', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', greenFill: '#34C759', red: '#D70015', redTint: 'rgba(255,59,48,0.12)', payBg: '#000000', payFg: '#FFFFFF'
+    };
+    return {
+      t: t, error: error, sheetTop: error ? '230px' : '320px',
+      payText: error ? 'Try again with Apple Pay' : 'Apple Pay', payLabel: error ? 'Try again with Apple Pay' : 'Pay with Apple Pay'
+    };
+  }
+}
+</script>
+</body>
+</html>

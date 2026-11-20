@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Usage detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 8px; right: 8px; top: 54px; height: 44px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center">
+    <a href="MyEsims.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: {{t.card}}; color: {{t.label}}; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <span style="text-align: center; font-size: 17px; font-weight: 600">{{title}}</span>
+    <button type="button" aria-label="More" style="width: 44px; height: 44px; border: 0; border-radius: 22px; background: {{t.card}}; color: {{t.label}}; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg>
+    </button>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 112px; display: flex; flex-direction: column; gap: 16px">
+    <div style="border-radius: 20px; background: {{t.card}}; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <div style="position: relative; width: 200px; height: 200px">
+        <svg width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="{{ringLabel}}">
+          <circle cx="100" cy="100" r="86" fill="none" stroke="{{t.fill}}" stroke-width="18"></circle>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="{{ringColor}}" stroke-width="18" stroke-linecap="round" stroke-dasharray="{{dash}}" transform="rotate(-90 100 100)"></circle>
+        </svg>
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+          <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 48px; line-height: 52px; font-weight: 700; color: {{numColor}}">{{big}}</span>
+          <span style="font-size: 15px; color: {{t.sec}}">{{bigSub}}</span>
+        </div>
+      </div>
+      <span style="{{pill}}">{{pillText}}</span>
+    </div>
+
+    <sc-if value="{{active}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 20px; background: {{t.card}}; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-size: 17px; font-weight: 600">Last 7 days</span>
+          <span style="font-size: 13px; color: {{t.sec}}">avg <span style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif">0.88 GB</span>/day</span>
+        </div>
+        <div style="height: 88px; display: flex; align-items: flex-end; gap: 10px">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="7">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end">
+              <div style="{{b.style}}"></div>
+              <span style="font-size: 11px; color: {{t.sec}}">{{b.d}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 44px; padding: 0 16px; border-bottom: {{r.border}}; font-size: 17px">
+          <span>{{r.k}}</span><span style="color: {{t.sec}}; font-size: 15px">{{r.v}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 34px">
+    <a href="{{ctaHref}}" style="height: 50px; border-radius: 14px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">{{cta}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["default","expired"],"default":"default"},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var expired = this.props.state === 'expired';
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', ink: '#FFFFFF', onInk: '#000000', bar: 'rgba(235,235,245,0.3)',
+      green: '#30DB5B', greenTint: 'rgba(48,209,88,0.18)', red: '#FF6961', redFill: '#FF453A', redTint: 'rgba(255,69,58,0.18)'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', ink: '#000000', onInk: '#FFFFFF', bar: 'rgba(60,60,67,0.18)',
+      green: '#217D38', greenTint: 'rgba(52,199,89,0.15)', red: '#D70015', redFill: '#FF3B30', redTint: 'rgba(255,59,48,0.12)'
+    };
+    var circ = 2 * Math.PI * 86;
+    var pct = expired ? 1 : 0.38;
+    var used = [0.6, 1.2, 0.9, 1.4, 0.5, 1.0, 0.6];
+    var days = ['T', 'F', 'S', 'S', 'M', 'T', 'W'];
+    var bars = used.map(function (u, i) {
+      return { d: days[i], style: { width: '100%', maxWidth: '28px', height: Math.round(u / 1.4 * 66) + 'px', borderRadius: '6px', background: i === 6 ? t.ink : t.bar } };
+    });
+    var rowsRaw = expired
+      ? [['Plan', 'France · 5 GB · 7 days'], ['Used', '5.0 of 5 GB'], ['Expired', '2 Nov, 23:59'], ['Invoice', 'Download']]
+      : [['Plan', '10 GB · 15 days'], ['Network', 'NTT Docomo · 5G'], ['Data roaming', 'On'], ['Valid until', '28 Nov, 23:59']];
+    var rows = rowsRaw.map(function (r, i) { return { k: r[0], v: r[1], border: i < rowsRaw.length - 1 ? '0.5px solid ' + t.sep : '0' }; });
+    return {
+      t: t, dark: dark, active: !expired, bars: bars, rows: rows,
+      title: expired ? 'France · 5 GB' : 'Japan · 10 GB',
+      big: expired ? '0' : '3.8', bigSub: expired ? 'GB left' : 'of 10 GB left',
+      ringLabel: expired ? 'Expired, 0 GB left' : '3.8 of 10 GB left',
+      ringColor: expired ? t.redTint : t.ink, numColor: expired ? t.red : t.label,
+      dash: (pct * circ).toFixed(1) + ' ' + circ.toFixed(1),
+      pill: { fontFamily: "'SF Pro Rounded', ui-rounded, Nunito, sans-serif", fontVariantNumeric: 'tabular-nums', fontSize: '15px', fontWeight: 600, padding: '8px 14px', borderRadius: '10px', background: expired ? t.redTint : t.greenTint, color: expired ? t.red : t.green },
+      pillText: expired ? 'Expired 2 Nov' : '6d 14:42:18 left',
+      cta: expired ? 'Buy again' : 'Top up', ctaHref: expired ? 'Country.dc.html' : 'TopUp.dc.html'
+    };
+  }
+}
+</script>
+</body>
+</html>

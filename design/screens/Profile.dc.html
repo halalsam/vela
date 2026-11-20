@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Profile and settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 16px; right: 16px; top: 54px; display: flex; flex-direction: column; gap: 20px">
+    <div style="height: 44px"></div>
+    <h1 style="margin: -28px 0 0; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.4px">Profile</h1>
+
+    <a href="#account" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 20px; background: {{t.card}}; color: inherit; text-decoration: none">
+      <span style="width: 56px; height: 56px; border-radius: 28px; background: {{t.ink}}; color: {{t.onInk}}; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600">SK</span>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 20px; line-height: 25px; font-weight: 600">Sameer Khan</span>
+        <span style="font-size: 15px; color: {{t.sec}}">Apple ID · [EMAIL]</span>
+      </span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+    </a>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+        <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
+          <a href="{{r.href}}" style="display: flex; align-items: center; gap: 12px; padding-left: 16px; min-height: 48px; color: inherit; text-decoration: none">
+            <span style="width: 30px; height: 30px; border-radius: 8px; background: {{t.fill}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.icon}}"></path></svg>
+            </span>
+            <span style="flex-grow: 1; align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 16px; border-bottom: {{r.border}}">
+              <span style="font-size: 17px">{{r.label}}</span>
+              <span style="display: flex; align-items: center; gap: 8px; color: {{t.sec}}; font-size: 17px">
+                {{r.value}}
+                <sc-if value="{{r.toggle}}" hint-placeholder-val="{{ false }}"><span style="position: relative; width: 51px; height: 31px; border-radius: 16px; background: {{t.green}}; display: inline-block"><span style="position: absolute; right: 2px; top: 2px; width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,0.2)"></span></span></sc-if>
+                <sc-if value="{{r.chev}}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></sc-if>
+              </span>
+            </span>
+          </a>
+        </sc-for>
+      </div>
+    </sc-for>
+
+    <button type="button" style="min-height: 48px; border: 0; border-radius: 20px; background: {{t.card}}; color: {{t.red}}; font: inherit; font-size: 17px">Sign out</button>
+  </div>
+  <div style="position: absolute; left: 0; bottom: 0; z-index: 3"><dc-import name="TabBar" dark="{{dark}}" active="{{ 3 }}" hint-size="402px,96px"></dc-import></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', ink: '#FFFFFF', onInk: '#000000', green: '#30D158', red: '#FF6961'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', ink: '#000000', onInk: '#FFFFFF', green: '#34C759', red: '#D70015'
+    };
+    var I = {
+      lang: 'M4 5h9M8.5 3v2M6 5c.5 3 2.5 5.5 5 7M11 5c-.5 3-3 6.5-6 8M13 21l4-10 4 10M14.5 17.5h5',
+      cur: 'M7 4h10M7 8h10M10 4c3 0 4.5 1.8 4.5 4s-1.5 4-4.5 4H7l7 8',
+      look: 'M12 3a9 9 0 1 0 0 18zM12 3a9 9 0 0 1 0 18',
+      bell: 'M12 3a6 6 0 0 0-6 6v4l-1.5 3h15L18 13V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0',
+      face: 'M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9v1.5M15 9v1.5M12 9v4h-1M9.5 16a4 4 0 0 0 5 0',
+      doc: 'M7 3h7l4 4v14H7zM10 12h5M10 16h5',
+      gift: 'M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-2-4-6-3-5 0M12 7c2-4 6-3 5 0',
+      chat: 'M4 5h16v11H9l-5 4z',
+      help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 16.5v.5',
+      phone: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2'
+    };
+    function g(rows) {
+      return { rows: rows.map(function (r, i) { return { label: r[0], value: r[1] || '', icon: r[2], href: r[3] || '#settings', toggle: !!r[4], chev: !r[4], border: i < rows.length - 1 ? '0.5px solid ' + t.sep : '0' }; }) };
+    }
+    var groups = [
+      g([['Language', 'English', I.lang], ['Currency', '₹ INR', I.cur], ['Appearance', 'System', I.look]]),
+      g([['Notifications', '', I.bell], ['Face ID for purchases', '', I.face, '#faceid', true], ['Invoices', '', I.doc], ['Refer a friend', '', I.gift]]),
+      g([['Support chat', '', I.chat, 'Support.dc.html'], ['Help centre', '', I.help], ['Is my phone compatible?', '', I.phone]])
+    ];
+    return { t: t, dark: dark, groups: groups };
+  }
+}
+</script>
+</body>
+</html>

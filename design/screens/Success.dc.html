@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Order success</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 16px; right: 16px; top: 54px; height: 44px; display: flex; justify-content: flex-end; align-items: center">
+    <a href="Home.dc.html" style="min-height: 44px; display: flex; align-items: center; color: {{t.label}}; font-size: 17px; font-weight: 600; text-decoration: none">Done</a>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 104px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+    <div style="width: 56px; height: 56px; border-radius: 28px; background: {{t.greenFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
+      <h1 style="margin: 0; font-size: 28px; line-height: 34px; font-weight: 700">You’re all set</h1>
+      <span style="font-size: 15px; line-height: 20px; color: {{t.sec}}">Japan · 10 GB · 15 days · Order #[ORDER-ID]</span>
+    </div>
+
+    <div style="width: 100%; border-radius: 20px; background: {{t.card}}; padding: 20px; box-sizing: border-box; display: flex; align-items: center; gap: 18px">
+      <div role="img" aria-label="eSIM QR code (sample)" style="width: 147px; height: 147px; padding: 8px; border-radius: 12px; background: #FFFFFF; flex-shrink: 0; display: grid; grid-template-columns: repeat(21, minmax(0, 1fr)); box-sizing: content-box">
+        <sc-for list="{{qr}}" as="q" hint-placeholder-count="441"><span style="{{q}}"></span></sc-for>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 15px; font-weight: 600">Installing on another device?</span>
+        <span style="font-size: 13px; line-height: 18px; color: {{t.sec}}">Scan with that phone’s camera. Each QR can be installed once.</span>
+      </div>
+    </div>
+
+    <a href="Install.dc.html" style="width: 100%; height: 50px; border-radius: 14px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"></path></svg>Install eSIM on this iPhone
+    </a>
+
+    <div style="width: 100%; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; color: {{t.sec}}; padding: 4px 16px 0">Manual install</span>
+      <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+        <sc-for list="{{codes}}" as="cd" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 10px 8px 10px 16px; border-bottom: {{cd.border}}">
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 13px; color: {{t.sec}}">{{cd.label}}</span>
+              <span style="font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{cd.value}}</span>
+            </span>
+            <button type="button" onClick="{{cd.copy}}" style="{{cd.btn}}">
+              <sc-if value="{{cd.copied}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{cd.btnText}}
+            </button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <a href="Install.dc.html" style="min-height: 44px; display: flex; align-items: center; color: {{t.label}}; font-size: 15px; font-weight: 600; text-decoration: none">View install guide</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', ink: '#FFFFFF', onInk: '#000000', greenFill: '#30D158'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', ink: '#000000', onInk: '#FFFFFF', greenFill: '#34C759'
+    };
+    var N = 21, seed = 7, qr = [];
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    function finder(x, y) {
+      var corners = [[0, 0], [N - 7, 0], [0, N - 7]];
+      for (var i = 0; i < 3; i++) {
+        var cx = x - corners[i][0], cy = y - corners[i][1];
+        if (cx >= 0 && cx < 7 && cy >= 0 && cy < 7) {
+          var edge = cx === 0 || cy === 0 || cx === 6 || cy === 6;
+          var core = cx >= 2 && cx <= 4 && cy >= 2 && cy <= 4;
+          return edge || core ? 1 : 0;
+        }
+        if (cx >= -1 && cx <= 7 && cy >= -1 && cy <= 7) return 0;
+      }
+      return -1;
+    }
+    for (var y = 0; y < N; y++) {
+      for (var x = 0; x < N; x++) {
+        var f = finder(x, y);
+        var on = f === -1 ? rnd() > 0.52 : f === 1;
+        qr.push({ background: on ? '#000000' : 'transparent' });
+      }
+    }
+    var self = this;
+    var copied = this.state.copied;
+    var raw = [['SM-DP+ address', '[SMDP.EXAMPLE.COM]'], ['Activation code', '[ACTIVATION-CODE]']];
+    var codes = raw.map(function (r, i) {
+      var on = copied === i;
+      return {
+        label: r[0], value: r[1], copied: on, btnText: on ? 'Copied' : 'Copy',
+        border: i === 0 ? '0.5px solid ' + t.sep : '0',
+        copy: function () { self.setState({ copied: i }); setTimeout(function () { self.setState({ copied: null }); }, 1200); },
+        btn: { minWidth: '76px', height: '34px', border: 0, borderRadius: '10px', background: on ? t.ink : t.fill, color: on ? t.onInk : t.label, font: 'inherit', fontSize: '15px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }
+      };
+    });
+    return { t: t, dark: dark, qr: qr, codes: codes };
+  }
+}
+</script>
+</body>
+</html>

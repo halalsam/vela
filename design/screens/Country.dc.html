@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Country detail — Japan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;family=Noto+Sans+Arabic:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div dir="{{dir}}" lang="{{lang}}" style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: {{font}}">
+  <div style="position: absolute; left: 0; top: 0; width: 402px; height: 300px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden">
+    <div style="width: 156px; height: 156px; border-radius: 78px; background: #BC002D; transform: translateY(14px)"></div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 0.5px; background: rgba(0,0,0,0.08)"></div>
+  </div>
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{ false }}" rtl="{{rtl}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 16px; right: 16px; top: 54px; height: 44px; display: flex; justify-content: space-between; z-index: 3">
+    <a href="Store.dc.html" aria-label="{{c.back}}" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.6); backdrop-filter: blur(20px) saturate(180%); border: 0.5px solid rgba(255,255,255,0.9); box-shadow: 0 4px 12px rgba(0,0,0,0.08); color: #000000; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform: {{chev}}" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <button type="button" aria-label="{{c.share}}" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.6); backdrop-filter: blur(20px) saturate(180%); border: 0.5px solid rgba(255,255,255,0.9); box-shadow: 0 4px 12px rgba(0,0,0,0.08); color: #000000; display: flex; align-items: center; justify-content: center; padding: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"></path></svg>
+    </button>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; top: 276px; bottom: 0; border-radius: 28px 28px 0 0; background: {{t.grouped}}; padding: 24px 16px 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px">
+      <h1 style="margin: 0; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.4px">{{c.title}}</h1>
+      <span style="font-size: 15px; line-height: 20px; color: {{t.sec}}">{{c.sub}}</span>
+      <div style="display: flex; gap: 6px; margin-top: 4px">
+        <sc-for list="{{c.chips}}" as="ch" hint-placeholder-count="3">
+          <span style="font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; border: 1px solid {{t.sep}}">{{ch}}</span>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px" role="radiogroup" aria-label="{{c.plans}}">
+      <sc-for list="{{plans}}" as="p" hint-placeholder-count="3">
+        <button type="button" role="radio" aria-checked="{{p.checked}}" onClick="{{p.pick}}" style="{{p.style}}">
+          <span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start">
+            <span style="display: flex; align-items: baseline; gap: 8px">
+              <span dir="ltr" style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; line-height: 32px; font-weight: 700">{{p.gb}}<span style="font-size: 17px; font-weight: 600"> GB</span></span>
+              <span style="font-size: 15px; color: {{t.sec}}">{{p.days}}</span>
+            </span>
+            <sc-if value="{{p.best}}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 10px; background: {{t.ink}}; color: {{t.onInk}}">{{c.best}}</span>
+            </sc-if>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-end">
+            <span dir="ltr" style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600">{{p.price}}</span>
+            <span style="font-size: 13px; color: {{t.sec}}"><span dir="ltr" style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums">{{p.perGb}}</span> {{c.perGb}}</span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 0.5px solid {{t.sep}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12a10 10 0 0 1 14 0M8 15a6 6 0 0 1 8 0M12 18.5v.5"></path></svg>
+        <span style="flex-grow: 1; display: flex; flex-direction: column"><span style="font-size: 15px; color: {{t.sec}}">{{c.networks}}</span><span style="font-size: 17px">NTT Docomo · SoftBank</span></span>
+        <span style="font-size: 12px; font-weight: 600; padding: 3px 7px; border-radius: 10px; border: 1px solid {{t.sep}}">5G</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.greenFill}}" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>
+        <span style="font-size: 15px; line-height: 20px">{{c.compat}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 12px; right: 12px; bottom: 34px; z-index: 3; border-radius: 28px; background: {{t.glass}}; backdrop-filter: blur(24px) saturate(180%); border: 0.5px solid {{t.rim}}; box-shadow: 0 8px 24px rgba(0,0,0,0.10); padding: 10px 10px 10px 20px; display: flex; align-items: center; gap: 12px">
+    <span style="display: flex; flex-direction: column; flex-grow: 1">
+      <span style="font-size: 13px; color: {{t.sec}}">{{selSummary}}</span>
+      <span dir="ltr" style="font-family: 'SF Pro Rounded', ui-rounded, Nunito, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; text-align: start">{{selPrice}}</span>
+    </span>
+    <a href="Checkout.dc.html" style="height: 50px; padding: 0 28px; border-radius: 14px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center">{{c.cont}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"rtl":{"editor":"boolean","default":false},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var rtl = !!this.props.rtl;
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', sep: 'rgba(84,84,88,0.65)', ink: '#FFFFFF', onInk: '#000000', greenFill: '#30D158', glass: 'rgba(30,30,32,0.66)', rim: 'rgba(255,255,255,0.14)'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', sep: 'rgba(60,60,67,0.29)', ink: '#000000', onInk: '#FFFFFF', greenFill: '#34C759', glass: 'rgba(255,255,255,0.66)', rim: 'rgba(255,255,255,0.9)'
+    };
+    var en = { back: 'Back', share: 'Share', title: 'Japan', sub: 'Data only · keep your number for calls & iMessage', chips: ['5G', 'Hotspot', 'Instant activation'], plans: 'Plans', best: 'Best value', perGb: '/ GB', networks: 'Networks', compat: 'This iPhone 16 Pro supports eSIM', cont: 'Continue', days: ['7 days', '15 days', '30 days'] };
+    var ar = { back: 'رجوع', share: 'مشاركة', title: 'اليابان', sub: 'بيانات فقط · احتفظ برقمك للمكالمات وiMessage', chips: ['5G', 'نقطة اتصال', 'تفعيل فوري'], plans: 'الباقات', best: 'الأفضل قيمة', perGb: 'لكل جيجابايت', networks: 'الشبكات', compat: 'جهاز iPhone 16 Pro هذا يدعم eSIM', cont: 'متابعة', days: ['7 أيام', '15 يومًا', '30 يومًا'] };
+    var c = rtl ? ar : en;
+    var self = this;
+    var sel = this.state.sel ?? 1;
+    var raw = [['3', '₹499', '₹166', false], ['10', '₹1,199', '₹120', false], ['20', '₹1,999', '₹100', true]];
+    var plans = raw.map(function (p, i) {
+      var on = i === sel;
+      return {
+        gb: p[0], days: c.days[i], price: p[1], perGb: p[2], best: p[3], checked: on ? 'true' : 'false',
+        pick: function () { self.setState({ sel: i }); },
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', minHeight: '76px', padding: '14px 18px', borderRadius: '20px', background: t.card, color: t.label, font: 'inherit', textAlign: 'start', boxSizing: 'border-box', border: on ? '2px solid ' + t.ink : '2px solid transparent', cursor: 'pointer' }
+      };
+    });
+    var s = raw[sel];
+    return {
+      t: t, c: c, dark: dark, rtl: rtl, plans: plans, dir: rtl ? 'rtl' : 'ltr', lang: rtl ? 'ar' : 'en',
+      font: rtl ? "'SF Arabic', 'Noto Sans Arabic', -apple-system, sans-serif" : "-apple-system, 'SF Pro Text', Inter, system-ui, sans-serif",
+      chev: rtl ? 'scaleX(-1)' : 'none',
+      selSummary: s[0] + ' GB · ' + c.days[sel], selPrice: s[1]
+    };
+  }
+}
+</script>
+</body>
+</html>

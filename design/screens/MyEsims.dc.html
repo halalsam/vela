@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My eSIMs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 402px; height: 874px; overflow: hidden; background: {{t.grouped}}; color: {{t.label}}; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif">
+  <div style="position: absolute; left: 0; top: 0; z-index: 3"><dc-import name="StatusBar" dark="{{dark}}" hint-size="402px,54px"></dc-import></div>
+  <div style="position: absolute; left: 16px; right: 16px; top: 54px; display: flex; flex-direction: column">
+    <div style="height: 44px; display: flex; justify-content: flex-end; align-items: center">
+      <a href="Store.dc.html" aria-label="Buy new eSIM" style="width: 44px; height: 44px; border-radius: 22px; background: {{t.card}}; color: {{t.label}}; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+      </a>
+    </div>
+    <h1 style="margin: 0 0 20px; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.4px">My eSIMs</h1>
+
+    <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top: 80px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; padding: 0 24px">
+        <div style="width: 112px; height: 112px; border-radius: 56px; background: {{t.card}}; display: flex; align-items: center; justify-content: center">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l4.5 4.5V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><rect x="9.5" y="11" width="5" height="6" rx="1"></rect></svg>
+        </div>
+        <h2 style="margin: 8px 0 0; font-size: 22px; line-height: 28px; font-weight: 700">No eSIMs yet</h2>
+        <p style="margin: 0; font-size: 17px; line-height: 22px; color: {{t.sec}}">Pick a destination and you’ll be connected the moment you land.</p>
+        <a href="Store.dc.html" style="margin-top: 10px; height: 50px; padding: 0 28px; border-radius: 14px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 17px; font-weight: 600; text-decoration: none; display: flex; align-items: center">Browse destinations</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{full}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 16px 8px">
+        <span style="font-size: 13px; font-weight: 600; color: {{t.sec}}; text-transform: uppercase; letter-spacing: 0.3px">Active · 3</span>
+        <span style="font-size: 13px; color: {{t.sec}}">Swipe left for actions</span>
+      </div>
+      <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+        <sc-for list="{{active}}" as="r" hint-placeholder-count="3">
+          <div style="position: relative; height: 72px; overflow: hidden; touch-action: pan-y">
+            <div style="position: absolute; right: 0; top: 0; bottom: 0; display: flex">
+              <a href="Usage.dc.html" style="width: 84px; background: {{t.gray}}; color: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>Details</a>
+              <a href="TopUp.dc.html" style="width: 84px; background: {{t.ink}}; color: {{t.onInk}}; font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Top up</a>
+            </div>
+            <a href="Usage.dc.html" onPointerDown="{{r.down}}" onPointerMove="{{r.move}}" onPointerUp="{{r.up}}" onPointerCancel="{{r.up}}" onClick="{{r.click}}" style="{{r.front}}">
+              <span style="{{r.flag}}"></span>
+              <span style="flex-grow: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; gap: 12px; border-bottom: {{r.border}}">
+                <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-size: 17px; line-height: 22px; font-weight: 600">{{r.name}}</span>
+                  <span style="{{r.subStyle}}">{{r.sub}}</span>
+                </span>
+                <sc-if value="{{r.started}}" hint-placeholder-val="{{ true }}">
+                  <span style="display: flex; flex-direction: column; align-items: flex-end">
+                    <span style="{{r.amountStyle}}">{{r.left}}</span>
+                    <span style="font-size: 12px; color: {{t.sec}}">of {{r.total}}</span>
+                  </span>
+                  <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true" style="flex-shrink: 0">
+                    <circle cx="15" cy="15" r="12" fill="none" stroke="{{t.fill}}" stroke-width="4"></circle>
+                    <circle cx="15" cy="15" r="12" fill="none" stroke="{{r.ring}}" stroke-width="4" stroke-linecap="round" stroke-dasharray="{{r.dash}}" transform="rotate(-90 15 15)"></circle>
+                  </svg>
+                </sc-if>
+                <sc-if value="{{r.pending}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 10px; background: {{t.fill}}; color: {{t.label}}">Not started</span>
+                </sc-if>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="color: {{t.ter}}; flex-shrink: 0; margin-right: 16px" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+              </span>
+            </a>
+          </div>
+        </sc-for>
+      </div>
+
+      <span style="font-size: 13px; font-weight: 600; color: {{t.sec}}; padding: 28px 16px 8px; text-transform: uppercase; letter-spacing: 0.3px">Expired</span>
+      <div style="border-radius: 20px; background: {{t.card}}; overflow: hidden">
+        <sc-for list="{{expired}}" as="e" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px; min-height: 64px">
+            <span style="{{e.flag}}"></span>
+            <span style="flex-grow: 1; align-self: stretch; display: flex; align-items: center; gap: 12px; padding-right: 12px; border-bottom: {{e.border}}">
+              <a href="Usage.dc.html" style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; color: inherit; text-decoration: none">
+                <span style="font-size: 17px; line-height: 22px; color: {{t.sec}}">{{e.name}}</span>
+                <span style="font-size: 13px; color: {{t.sec}}">{{e.when}}</span>
+              </a>
+              <a href="Country.dc.html" style="height: 32px; padding: 0 12px; border-radius: 10px; background: {{t.fill}}; color: {{t.label}}; font-size: 15px; font-weight: 600; text-decoration: none; display: flex; align-items: center">Buy again</a>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+  <div style="position: absolute; left: 0; bottom: 0; z-index: 3"><dc-import name="TabBar" dark="{{dark}}" active="{{ 2 }}" hint-size="402px,96px"></dc-import></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"state":{"editor":"enum","options":["default","empty"],"default":"default"},"swiped":{"editor":"enum","options":["none","Japan","Thailand","UAE"],"default":"none"},"$preview":{"width":402,"height":874}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var dark = !!this.props.dark;
+    var empty = this.props.state === 'empty';
+    var t = dark ? {
+      grouped: '#000000', card: '#1C1C1E', label: '#FFFFFF', sec: 'rgba(235,235,245,0.6)', ter: 'rgba(235,235,245,0.3)', sep: 'rgba(84,84,88,0.65)', fill: 'rgba(118,118,128,0.24)', ink: '#FFFFFF', onInk: '#000000', gray: '#636366', orange: '#FFB340', orangeFill: '#FF9F0A'
+    } : {
+      grouped: '#F2F2F7', card: '#FFFFFF', label: '#000000', sec: 'rgba(60,60,67,0.6)', ter: 'rgba(60,60,67,0.3)', sep: 'rgba(60,60,67,0.29)', fill: 'rgba(118,118,128,0.12)', ink: '#000000', onInk: '#FFFFFF', gray: '#8E8E93', orange: '#C93400', orangeFill: '#FF9500'
+    };
+    function flag(bg, dim) { return { display: 'inline-block', width: '32px', height: '32px', borderRadius: '16px', background: bg, flexShrink: 0, boxShadow: 'inset 0 0 0 0.5px rgba(0,0,0,0.15)', opacity: dim ? 0.5 : 1 }; }
+    var F = {
+      jp: 'radial-gradient(circle at 50% 50%, #BC002D 0 30%, #FFFFFF 31%)',
+      th: 'linear-gradient(#A51931 0 16.6%, #F4F5F8 16.6% 33.3%, #2D2A4A 33.3% 66.6%, #F4F5F8 66.6% 83.3%, #A51931 83.3%)',
+      ae: 'linear-gradient(to right, #EF3340 0 30%, transparent 30%), linear-gradient(#009739 0 33.3%, #FFFFFF 33.3% 66.6%, #000000 66.6%)',
+      fr: 'linear-gradient(to right, #002654 0 33.3%, #FFFFFF 33.3% 66.6%, #CE1126 66.6%)',
+      id: 'linear-gradient(#CE1126 0 50%, #FFFFFF 50%)'
+    };
+    var self = this;
+    var OPEN = -168;
+    var names = ['Japan', 'Thailand', 'UAE'];
+    var openIdx = this.state.open !== undefined ? this.state.open : names.indexOf(this.props.swiped);
+    var drag = this.state.drag;
+    var circ = 2 * Math.PI * 12;
+    var data = [
+      { name: 'Japan · 10 GB', sub: '6d 14h left · NTT Docomo', left: '3.8 GB', total: '10 GB', pct: 0.38, low: false, started: true, flag: F.jp },
+      { name: 'Thailand · 5 GB', sub: 'Starts when you land · AIS', started: false, flag: F.th },
+      { name: 'UAE · 3 GB', sub: 'Running low · 2d left', left: '0.4 GB', total: '3 GB', pct: 0.13, low: true, started: true, flag: F.ae }
+    ];
+    var active = data.map(function (d, i) {
+      var x = drag && drag.i === i ? drag.x : (i === openIdx ? OPEN : 0);
+      return {
+        name: d.name, sub: d.sub, left: d.left, total: d.total, started: d.started, pending: !d.started,
+        flag: flag(d.flag),
+        border: i < data.length - 1 ? '0.5px solid ' + t.sep : '0',
+        subStyle: { fontSize: '13px', lineHeight: '18px', color: d.low ? t.orange : t.sec, fontWeight: d.low ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+        amountStyle: { fontFamily: "'SF Pro Rounded', ui-rounded, Nunito, sans-serif", fontVariantNumeric: 'tabular-nums', fontSize: '15px', fontWeight: 600, color: d.low ? t.orange : t.label },
+        ring: d.low ? t.orangeFill : t.ink,
+        dash: d.started ? (d.pct * circ).toFixed(1) + ' ' + circ.toFixed(1) : '0 100',
+        front: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '16px', background: t.card, color: 'inherit', textDecoration: 'none', transform: 'translateX(' + x + 'px)', transition: drag && drag.i === i ? 'none' : 'transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1)', userSelect: 'none', cursor: 'grab' },
+        down: function (e) {
+          self._start = e.clientX; self._base = i === openIdx ? OPEN : 0; self._moved = false;
+          if (e.currentTarget.setPointerCapture) { e.currentTarget.setPointerCapture(e.pointerId); }
+          if (openIdx !== -1 && openIdx !== i) { self.setState({ open: -1 }); }
+        },
+        move: function (e) {
+          if (self._start === undefined || self._start === null) { return; }
+          var dx = e.clientX - self._start;
+          if (Math.abs(dx) > 5) { self._moved = true; }
+          var nx = self._base + dx;
+          if (nx > 0) { nx = nx * 0.2; }
+          if (nx < OPEN) { nx = OPEN + (nx - OPEN) * 0.3; }
+          self.setState({ drag: { i: i, x: nx } });
+        },
+        up: function () {
+          var cur = self.state.drag && self.state.drag.i === i ? self.state.drag.x : (i === openIdx ? OPEN : 0);
+          self._start = null;
+          self.setState({ drag: null, open: cur < OPEN / 2 ? i : -1 });
+        },
+        click: function (e) { if (self._moved || i === openIdx) { e.preventDefault(); if (!self._moved) { self.setState({ open: -1 }); } } self._moved = false; }
+      };
+    });
+    var expired = [['France · 5 GB', 'Expired 2 Nov', F.fr], ['Indonesia · 3 GB', 'Expired 14 Aug', F.id]].map(function (e, i) {
+      return { name: e[0], when: e[1], flag: flag(e[2], true), border: i === 0 ? '0.5px solid ' + t.sep : '0' };
+    });
+    return { t: t, dark: dark, empty: empty, full: !empty, active: active, expired: expired };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Landed — Wireframes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1880px; min-height: 2560px; box-sizing: border-box; padding: 64px 72px; background: #FFFFFF; color: #000000; font-family: -apple-system, 'SF Pro Text', Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 40px">
+  <header style="display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 24px; border-bottom: 0.5px solid rgba(60,60,67,0.29)">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; color: rgba(60,60,67,0.6)">Landed · iPhone · lo-fi</span>
+      <h1 style="margin: 0; font-size: 44px; line-height: 50px; font-weight: 700; letter-spacing: -0.8px">Wireframes · full flow</h1>
+      <p style="margin: 0; max-width: 760px; font-size: 15px; line-height: 21px; color: rgba(60,60,67,0.6)">Structure and hierarchy only, at half scale. Numbers follow the hi-fi screens. Dark blocks are primary actions; dashed blocks are chrome (nav bar, tab bar, sheets).</p>
+    </div>
+    <div style="display: flex; gap: 16px; font-size: 12px; color: rgba(60,60,67,0.6)">
+      <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 10px; border-radius: 3px; background: #E5E5EA"></span>Content</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 10px; border-radius: 3px; background: #000000"></span>Primary action</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 10px; border-radius: 3px; border: 1px dashed #8E8E93"></span>System chrome</span>
+    </div>
+  </header>
+
+  <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <span style="font-size: 17px; font-weight: 600">{{g.title}}</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 36px">
+        <sc-for list="{{g.screens}}" as="s" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 201px">
+            <div style="position: relative; width: 201px; height: 437px; border-radius: 28px; border: 1.5px solid #1C1C1E; background: #FFFFFF; overflow: hidden; box-sizing: border-box">
+              <div style="position: absolute; left: 69px; top: 6px; width: 60px; height: 17px; border-radius: 9px; background: #1C1C1E"></div>
+              <div style="position: absolute; left: 8px; right: 8px; top: 30px; bottom: 20px; display: flex; flex-direction: column; gap: 6px; overflow: hidden">
+                <sc-for list="{{s.blocks}}" as="b" hint-placeholder-count="5">
+                  <div style="{{b.style}}">{{b.label}}</div>
+                </sc-for>
+              </div>
+              <sc-if value="{{s.tab}}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; left: 8px; right: 8px; bottom: 18px; height: 30px; border-radius: 15px; border: 1px dashed #8E8E93; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: space-around; font-size: 7px; color: #3C3C43">
+                  <span>Home</span><span>Store</span><span>eSIMs</span><span>Profile</span>
+                </div>
+              </sc-if>
+              <div style="position: absolute; left: 67px; bottom: 5px; width: 67px; height: 3px; border-radius: 2px; background: #1C1C1E"></div>
+            </div>
+            <span style="font-size: 13px; font-weight: 600">{{s.name}}</span>
+            <span style="font-size: 11px; line-height: 15px; color: rgba(60,60,67,0.6)">{{s.note}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1880,"height":2560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    function base(h) {
+      return { height: h + 'px', flexShrink: 0, borderRadius: '6px', background: '#E5E5EA', fontSize: '8px', lineHeight: '10px', color: '#3C3C43', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 4px', boxSizing: 'border-box' };
+    }
+    function B(h, label, kind) {
+      var s = base(h);
+      if (kind === 'title') { s.background = '#3A3A3C'; s.width = '62%'; s.borderRadius = '3px'; s.color = '#FFFFFF'; s.justifyContent = 'flex-start'; s.paddingLeft = '6px'; }
+      if (kind === 'text') { s.background = '#F2F2F7'; s.justifyContent = 'flex-start'; s.paddingLeft = '6px'; }
+      if (kind === 'btn') { s.background = '#000000'; s.color = '#FFFFFF'; s.borderRadius = '7px'; }
+      if (kind === 'btn2') { s.background = '#E5E5EA'; s.borderRadius = '7px'; }
+      if (kind === 'chrome') { s.background = 'transparent'; s.border = '1px dashed #8E8E93'; }
+      if (kind === 'spacer') { s.background = 'transparent'; s.flexGrow = 1; s.height = 'auto'; }
+      if (kind === 'warn') { s.background = '#FFE8CC'; s.color = '#8A3A00'; }
+      if (kind === 'bad') { s.background = '#FFE0DE'; s.color = '#8A0010'; }
+      if (kind === 'ring') { s.width = h + 'px'; s.borderRadius = (h / 2) + 'px'; s.border = '6px solid #3A3A3C'; s.background = 'transparent'; s.alignSelf = 'center'; }
+      if (kind === 'circle') { s.width = h + 'px'; s.borderRadius = (h / 2) + 'px'; s.alignSelf = 'center'; }
+      if (kind === 'sheet') { s.background = '#F2F2F7'; s.border = '1px dashed #8E8E93'; s.borderRadius = '14px 14px 6px 6px'; s.alignItems = 'flex-start'; s.paddingTop = '6px'; }
+      if (kind === 'dim') { s.background = '#C7C7CC'; }
+      if (kind === 'qr') { s.width = h + 'px'; s.alignSelf = 'center'; s.background = 'repeating-linear-gradient(90deg, #3A3A3C 0 6px, #FFFFFF 6px 10px), #FFFFFF'; s.border = '6px solid #FFFFFF'; s.outline = '1px solid #C7C7CC'; }
+      return { style: s, label: label || '' };
+    }
+    var nav = B(22, 'Nav bar · large title collapses', 'chrome');
+    var groups = [
+      { title: 'Onboarding & sign in', screens: [
+        { name: '01 Onboarding · 1', note: 'Destination illustration, value prop, page dots', blocks: [B(30, '', 'spacer'), B(110, 'Destination illustration', 'circle'), B(16, 'Land connected', 'title'), B(28, 'Buy before you fly. Install in a minute.', 'text'), B(8, '● ○ ○'), B(30, '', 'spacer'), B(26, 'Continue', 'btn'), B(18, 'Skip', 'btn2')] },
+        { name: '01 Onboarding · 2', note: 'How it works: buy → scan → top up', blocks: [B(30, '', 'spacer'), B(28, '1 · Pick a plan'), B(28, '2 · Install in Settings'), B(28, '3 · Top up anytime'), B(16, 'Three steps', 'title'), B(8, '○ ● ○'), B(30, '', 'spacer'), B(26, 'Continue', 'btn')] },
+        { name: '01 Onboarding · 3', note: 'Notifications ask with reasons', blocks: [B(30, '', 'spacer'), B(70, 'Bell symbol', 'circle'), B(16, 'Stay ahead of data', 'title'), B(24, 'Low-data + expiry alerts', 'text'), B(30, 'Sample notification'), B(30, '', 'spacer'), B(26, 'Allow notifications', 'btn'), B(18, 'Not now', 'btn2')] },
+        { name: '02 Sign in', note: 'Apple first, Google, phone OTP with code autofill', blocks: [B(30, '', 'spacer'), B(40, 'Logo', 'circle'), B(16, 'Sign in', 'title'), B(20, 'Keep your eSIMs on every device', 'text'), B(30, '', 'spacer'), B(24, 'Sign in with Apple', 'btn'), B(24, 'Continue with Google', 'btn2'), B(24, 'Phone number', 'btn2'), B(22, 'OTP · 6 boxes · autofill', 'chrome'), B(14, 'Terms · Privacy', 'text')] }
+      ] },
+      { title: 'Buy flow', screens: [
+        { name: '03 Home', note: 'Greeting, search, active eSIM, popular, regions', tab: true, blocks: [nav, B(16, 'Good evening, Sam', 'title'), B(18, 'Search destinations'), B(84, 'Active eSIM · ring · days left · Top up'), B(10, 'Popular destinations', 'text'), B(56, 'Carousel · flag cards →'), B(10, 'Regional plans', 'text'), B(22, 'Asia'), B(22, 'Europe'), B(22, 'Gulf')] },
+        { name: '04 Store', note: 'Segmented, search, A–Z list with index', tab: true, blocks: [nav, B(16, 'Store', 'title'), B(18, 'Search'), B(16, 'Countries | Regions | Global', 'chrome'), B(10, 'A', 'text'), B(22, 'Flag · Country · from ₹ ›'), B(22, 'Flag · Country · from ₹ ›'), B(10, 'B', 'text'), B(22, 'Flag · Country · from ₹ ›'), B(22, 'Flag · Country · from ₹ ›'), B(22, 'Flag · Country · from ₹ ›')] },
+        { name: '05 Country detail', note: 'Parallax hero, plan cards, networks, compatibility', blocks: [B(80, 'Hero flag / photo · parallax'), B(16, 'Japan', 'title'), B(52, 'Plan · 3 GB · 7 d · ₹'), B(52, 'Plan · selected', 'chrome'), B(52, 'Plan · Best value'), B(24, 'Networks · 5G'), B(18, 'Compatibility note', 'text'), B(30, '', 'spacer'), B(26, '₹ · Continue', 'btn')] },
+        { name: '06 Checkout sheet', note: 'Medium → large detent, Apple Pay primary', blocks: [B(110, 'Dimmed + scaled parent', 'dim'), B(250, 'Sheet · grabber · summary · compatible ✓ · coupon · total', 'sheet'), B(26, 'Apple Pay', 'btn')] },
+        { name: '07 Success', note: 'QR reveal, direct install, manual codes', blocks: [B(36, '✓', 'circle'), B(16, "You're all set", 'title'), B(90, '', 'qr'), B(26, 'Install on this iPhone', 'btn'), B(20, 'Show QR for another device', 'btn2'), B(22, 'SM-DP+ address · Copy'), B(22, 'Activation code · Copy'), B(14, 'Install guide ›', 'text')] },
+        { name: '08 Install guide', note: '4 steps, progress dots, Settings screenshot', blocks: [nav, B(8, '● ● ○ ○'), B(16, 'Step 2 of 4', 'title'), B(160, 'Screenshot · iOS Settings › Cellular'), B(22, 'Instruction text', 'text'), B(30, '', 'spacer'), B(26, 'Next step', 'btn'), B(18, 'Need help?', 'btn2')] }
+      ] },
+      { title: 'Manage', screens: [
+        { name: '09 My eSIMs', note: 'Active / expired sections, swipe actions', tab: true, blocks: [nav, B(16, 'My eSIMs', 'title'), B(10, 'Active', 'text'), B(30, 'eSIM row · mini ring ‹ swipe'), B(30, 'eSIM row · low', 'warn'), B(10, 'Expired', 'text'), B(30, 'eSIM row · expired'), B(30, 'eSIM row · expired')] },
+        { name: '09b Usage detail', note: 'Big ring, countdown, daily bars, actions', blocks: [nav, B(110, '3.8 GB', 'ring'), B(18, 'Countdown pill'), B(60, 'Daily usage bars'), B(44, 'Plan · network · APN rows'), B(30, '', 'spacer'), B(26, 'Top up', 'btn')] },
+        { name: '10 Top-up', note: 'Same plan cards, inline sheet', blocks: [nav, B(16, 'Top up Japan', 'title'), B(20, 'Adds to current eSIM · no reinstall', 'text'), B(48, 'Plan card'), B(48, 'Plan card · selected', 'chrome'), B(48, 'Plan card'), B(30, '', 'spacer'), B(26, 'Apple Pay', 'btn')] },
+        { name: '11 Profile & Settings', note: 'Grouped inset list', tab: true, blocks: [nav, B(36, 'Avatar · name · email'), B(56, 'Language · Currency · Appearance'), B(56, 'Notifications · Face ID'), B(56, 'Invoices · Referral'), B(40, 'Support · Help centre'), B(18, 'Sign out', 'btn2')] },
+        { name: '12 Support chat', note: 'Agent + quick replies, attach', blocks: [nav, B(28, 'Agent bubble'), B(22, 'You', 'chrome'), B(36, 'Agent bubble · steps'), B(22, 'Quick reply chips'), B(30, '', 'spacer'), B(22, 'Message field · attach · send', 'chrome')] }
+      ] },
+      { title: 'States', screens: [
+        { name: 'Loading', note: 'Skeleton shimmer', tab: true, blocks: [nav, B(16, '', 'title'), B(18, ''), B(84, 'Skeleton'), B(56, 'Skeleton'), B(22, ''), B(22, '')] },
+        { name: 'Low data', note: 'Orange ring, banner drops in', tab: true, blocks: [B(24, 'Banner · Running low · Top up', 'warn'), B(16, 'Good evening', 'title'), B(84, 'Active eSIM · orange ring', 'warn'), B(56, 'Carousel')] },
+        { name: 'Offline', note: 'Cached data, retry', tab: true, blocks: [nav, B(18, 'Offline · showing saved usage', 'chrome'), B(84, 'Active eSIM · cached'), B(56, 'Carousel · disabled'), B(18, 'Retry', 'btn2')] },
+        { name: 'Empty', note: 'No eSIMs yet', tab: true, blocks: [nav, B(40, '', 'spacer'), B(60, 'Symbol', 'circle'), B(16, 'No eSIMs yet', 'title'), B(20, 'Pick a destination', 'text'), B(26, 'Browse destinations', 'btn')] },
+        { name: 'Payment error', note: 'Inline in sheet, retry', blocks: [B(110, 'Dimmed parent', 'dim'), B(60, 'Payment didn’t go through · reason', 'bad'), B(150, 'Sheet · summary', 'sheet'), B(26, 'Try again', 'btn')] },
+        { name: 'Expired', note: 'Red ring, buy again', blocks: [nav, B(110, 'Expired', 'ring'), B(18, 'Expired 2 Nov', 'bad'), B(44, 'Plan rows'), B(30, '', 'spacer'), B(26, 'Buy again', 'btn')] }
+      ] }
+    ];
+    return { groups: groups };
+  }
+}
+</script>
+</body>
+</html>

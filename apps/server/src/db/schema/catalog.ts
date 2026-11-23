@@ -1,5 +1,5 @@
 import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
-import { activationPolicy, currency, planType, regionType } from './enums';
+import { activationPolicy, area, currency, planType, regionType } from './enums';
 
 const timestamps = {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -21,8 +21,38 @@ export const country = pgTable('country', {
   code: text().primaryKey(),
   nameEn: text().notNull(),
   nameAr: text().notNull(),
-  regionId: text().references(() => region.id),
+  area: area().notNull(),
   popular: boolean().notNull().default(false),
+  ...timestamps,
+});
+
+export const regionCountry = pgTable(
+  'region_country',
+  {
+    regionId: text()
+      .notNull()
+      .references(() => region.id, { onDelete: 'cascade' }),
+    countryCode: text()
+      .notNull()
+      .references(() => country.code, { onDelete: 'cascade' }),
+  },
+  (table) => [primaryKey({ columns: [table.regionId, table.countryCode] })],
+);
+
+export const offer = pgTable('offer', {
+  id: text().primaryKey(),
+  titleEn: text().notNull(),
+  titleAr: text().notNull(),
+  bodyEn: text().notNull(),
+  bodyAr: text().notNull(),
+  tagEn: text().notNull(),
+  tagAr: text().notNull(),
+  couponCode: text(),
+  discountPct: integer(),
+  countryCodes: text().array().notNull().default([]),
+  endsAt: timestamp({ withTimezone: true }),
+  active: boolean().notNull().default(true),
+  sortOrder: integer().notNull().default(0),
   ...timestamps,
 });
 
@@ -60,6 +90,7 @@ export const planPrice = pgTable(
       .references(() => plan.id, { onDelete: 'cascade' }),
     currency: currency().notNull(),
     amountMinor: integer().notNull(),
+    manual: boolean().notNull().default(false),
     ...timestamps,
   },
   (table) => [primaryKey({ columns: [table.planId, table.currency] })],

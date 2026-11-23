@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import { HttpError } from './lib/errors';
+import { catalogRoutes } from './routes/catalog';
 import { systemRoutes } from './routes/system';
 import { captureError } from './sentry';
 import type { AppDeps, AppEnv } from './types';
@@ -45,6 +46,7 @@ export function createApp(deps: AppDeps) {
   });
 
   app.route('/', systemRoutes);
+  app.route('/', catalogRoutes);
 
   app.doc31('/v1/openapi.json', {
     openapi: '3.1.0',

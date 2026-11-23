@@ -1,4 +1,5 @@
 CREATE TYPE "public"."activation_policy" AS ENUM('on_install', 'on_first_connection');--> statement-breakpoint
+CREATE TYPE "public"."area" AS ENUM('asia', 'europe', 'gulf', 'americas', 'africa', 'oceania');--> statement-breakpoint
 CREATE TYPE "public"."coupon_kind" AS ENUM('percent', 'amount');--> statement-breakpoint
 CREATE TYPE "public"."currency" AS ENUM('INR', 'AED', 'SAR', 'QAR', 'USD');--> statement-breakpoint
 CREATE TYPE "public"."device_platform" AS ENUM('ios', 'android', 'web');--> statement-breakpoint
@@ -41,8 +42,26 @@ CREATE TABLE "country" (
 	"code" text PRIMARY KEY NOT NULL,
 	"name_en" text NOT NULL,
 	"name_ar" text NOT NULL,
-	"region_id" text,
+	"area" "area" NOT NULL,
 	"popular" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "offer" (
+	"id" text PRIMARY KEY NOT NULL,
+	"title_en" text NOT NULL,
+	"title_ar" text NOT NULL,
+	"body_en" text NOT NULL,
+	"body_ar" text NOT NULL,
+	"tag_en" text NOT NULL,
+	"tag_ar" text NOT NULL,
+	"coupon_code" text,
+	"discount_pct" integer,
+	"country_codes" text[] DEFAULT '{}' NOT NULL,
+	"ends_at" timestamp with time zone,
+	"active" boolean DEFAULT true NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -71,6 +90,7 @@ CREATE TABLE "plan_price" (
 	"plan_id" text NOT NULL,
 	"currency" "currency" NOT NULL,
 	"amount_minor" integer NOT NULL,
+	"manual" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "plan_price_plan_id_currency_pk" PRIMARY KEY("plan_id","currency")
@@ -83,6 +103,12 @@ CREATE TABLE "region" (
 	"name_ar" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "region_country" (
+	"region_id" text NOT NULL,
+	"country_code" text NOT NULL,
+	CONSTRAINT "region_country_region_id_country_code_pk" PRIMARY KEY("region_id","country_code")
 );
 --> statement-breakpoint
 CREATE TABLE "top_up_pack" (
@@ -248,9 +274,10 @@ CREATE TABLE "webhook_event" (
 	"error" text
 );
 --> statement-breakpoint
-ALTER TABLE "country" ADD CONSTRAINT "country_region_id_region_id_fk" FOREIGN KEY ("region_id") REFERENCES "public"."region"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "plan" ADD CONSTRAINT "plan_region_id_region_id_fk" FOREIGN KEY ("region_id") REFERENCES "public"."region"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "plan_price" ADD CONSTRAINT "plan_price_plan_id_plan_id_fk" FOREIGN KEY ("plan_id") REFERENCES "public"."plan"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "region_country" ADD CONSTRAINT "region_country_region_id_region_id_fk" FOREIGN KEY ("region_id") REFERENCES "public"."region"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "region_country" ADD CONSTRAINT "region_country_country_code_country_code_fk" FOREIGN KEY ("country_code") REFERENCES "public"."country"("code") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "top_up_pack" ADD CONSTRAINT "top_up_pack_plan_id_plan_id_fk" FOREIGN KEY ("plan_id") REFERENCES "public"."plan"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "top_up_price" ADD CONSTRAINT "top_up_price_pack_id_top_up_pack_id_fk" FOREIGN KEY ("pack_id") REFERENCES "public"."top_up_pack"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "coupon_redemption" ADD CONSTRAINT "coupon_redemption_coupon_code_coupon_code_fk" FOREIGN KEY ("coupon_code") REFERENCES "public"."coupon"("code") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

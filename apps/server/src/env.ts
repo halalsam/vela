@@ -21,6 +21,8 @@ const envSchema = z.object({
     .optional()
     .transform((value) => value || undefined),
   GIT_SHA: z.string().default('dev'),
+  ESIM_PROVIDER: z.enum(['mock']).default('mock'),
+  PRICING_MARGIN_PERCENT: z.coerce.number().min(0).max(300).default(40),
 });
 
 export type Env = z.infer<typeof envSchema>;

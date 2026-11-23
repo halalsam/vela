@@ -22,3 +22,4 @@ export const esimStatus = pgEnum('esim_status', ['not_started', 'active', 'expir
 export const devicePlatform = pgEnum('device_platform', ['ios', 'android', 'web']);
 export const userRole = pgEnum('user_role', ['customer', 'support', 'admin']);
 export const webhookSource = pgEnum('webhook_source', ['razorpay', 'gulf', 'esim']);
+export const area = pgEnum('area', ['asia', 'europe', 'gulf', 'americas', 'africa', 'oceania']);

@@ -60,7 +60,7 @@ describe('system routes', () => {
 describe('schema', () => {
   it('applies the migration and stores a priced plan', async () => {
     await db.insert(region).values({ id: 'asia', type: 'regional', nameEn: 'Asia', nameAr: 'آسيا' });
-    await db.insert(country).values({ code: 'JP', nameEn: 'Japan', nameAr: 'اليابان', regionId: 'asia', popular: true });
+    await db.insert(country).values({ code: 'JP', nameEn: 'Japan', nameAr: 'اليابان', area: 'asia', popular: true });
     await db.insert(plan).values({
       id: 'jp-10gb-15d',
       providerPlanRef: 'prov-jp-10',

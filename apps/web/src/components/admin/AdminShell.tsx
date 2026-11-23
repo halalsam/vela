@@ -39,38 +39,10 @@ function AdminLoading() {
   );
 }
 
-export function AdminShell({ children }: { children: ReactNode }) {
-  const session = authClient?.useSession();
+function Frame({ role, demo = false, children }: { role: StaffRole; demo?: boolean; children: ReactNode }) {
   const pathname = usePathname();
-  const [access, setAccess] = useState<Access>({ state: 'loading' });
-  const signedIn = Boolean(session?.data);
-
-  useEffect(() => {
-    if (!signedIn) return;
-    let cancelled = false;
-    adminFetch<{ role: StaffRole }>('/v1/admin/me').then(
-      (me) => !cancelled && setAccess({ state: 'ready', role: me.role }),
-      (error: unknown) =>
-        !cancelled &&
-        setAccess({ state: 'denied', message: error instanceof AdminError && error.status === 403 ? 'This account isn’t staff.' : 'Couldn’t reach the API.' }),
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [signedIn]);
-
-  if (!adminConfigured || !authClient) {
-    return <Notice title="admin" body="Set NEXT_PUBLIC_API_URL to use the admin. It talks to the live API only." />;
-  }
-  if (!session || session.isPending) return <AdminLoading />;
-  if (!session.data) {
-    return <Notice title="staff sign-in" body="Sign in with your staff account, then come back here." action={<ButtonLink href="/en/account">Sign in</ButtonLink>} />;
-  }
-  if (access.state === 'loading') return <AdminLoading />;
-  if (access.state === 'denied') return <Notice title="no access" body={access.message} />;
-
   return (
-    <RoleContext.Provider value={access.role}>
+    <RoleContext.Provider value={role}>
       <header className="border-b border-line">
         <Container className="flex h-16 items-center gap-6">
           <span className={type.title}>vela admin</span>
@@ -89,10 +61,53 @@ export function AdminShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          <span className={cn(type.caption, 'ms-auto text-fg-tertiary')}>{access.role}</span>
+          <span className={cn(type.caption, 'ms-auto text-fg-tertiary')}>{role}</span>
         </Container>
       </header>
+      {demo ? (
+        <div className="border-b border-line bg-accent-tint">
+          <Container className={cn(type.caption, 'py-2 text-accent')}>Demo data. Nothing here is real, and changes reset when you reload.</Container>
+        </div>
+      ) : null}
       <Container className="flex flex-col gap-8 py-10">{children}</Container>
     </RoleContext.Provider>
+  );
+}
+
+export function AdminShell({ children }: { children: ReactNode }) {
+  const session = authClient?.useSession();
+  const [access, setAccess] = useState<Access>({ state: 'loading' });
+  const signedIn = Boolean(session?.data);
+
+  useEffect(() => {
+    if (!signedIn) return;
+    let cancelled = false;
+    adminFetch<{ role: StaffRole }>('/v1/admin/me').then(
+      (me) => !cancelled && setAccess({ state: 'ready', role: me.role }),
+      (error: unknown) =>
+        !cancelled &&
+        setAccess({ state: 'denied', message: error instanceof AdminError && error.status === 403 ? 'This account isn’t staff.' : 'Couldn’t reach the API.' }),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn]);
+
+  if (!adminConfigured || !authClient) {
+    return (
+      <Frame role="admin" demo>
+        {children}
+      </Frame>
+    );
+  }
+  if (!session || session.isPending) return <AdminLoading />;
+  if (!session.data) {
+    return <Notice title="staff sign-in" body="Sign in with your staff account, then come back here." action={<ButtonLink href="/en/account">Sign in</ButtonLink>} />;
+  }
+  if (access.state === 'loading') return <AdminLoading />;
+  if (access.state === 'denied') return <Notice title="no access" body={access.message} />;
+
+  return (
+    <Frame role={access.role}>{children}</Frame>
   );
 }

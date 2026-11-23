@@ -1,5 +1,7 @@
 'use client';
 
+import { demoAdmin, DemoError } from './adminMock';
+
 const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
 
 export type StaffRole = 'support' | 'admin';
@@ -69,6 +71,14 @@ export class AdminError extends Error {
 export const adminConfigured = Boolean(baseUrl);
 
 export async function adminFetch<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+  if (!baseUrl) {
+    try {
+      return (await demoAdmin(path, init)) as T;
+    } catch (error) {
+      if (error instanceof DemoError) throw new AdminError(error.status, error.message);
+      throw error;
+    }
+  }
   const response = await fetch(`${baseUrl}${path}`, {
     method: init.method ?? 'GET',
     credentials: 'include',

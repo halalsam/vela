@@ -42,6 +42,7 @@ export const order = pgTable(
     idempotencyKey: text().notNull(),
     paidAt: timestamp({ withTimezone: true }),
     fulfilledAt: timestamp({ withTimezone: true }),
+    backupAttemptedAt: timestamp({ withTimezone: true }),
     failureReason: text(),
     ...timestamps,
   },

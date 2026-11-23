@@ -2,7 +2,7 @@ import { randomInt } from 'node:crypto';
 import { priceBreakdown, taxRateFor, type Checkout, type Coupon, type Order, type OrderStatus, type PaymentResult, type TopUpPack } from '@vela/api';
 import { and, count, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { coupon, couponRedemption, creditLedger, esim, order, payment, profile, topUpPack, topUpPrice, webhookEvent } from '../../db/schema';
+import { coupon, couponRedemption, creditLedger, esim, order, payment, plan, profile, topUpPack, topUpPrice, webhookEvent } from '../../db/schema';
 import type { Env } from '../../env';
 import { JOB, type JobQueue } from '../../jobs/queue';
 import { HttpError, notFound } from '../../lib/errors';
@@ -332,6 +332,8 @@ export async function listTopUpPacks(db: Database, userId: string, iccid: string
   const [owned] = await db.select().from(esim).where(and(eq(esim.userId, userId), eq(esim.iccid, iccid)));
   if (!owned) throw notFound('eSIM');
   if (!TOP_UP_STATUSES.includes(owned.status)) return [];
+  const [supplied] = await db.select({ provider: plan.provider }).from(plan).where(eq(plan.id, owned.planId));
+  if (owned.provider && supplied?.provider && owned.provider !== supplied.provider) return [];
   const rows = await db
     .select({ pack: topUpPack, priceMinor: topUpPrice.amountMinor })
     .from(topUpPack)

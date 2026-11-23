@@ -13,6 +13,7 @@ export const esim = pgTable(
       .notNull()
       .references(() => plan.id),
     providerRef: text().notNull(),
+    provider: text().notNull().default(''),
     status: esimStatus().notNull().default('not_started'),
     label: text().notNull(),
     dataUsedMb: integer().notNull().default(0),

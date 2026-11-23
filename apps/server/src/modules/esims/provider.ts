@@ -25,6 +25,16 @@ export type ProviderTopUp = {
   suggestedRetail: { amountMinor: number; currency: CurrencyCode }[];
 };
 
+export class ProviderUnavailable extends Error {
+  constructor(
+    readonly provider: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ProviderUnavailable';
+  }
+}
+
 export type PurchasedEsim = {
   iccid: string;
   smdp: string;

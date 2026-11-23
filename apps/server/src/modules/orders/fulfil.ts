@@ -7,7 +7,8 @@ import { JOB, type JobQueue } from '../../jobs/queue';
 import { decrypt, encrypt } from '../../lib/crypto';
 import { notFound } from '../../lib/errors';
 import type { Logger } from '../../logger';
-import type { EsimProvider } from '../esims/provider';
+import { ProviderUnavailable, type EsimProvider, type PurchasedEsim } from '../esims/provider';
+import { providerFor } from '../esims/providers';
 import { issueInvoice } from '../invoices/invoice';
 import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
@@ -18,6 +19,7 @@ export type FulfilDeps = {
   env: Env;
   logger: Logger;
   provider: EsimProvider;
+  backupProvider?: EsimProvider | null;
   payments: PaymentProvider;
   queue: JobQueue;
   push: PushSender;
@@ -27,6 +29,29 @@ function labelFor(row: typeof plan.$inferSelect): string {
   const place = row.type === 'country' ? (row.countryCodes[0] ?? '') : (row.regionId ?? row.type);
   const size = row.dataMb >= 1024 ? `${Math.round(row.dataMb / 1024)} GB` : `${row.dataMb} MB`;
   return `${place.toUpperCase()} · ${size}`;
+}
+
+export class BackupStateUnknown extends Error {}
+
+async function buyWithFailover(
+  deps: FulfilDeps,
+  current: typeof order.$inferSelect,
+  planRow: typeof plan.$inferSelect,
+): Promise<{ bought: PurchasedEsim; supplier: string }> {
+  const backup = deps.backupProvider;
+  try {
+    const bought = await deps.provider.purchase({ planRef: planRow.providerPlanRef, idempotencyKey: current.id });
+    return { bought, supplier: deps.provider.name };
+  } catch (error) {
+    if (!(error instanceof ProviderUnavailable) || !backup || !planRow.backupProviderRef) throw error;
+    if (current.backupAttemptedAt) {
+      throw new BackupStateUnknown(`Backup purchase from ${backup.name} was already attempted; check the ${backup.name} portal before refunding`);
+    }
+    await deps.db.update(order).set({ backupAttemptedAt: new Date(), updatedAt: new Date() }).where(eq(order.id, current.id));
+    deps.logger.warn({ orderId: current.id, reason: error.message, backup: backup.name }, 'primary supplier refused, buying from backup');
+    const bought = await backup.purchase({ planRef: planRow.backupProviderRef, idempotencyKey: current.id });
+    return { bought, supplier: backup.name };
+  }
 }
 
 export async function provisionOrder(deps: FulfilDeps, orderId: string, options: { finalAttempt: boolean }): Promise<void> {
@@ -48,7 +73,7 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
     if (!current.planId) throw new Error('Order has no plan');
     const [planRow] = await db.select().from(plan).where(eq(plan.id, current.planId));
     if (!planRow) throw new Error(`Plan ${current.planId} is missing`);
-    const bought = await deps.provider.purchase({ planRef: planRow.providerPlanRef, idempotencyKey: current.id });
+    const { bought, supplier } = await buyWithFailover(deps, current, planRow);
     await db
       .insert(esim)
       .values({
@@ -56,6 +81,7 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
         iccid: bought.iccid,
         planId: planRow.id,
         providerRef: bought.providerRef,
+        provider: supplier,
         label: labelFor(planRow),
         dataTotalMb: planRow.dataMb,
         smdp: bought.smdp,
@@ -108,7 +134,7 @@ async function applyTopUp(deps: FulfilDeps, current: typeof order.$inferSelect):
   const [target] = await db.select().from(esim).where(eq(esim.id, current.esimId));
   const [pack] = await db.select().from(topUpPack).where(eq(topUpPack.id, current.topUpPackId));
   if (!target || !pack) throw new Error('Top-up eSIM or pack is missing');
-  await deps.provider.topUp({ iccid: target.iccid, providerRef: target.providerRef, packRef: pack.providerPackRef, idempotencyKey: current.id });
+  await providerFor(deps.provider, deps.backupProvider, target.provider).topUp({ iccid: target.iccid, providerRef: target.providerRef, packRef: pack.providerPackRef, idempotencyKey: current.id });
   const updated = await db.transaction(async (tx) => {
     const [claimed] = await tx
       .update(order)

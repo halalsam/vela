@@ -1,9 +1,10 @@
-import type { EsimProvider, EsimUsage, ProviderPlan, ProviderTopUp, PurchasedEsim } from '../provider';
+import { ProviderUnavailable, type EsimProvider, type EsimUsage, type ProviderPlan, type ProviderTopUp, type PurchasedEsim } from '../provider';
 
 const API = 'https://api.esimaccess.com/api/v1/open';
 const BYTES_PER_MB = 1024 * 1024;
 const MIN_GAP_MS = 150;
 const NOT_READY = '200010';
+const ORDER_REFUSED = new Set(['200005', '200006', '200007', '200008', '200011', '310201', '310241', '310243', '401', '403']);
 
 type Envelope<T> = { success: boolean | string; errorCode: string | null; errorMsg?: string | null; errorMessage?: string | null; obj: T | null };
 
@@ -183,6 +184,9 @@ export function createEsimAccess(options: Options): EsimProvider {
       const ordered = await call<{ orderNo: string }>('/esim/order', {
         transactionId: idempotencyKey,
         packageInfoList: [{ packageCode: planRef, count: 1 }],
+      }).catch((error: unknown) => {
+        if (error instanceof EsimAccessError && ORDER_REFUSED.has(error.code)) throw new ProviderUnavailable('esimaccess', error.message);
+        throw error;
       });
       const attempts = options.pollAttempts ?? 15;
       for (let attempt = 0; attempt < attempts; attempt += 1) {

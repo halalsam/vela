@@ -177,3 +177,13 @@ source of truth. Resolved as follows:
   INR only until the accountant confirms how exports are taxed. Razorpay takes all five. The app
   follows the Profile currency (default from the phone's region); the website prerenders rupee
   prices and lets the visitor pick their currency at checkout.
+- Backup supplier (2026-11-24): eSIM Go can be switched on as a backup (`ESIM_BACKUP_PROVIDER=esimgo`,
+  `ESIM_GO_API_KEY`). Each catalog sync matches every primary plan to the cheapest eSIM Go bundle
+  with the same days, the same nominal data (eSIM Go counts 1 GB as 1000 MB) and coverage of every
+  country, and stores it on the plan. Provisioning switches to eSIM Go only when eSIM Access
+  definitely refused the order (no balance, no stock, unknown plan, bad key); timeouts and server
+  errors retry the primary, because the order may have gone through. eSIM Go has no idempotency key,
+  so the order is stamped before the backup purchase and never bought from the backup twice; a retry
+  that finds the stamp fails for a manual check in the eSIM Go portal. Each eSIM records its
+  supplier, usage goes to that supplier, and top-ups are offered only on eSIMs from the main supplier.
+- The website admin has a demo mode with sample data when `NEXT_PUBLIC_API_URL` is not set.

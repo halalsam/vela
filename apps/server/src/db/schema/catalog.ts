@@ -61,6 +61,8 @@ export const plan = pgTable(
   {
     id: text().primaryKey(),
     providerPlanRef: text().notNull(),
+    provider: text().notNull().default(''),
+    backupProviderRef: text(),
     type: planType().notNull(),
     regionId: text().references(() => region.id),
     countryCodes: text().array().notNull(),

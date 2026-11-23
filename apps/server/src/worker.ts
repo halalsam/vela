@@ -6,7 +6,7 @@ import { loadEnv } from './env';
 import { catalogSync, jobs, registerJobs } from './jobs/registry';
 import { createLogger } from './logger';
 import { refreshRates } from './modules/catalog/fx';
-import { createEsimProvider } from './modules/esims/providers';
+import { createBackupProvider, createEsimProvider } from './modules/esims/providers';
 import { createPushSender } from './modules/notifications/push';
 import { createPaymentProvider } from './modules/payments';
 import { bossQueue } from './jobs/queue';
@@ -18,6 +18,7 @@ initSentry(env, 'worker');
 
 const { db, pool } = createDb(env.DATABASE_URL);
 const provider = createEsimProvider(env);
+const backupProvider = createBackupProvider(env);
 const boss = new PgBoss({ connectionString: env.DATABASE_URL, schema: 'pgboss' });
 boss.on('error', (error) => {
   captureError(error);
@@ -27,8 +28,8 @@ boss.on('error', (error) => {
 await boss.start();
 const push = createPushSender(env, logger);
 if (env.PUSH_ROUTE !== 'live') logger.warn('push route is console: notifications are logged, not sent');
-await registerJobs(boss, jobs, { logger, db, env, provider, payments: createPaymentProvider(env), queue: bossQueue(boss), push });
-logger.info({ jobs: jobs.map((job) => job.name), provider: provider.name }, 'worker started');
+await registerJobs(boss, jobs, { logger, db, env, provider, backupProvider, payments: createPaymentProvider(env), queue: bossQueue(boss), push });
+logger.info({ jobs: jobs.map((job) => job.name), provider: provider.name, backup: backupProvider?.name ?? null }, 'worker started');
 
 const [{ count } = { count: 0 }] = await db.select({ count: sql<number>`count(*)::int` }).from(plan);
 try {

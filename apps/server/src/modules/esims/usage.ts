@@ -10,8 +10,9 @@ import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
 import { creditReferrerForEsim } from '../rewards/credit';
 import type { EsimProvider } from './provider';
+import { providerFor } from './providers';
 
-export type UsageDeps = { db: Database; logger: Logger; provider: EsimProvider; push: PushSender; now?: () => Date };
+export type UsageDeps = { db: Database; logger: Logger; provider: EsimProvider; backupProvider?: EsimProvider | null; push: PushSender; now?: () => Date };
 
 type EsimRow = typeof esim.$inferSelect;
 
@@ -51,7 +52,7 @@ export async function syncEsimUsage(deps: UsageDeps, esimId: string): Promise<{ 
     .from(order)
     .innerJoin(topUpPack, eq(topUpPack.id, order.topUpPackId))
     .where(and(eq(order.esimId, before.id), eq(order.kind, 'top_up'), eq(order.status, 'fulfilled')));
-  const usage = await deps.provider.usage({
+  const usage = await providerFor(deps.provider, deps.backupProvider, before.provider).usage({
     iccid: before.iccid,
     providerRef: before.providerRef,
     purchasedAt: before.createdAt,

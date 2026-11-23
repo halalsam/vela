@@ -14,12 +14,46 @@ function packId(planId: string, pack: ProviderPlan['topUps'][number]): string {
   return `${planId}-topup-${size}${pack.extraDays ? `-${pack.extraDays}d` : ''}`;
 }
 
+export function nominalGb(dataMb: number): number {
+  const scale = dataMb % 1000 === 0 && dataMb % 1024 !== 0 ? 1000 : 1024;
+  return Math.round((dataMb / scale) * 10) / 10;
+}
+
+export function findBackup(item: ProviderPlan, candidates: readonly ProviderPlan[]): ProviderPlan | null {
+  const gb = nominalGb(item.dataMb);
+  const matches = candidates.filter(
+    (candidate) =>
+      candidate.validityDays === item.validityDays &&
+      nominalGb(candidate.dataMb) === gb &&
+      item.countryCodes.every((code) => candidate.countryCodes.includes(code)),
+  );
+  return matches.sort((a, b) => a.countryCodes.length - b.countryCodes.length || a.cost.amountMinor - b.cost.amountMinor)[0] ?? null;
+}
+
+async function matchBackups(remote: readonly ProviderPlan[], backup: EsimProvider | null, logger: Logger): Promise<Map<string, string> | null> {
+  const refs = new Map<string, string>();
+  if (!backup) return refs;
+  try {
+    const candidates = await backup.listPlans();
+    for (const item of remote) {
+      const match = findBackup(item, candidates);
+      if (match) refs.set(item.ref, match.ref);
+    }
+    logger.info({ backup: backup.name, matched: refs.size, of: remote.length }, 'backup plans matched');
+  } catch (error) {
+    logger.warn({ err: error, backup: backup.name }, 'backup catalogue unavailable; plans keep their previous backup');
+    return null;
+  }
+  return refs;
+}
+
 export async function syncCatalog(
   db: Database,
   provider: EsimProvider,
-  options: { marginPercent: number; logger: Logger },
+  options: { marginPercent: number; logger: Logger; backup?: EsimProvider | null },
 ): Promise<SyncSummary> {
   const remote = await provider.listPlans();
+  const backupRefs = await matchBackups(remote, options.backup ?? null, options.logger);
   const rates = await loadRates(db);
   const existing = await db.select({ id: plan.id, ref: plan.providerPlanRef }).from(plan);
   const knownCountries = new Set((await db.select({ code: country.code }).from(country)).map((row) => row.code));
@@ -68,6 +102,8 @@ export async function syncCatalog(
       }
       const values = {
         providerPlanRef: item.ref,
+        provider: provider.name,
+        ...(backupRefs ? { backupProviderRef: backupRefs.get(item.ref) ?? null } : {}),
         type: item.type,
         regionId: item.regionRef && regions.has(item.regionRef) ? item.regionRef : null,
         countryCodes: item.countryCodes,

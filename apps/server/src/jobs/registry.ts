@@ -17,6 +17,7 @@ export type JobContext = {
   db: Database;
   env: Env;
   provider: EsimProvider;
+  backupProvider: EsimProvider | null;
   payments: PaymentProvider;
   queue: JobQueue;
   push: PushSender;
@@ -42,8 +43,8 @@ export const catalogSync: JobDefinition = {
   name: 'catalog.sync',
   schedule: '0 */6 * * *',
   retryLimit: 3,
-  handle: async (_jobs, { db, env, provider, logger }) => {
-    await syncCatalog(db, provider, { marginPercent: env.PRICING_MARGIN_PERCENT, logger });
+  handle: async (_jobs, { db, env, provider, backupProvider, logger }) => {
+    await syncCatalog(db, provider, { marginPercent: env.PRICING_MARGIN_PERCENT, logger, backup: backupProvider });
   },
 };
 

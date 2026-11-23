@@ -1,7 +1,8 @@
 import type { CurrencyCode } from '../../lib/money';
 import type { ProviderPlan } from '../esims/provider';
+import { convertMinor, type Rates } from './fx';
 
-export const SELLING_CURRENCIES: readonly CurrencyCode[] = ['INR', 'AED', 'SAR'];
+export const SELLING_CURRENCIES: readonly CurrencyCode[] = ['INR', 'AED', 'SAR', 'EUR', 'USD'];
 
 export function charmPrice(minor: number, currency: CurrencyCode): number {
   if (currency === 'INR') {
@@ -14,15 +15,15 @@ export function charmPrice(minor: number, currency: CurrencyCode): number {
 export function retailPrices(
   source: Pick<ProviderPlan, 'cost' | 'suggestedRetail'>,
   marginPercent: number,
+  rates: Rates = new Map(),
   currencies: readonly CurrencyCode[] = SELLING_CURRENCIES,
 ): { currency: CurrencyCode; amountMinor: number }[] {
   return currencies.flatMap((currency) => {
     const suggested = source.suggestedRetail.find((price) => price.currency === currency);
     if (suggested) return [{ currency, amountMinor: suggested.amountMinor }];
-    if (source.cost.currency === currency) {
-      return [{ currency, amountMinor: charmPrice(source.cost.amountMinor * (1 + marginPercent / 100), currency) }];
-    }
-    return [];
+    const cost = convertMinor(source.cost.amountMinor, source.cost.currency, currency, rates);
+    if (cost === null) return [];
+    return [{ currency, amountMinor: charmPrice(cost * (1 + marginPercent / 100), currency) }];
   });
 }
 

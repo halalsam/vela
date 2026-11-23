@@ -5,6 +5,7 @@ export const JOB = {
   refund: 'esim.refund',
   expireOrders: 'orders.expire',
   usage: 'esim.usage',
+  fx: 'fx.refresh',
 } as const;
 
 export type OrderJob = { orderId: string };

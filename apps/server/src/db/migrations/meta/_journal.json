@@ -50,6 +50,13 @@
       "when": 1795418831363,
       "tag": "0006_eur",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795433647975,
+      "tag": "0007_fx_topups",
+      "breakpoints": true
     }
   ]
 }

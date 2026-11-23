@@ -1,6 +1,6 @@
 'use client';
 
-import { priceBreakdown, type Coupon, type Currency, type Order } from '@vela/api';
+import { priceBreakdown, SELLING_CURRENCIES, taxRateFor, type Coupon, type Currency, type Order, type SellingCurrency } from '@vela/api';
 import { colors } from '@vela/tokens';
 import { formatPrice } from '@vela/utils';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,7 @@ import { Button, ButtonLink, Card, Field } from '@/components/ui';
 import { authClient } from '@/lib/authClient';
 import { browserApi } from '@/lib/browserApi';
 import { format, type Dictionary } from '@/lib/i18n';
+import { readCurrency, saveCurrency } from '@/lib/currency';
 import { saveOrder } from '@/lib/orders';
 import { collectWebPayment, PaymentCancelled } from '@/lib/razorpay';
 import { cn, type } from '@/lib/type';
@@ -82,19 +83,35 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
   const [paying, setPaying] = useState(false);
   const [failed, setFailed] = useState(false);
   const [credit, setCredit] = useState(0);
+  const [currency, setCurrency] = useState<Currency>(() => (live ? readCurrency() : plan.currency));
+  const [priced, setPriced] = useState<{ price: number; currency: Currency } | null>(live ? null : { price: plan.price, currency: plan.currency });
   useEffect(() => {
     if (!live) return;
     let cancelled = false;
+    browserApi.getPlan(plan.id).then(
+      (fresh) => !cancelled && setPriced({ price: fresh.price, currency: fresh.currency }),
+      () => !cancelled && setFailed(true),
+    );
     browserApi.getRewards().then(
-      (rewards) => !cancelled && setCredit(rewards.currency === plan.currency ? rewards.balance : 0),
+      (rewards) => !cancelled && setCredit(rewards.currency === currency ? rewards.balance : 0),
       () => undefined,
     );
     return () => {
       cancelled = true;
     };
-  }, [live, plan.currency]);
-  const totals = priceBreakdown(plan.price, coupon, credit);
-  const money = (amount: number) => formatPrice(amount, plan.currency);
+  }, [live, plan.id, currency]);
+  const price = priced?.price ?? plan.price;
+  const shownCurrency = priced?.currency ?? currency;
+  const totals = priceBreakdown(price, coupon, credit, taxRateFor(shownCurrency));
+  const money = (amount: number) => formatPrice(amount, shownCurrency);
+
+  function changeCurrency(next: SellingCurrency) {
+    saveCurrency(next);
+    setPriced(null);
+    setCoupon(null);
+    attempt.current = attemptKey();
+    setCurrency(next);
+  }
 
   async function apply() {
     setApplying(true);
@@ -156,7 +173,7 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
             </p>
           </div>
           <span dir="ltr" className={type.dataSm}>
-            {money(plan.price)}
+            {money(price)}
           </span>
         </Card>
         <Field
@@ -205,10 +222,26 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
       </div>
       <Card className="flex flex-col gap-3 self-start p-section md:sticky md:top-24">
         <h2 className={cn(type.label, 'text-fg-tertiary')}>{labels.summary}</h2>
+        {live ? (
+          <label className="flex items-center justify-between gap-3">
+            <span className={cn(type.callout, 'text-fg-secondary')}>{labels.currency}</span>
+            <select
+              className={cn(type.callout, 'h-9 rounded-pill border border-line bg-surface-2 px-3 text-fg')}
+              value={currency}
+              onChange={(event) => changeCurrency(event.target.value as SellingCurrency)}
+            >
+              {SELLING_CURRENCIES.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <Row label={labels.subtotal} value={money(totals.subtotal)} />
         {totals.discount > 0 ? <Row label={labels.discount} value={`−${money(totals.discount)}`} accent /> : null}
         {totals.credit > 0 ? <Row label={labels.credit} value={`−${money(totals.credit)}`} accent /> : null}
-        <Row label={labels.gst} value={money(totals.tax)} />
+        {totals.tax > 0 ? <Row label={labels.gst} value={money(totals.tax)} /> : null}
         <div className="mt-2 flex items-center justify-between border-t border-line pt-4">
           <span className={type.title}>{labels.total}</span>
           <span dir="ltr" className={type.dataMd}>
@@ -225,7 +258,7 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
             {labels.failed}
           </p>
         ) : null}
-        <Button type="submit" fullWidth disabled={paying} aria-busy={paying} className="mt-2">
+        <Button type="submit" fullWidth disabled={paying || !priced} aria-busy={paying} className="mt-2">
           {paying ? labels.paying : format(labels.pay, { amount: money(totals.total) })}
         </Button>
       </Card>

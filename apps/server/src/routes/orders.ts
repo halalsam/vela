@@ -16,7 +16,7 @@ import {
 import { rewardsFor } from '../modules/rewards/credit';
 import type { AppEnv } from '../types';
 
-const sellingCurrency = z.enum(['INR', 'AED', 'SAR']).default('INR');
+const sellingCurrency = z.enum(['INR', 'AED', 'SAR', 'EUR', 'USD']).default('INR');
 const errorSchema = z.object({ error: z.object({ code: z.string(), message: z.string() }) });
 const json = <T extends z.ZodType>(schema: T, description: string) => ({
   description,

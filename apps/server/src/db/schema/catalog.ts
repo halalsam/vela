@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, doublePrecision, index, integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import { activationPolicy, area, currency, planType, regionType } from './enums';
 
 const timestamps = {
@@ -96,9 +96,11 @@ export const planPrice = pgTable(
   (table) => [primaryKey({ columns: [table.planId, table.currency] })],
 );
 
-export const topUpPack = pgTable('top_up_pack', {
+export const topUpPack = pgTable(
+  'top_up_pack',
+  {
   id: text().primaryKey(),
-  providerPackRef: text().notNull().unique(),
+  providerPackRef: text().notNull(),
   planId: text()
     .notNull()
     .references(() => plan.id, { onDelete: 'cascade' }),
@@ -108,6 +110,15 @@ export const topUpPack = pgTable('top_up_pack', {
   costCurrency: currency().notNull(),
   active: boolean().notNull().default(true),
   ...timestamps,
+  },
+  (table) => [uniqueIndex('top_up_pack_plan_ref_idx').on(table.planId, table.providerPackRef)],
+);
+
+export const fxRate = pgTable('fx_rate', {
+  currency: currency().primaryKey(),
+  perUsd: doublePrecision().notNull(),
+  source: text().notNull(),
+  updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 
 export const topUpPrice = pgTable(

@@ -1,10 +1,11 @@
 import { createHttpApi, createMockApi, type VelaApi } from '@vela/api';
 import { currentMockScenario, useDevStore } from '@/stores/dev';
+import { useSession } from '@/stores/session';
 import { authHeaders } from './auth';
 
 const mock = createMockApi({ scenario: currentMockScenario });
 const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-const http = baseUrl ? createHttpApi({ baseUrl, fallback: mock, currency: () => 'INR', headers: authHeaders }) : null;
+const http = baseUrl ? createHttpApi({ baseUrl, fallback: mock, currency: () => useSession.getState().currency, headers: authHeaders }) : null;
 
 function current(): VelaApi {
   if (!http) return mock;

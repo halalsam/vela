@@ -1,5 +1,5 @@
 import { randomInt } from 'node:crypto';
-import { priceBreakdown, type Checkout, type Coupon, type Order, type OrderStatus, type PaymentResult, type TopUpPack } from '@vela/api';
+import { priceBreakdown, taxRateFor, type Checkout, type Coupon, type Order, type OrderStatus, type PaymentResult, type TopUpPack } from '@vela/api';
 import { and, count, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
 import { coupon, couponRedemption, creditLedger, esim, order, payment, profile, topUpPack, topUpPrice, webhookEvent } from '../../db/schema';
@@ -136,7 +136,7 @@ export async function createOrder(
     ? await resolveDiscount(db, input.couponCode, { currency: input.currency, countryCodes: plan.country_codes, userId })
     : null;
   const balance = await creditBalance(db, userId, input.currency);
-  const totals = priceBreakdown(plan.price, applied?.view ?? null, fromMinor(balance, input.currency));
+  const totals = priceBreakdown(plan.price, applied?.view ?? null, fromMinor(balance, input.currency), taxRateFor(input.currency));
 
   const [inserted] = await db
     .insert(order)
@@ -367,7 +367,7 @@ export async function createTopUpOrder(
   const [owned] = await db.select().from(esim).where(and(eq(esim.userId, userId), eq(esim.iccid, input.iccid)));
   if (!owned) throw notFound('eSIM');
   const balance = await creditBalance(db, userId, input.currency);
-  const totals = priceBreakdown(pack.price, null, fromMinor(balance, input.currency));
+  const totals = priceBreakdown(pack.price, null, fromMinor(balance, input.currency), taxRateFor(input.currency));
   const [inserted] = await db
     .insert(order)
     .values({

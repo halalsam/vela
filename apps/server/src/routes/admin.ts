@@ -40,7 +40,7 @@ function parse<T extends z.ZodType>(schema: T, value: unknown): z.infer<T> {
   return result.data;
 }
 
-const currency = z.enum(['INR', 'AED', 'SAR']);
+const currency = z.enum(['INR', 'AED', 'SAR', 'EUR', 'USD']);
 const isoDate = z.iso.datetime({ offset: true }).nullable();
 
 const couponBody = z.object({

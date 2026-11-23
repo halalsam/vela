@@ -1,7 +1,8 @@
 import { countries, coupons, offers, regions } from '@vela/api/mocks';
 import { sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { country, coupon, offer, region, regionCountry } from '../../db/schema';
+import { country, coupon, fxRate, offer, region, regionCountry } from '../../db/schema';
+import { SAMPLE_RATES } from './fx';
 
 export async function seedReferenceData(db: Database, options: { sampleContent: boolean }) {
   await db.transaction(async (tx) => {
@@ -27,6 +28,12 @@ export async function seedReferenceData(db: Database, options: { sampleContent: 
       }
     }
     if (!options.sampleContent) return;
+    for (const [currency, perUsd] of Object.entries(SAMPLE_RATES)) {
+      await tx
+        .insert(fxRate)
+        .values({ currency: currency as keyof typeof SAMPLE_RATES, perUsd, source: 'sample', updatedAt: new Date(0) })
+        .onConflictDoNothing();
+    }
     for (const item of coupons) {
       const percent = item.discount_pct !== null;
       await tx

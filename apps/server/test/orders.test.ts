@@ -81,16 +81,18 @@ describe('checkout', () => {
     expect(again.body.order.order_id).toBe(first.body.order.order_id);
   });
 
-  it('rejects unknown plans and currencies the payment provider cannot take', async () => {
+  it('rejects unknown plans, and Razorpay takes every selling currency', async () => {
     expect((await checkout('xx-1gb-1d', 'key-missing-plan')).response.status).toBe(404);
-    const razorpayApp = createTestApp(db, { payments: createRazorpay({ keyId: 'rzp_test', keySecret: 's', webhookSecret: 'w' }) }).app;
-    const response = await post(
-      '/v1/orders',
-      { plan_id: 'jp-10gb-15d', currency: 'AED' },
-      { ...auth(), 'idempotency-key': 'key-aed-00001' },
-      razorpayApp,
-    );
-    expect(response.status).toBe(422);
+    const razorpay = createRazorpay({ keyId: 'rzp_test', keySecret: 's', webhookSecret: 'w' });
+    expect(['INR', 'AED', 'SAR', 'EUR', 'USD'].every((code) => razorpay.supports(code as 'INR'))).toBe(true);
+    expect(razorpay.supports('QAR')).toBe(false);
+  });
+
+  it('charges GST on rupee orders only', async () => {
+    const response = await post('/v1/orders', { plan_id: 'jp-3gb-7d', currency: 'EUR' }, { ...auth(), 'idempotency-key': 'key-eur-000001' });
+    const body = (await response.json()) as Checkout;
+    expect(body.order).toMatchObject({ currency: 'EUR', tax: 0, credit: 0 });
+    expect(body.order.total).toBe(body.order.subtotal);
   });
 
   it('confirms a verified payment, queues provisioning once and fulfils the eSIM', async () => {

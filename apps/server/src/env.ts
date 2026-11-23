@@ -26,7 +26,8 @@ const envSchema = z.object({
     .optional()
     .transform((value) => value || undefined),
   GIT_SHA: z.string().default('dev'),
-  ESIM_PROVIDER: z.enum(['mock']).default('mock'),
+  ESIM_PROVIDER: z.enum(['mock', 'esimaccess']).default('mock'),
+  ESIM_ACCESS_CODE: optional,
   API_PUBLIC_URL: z.url().default('http://localhost:8787'),
   BETTER_AUTH_SECRET: z.string().min(32, 'must be at least 32 characters'),
   COOKIE_DOMAIN: optional,
@@ -66,6 +67,12 @@ const envSchema = z.object({
 });
 
 const checkedEnvSchema = envSchema.superRefine((env, context) => {
+  if (env.ESIM_PROVIDER === 'esimaccess' && !env.ESIM_ACCESS_CODE) {
+    context.addIssue({ code: 'custom', path: ['ESIM_ACCESS_CODE'], message: 'eSIM Access needs its access code' });
+  }
+  if (env.APP_ENV === 'production' && env.ESIM_PROVIDER === 'mock') {
+    context.addIssue({ code: 'custom', path: ['ESIM_PROVIDER'], message: 'production must sell real eSIMs' });
+  }
   if (env.PUSH_ROUTE === 'live' && !(env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY)) {
     context.addIssue({ code: 'custom', path: ['APNS_KEY_ID'], message: 'live push needs an APNs key ID, team ID and private key' });
   }

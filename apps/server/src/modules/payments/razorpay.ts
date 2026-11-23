@@ -55,7 +55,7 @@ export function createRazorpay(config: RazorpayConfig): PaymentProvider {
   return {
     name: 'razorpay',
     publicKey: config.keyId,
-    supports: (currency: CurrencyCode) => currency === 'INR',
+    supports: (currency: CurrencyCode) => ['INR', 'AED', 'SAR', 'EUR', 'USD'].includes(currency),
     async createPayment({ receipt, amountMinor, currency, orderId }) {
       const created = await post<{ id: string }>(
         '/orders',

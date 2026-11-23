@@ -4,6 +4,7 @@ export type ProviderPlan = {
   ref: string;
   type: 'country' | 'regional' | 'global';
   regionRef: string | null;
+  regionName?: string;
   countryCodes: string[];
   dataMb: number;
   validityDays: number;

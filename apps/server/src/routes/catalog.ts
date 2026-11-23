@@ -5,7 +5,7 @@ import { notFound } from '../lib/errors';
 import { listCountries, listOffers, listRegions, planById, plansForCountry, plansForRegion } from '../modules/catalog/queries';
 import type { AppEnv } from '../types';
 
-const currencyQuery = z.object({ currency: z.enum(['INR', 'AED', 'SAR']).default('INR') });
+const currencyQuery = z.object({ currency: z.enum(['INR', 'AED', 'SAR', 'EUR', 'USD']).default('INR') });
 const errorSchema = z.object({ error: z.object({ code: z.string(), message: z.string() }) });
 
 const json = <T extends z.ZodType>(schema: T, description: string) => ({

@@ -1,4 +1,5 @@
-import type { Currency } from '@vela/api';
+import { currencyForRegion, type Currency } from '@vela/api';
+import { getLocales } from 'expo-localization';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { persistStorage } from './storage';
@@ -33,7 +34,7 @@ export const useSession = create<SessionState>()(
       signedIn: false,
       provider: null,
       language: 'system',
-      currency: 'INR',
+      currency: currencyForRegion(getLocales()[0]?.regionCode),
       notifications: false,
       faceIdForPurchases: true,
       completeOnboarding: (notifications) => set({ onboardingSeen: true, notifications }),

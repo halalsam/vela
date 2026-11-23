@@ -5,6 +5,7 @@ import { plan } from './db/schema';
 import { loadEnv } from './env';
 import { catalogSync, jobs, registerJobs } from './jobs/registry';
 import { createLogger } from './logger';
+import { refreshRates } from './modules/catalog/fx';
 import { createEsimProvider } from './modules/esims/providers';
 import { createPushSender } from './modules/notifications/push';
 import { createPaymentProvider } from './modules/payments';
@@ -30,6 +31,12 @@ await registerJobs(boss, jobs, { logger, db, env, provider, payments: createPaym
 logger.info({ jobs: jobs.map((job) => job.name), provider: provider.name }, 'worker started');
 
 const [{ count } = { count: 0 }] = await db.select({ count: sql<number>`count(*)::int` }).from(plan);
+try {
+  await refreshRates(db, logger);
+} catch (error) {
+  logger.warn({ err: error }, 'exchange rates could not be refreshed at start; using stored rates');
+}
+
 if (count === 0) {
   await boss.send(catalogSync.name, {}, { singletonKey: 'initial' });
   logger.info('catalog empty, initial sync queued');

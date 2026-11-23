@@ -2,6 +2,7 @@ import type { JobWithMetadata, PgBoss } from 'pg-boss';
 import type { Database } from '../db/client';
 import type { Env } from '../env';
 import type { Logger } from '../logger';
+import { refreshRates } from '../modules/catalog/fx';
 import { syncCatalog } from '../modules/catalog/sync';
 import type { EsimProvider } from '../modules/esims/provider';
 import { syncTrackedEsims } from '../modules/esims/usage';
@@ -86,7 +87,16 @@ export const usageJob: JobDefinition = {
   },
 };
 
-export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob] as JobDefinition[];
+export const fxJob: JobDefinition = {
+  name: JOB.fx,
+  schedule: '30 16 * * 1-5',
+  retryLimit: 3,
+  handle: async (_jobs, { db, logger }) => {
+    await refreshRates(db, logger);
+  },
+};
+
+export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob, fxJob] as JobDefinition[];
 
 export async function ensureQueue(boss: PgBoss, definition: Pick<JobDefinition, 'name' | 'retryLimit'>) {
   if (await boss.getQueue(definition.name)) return;

@@ -1,4 +1,5 @@
-import type { Currency } from '@vela/api';
+import { SELLING_CURRENCIES, type Currency } from '@vela/api';
+import { queryClient } from '@/lib/queryClient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
@@ -44,7 +45,7 @@ export function AccountCard() {
   );
 }
 
-const currencies: readonly Currency[] = ['INR', 'AED', 'SAR', 'QAR', 'USD'];
+const currencies: readonly Currency[] = SELLING_CURRENCIES;
 
 export function PreferencesGroup() {
   const { t } = useTranslation();
@@ -81,7 +82,10 @@ export function PreferencesGroup() {
           <MenuPicker<Currency>
             value={currency}
             accessibilityLabel={t('profile.currency')}
-            onChange={session.setCurrency}
+            onChange={(value) => {
+              session.setCurrency(value);
+              void queryClient.invalidateQueries();
+            }}
             options={currencies.map((code) => ({ value: code, label: code }))}
           />
         }

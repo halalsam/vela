@@ -3,6 +3,7 @@ import { countries as mockCountries, plans as mockPlans } from '@vela/api/mocks'
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { plan, planPrice } from '../src/db/schema';
+import { convertMinor, parseEcb, ratesPerUsd } from '../src/modules/catalog/fx';
 import { charmPrice, planSlug, retailPrices, uniqueId } from '../src/modules/catalog/pricing';
 import { seedReferenceData } from '../src/modules/catalog/seed';
 import { syncCatalog } from '../src/modules/catalog/sync';
@@ -112,8 +113,34 @@ describe('catalog API through the shared client', () => {
     await expect(api.getPlan('nope')).rejects.toMatchObject({ status: 404, message: 'Plan not found' });
   });
 
-  it('returns nothing for a currency without prices yet', async () => {
-    expect(await httpApi('AED').getCountries()).toEqual([]);
+  it('prices other currencies from cost, margin and the exchange rate, with charm endings', async () => {
+    const [aed] = (await httpApi('AED').getPlans('JP')).filter((item) => item.id === 'jp-10gb-15d');
+    const [jpPlan] = await db.select().from(plan).where(eq(plan.id, 'jp-10gb-15d'));
+    const expected = charmPrice((((jpPlan?.costMinor ?? 0) / 84) * 3.6725 * 140) / 100, 'AED') / 100;
+    expect(aed).toMatchObject({ currency: 'AED', price: expected });
+    expect(Math.round(expected * 100) % 100).toBe(99);
+    expect((await httpApi('AED').getCountries()).length).toBeGreaterThan(0);
+  });
+
+  it('converts and rounds money between currencies', () => {
+    const rates = new Map([
+      ['USD', 1],
+      ['INR', 84],
+      ['EUR', 0.92],
+    ] as const);
+    expect(convertMinor(8400, 'INR', 'USD', rates)).toBe(100);
+    expect(convertMinor(1000, 'USD', 'EUR', rates)).toBe(920);
+    expect(convertMinor(1000, 'USD', 'SAR', rates)).toBeNull();
+    expect(charmPrice(1820, 'EUR')).toBe(1899);
+  });
+
+  it('reads ECB daily rates and keeps Gulf currencies on their dollar peg', () => {
+    const xml = "<Cube time='2026-11-20'><Cube currency='USD' rate='1.0870'/><Cube currency='INR' rate='91.30'/><Cube currency='JPY' rate='160.1'/></Cube>";
+    const rates = ratesPerUsd(parseEcb(xml));
+    expect(rates.get('EUR')).toBeCloseTo(0.92, 3);
+    expect(rates.get('INR')).toBeCloseTo(83.99, 2);
+    expect(rates.get('AED')).toBe(3.6725);
+    expect(rates.get('SAR')).toBe(3.75);
   });
 
   it('caches catalog responses and validates input', async () => {
@@ -124,7 +151,7 @@ describe('catalog API through the shared client', () => {
     const again = await app().request('/v1/catalog/plans?country=JP', { headers: { 'if-none-match': tag ?? '' } });
     expect(again.status).toBe(304);
     expect((await app().request('/v1/catalog/plans?country=JPN')).status).toBe(400);
-    expect((await app().request('/v1/catalog/countries?currency=EUR')).status).toBe(400);
+    expect((await app().request('/v1/catalog/countries?currency=GBP')).status).toBe(400);
   });
 
   it('documents the catalog in OpenAPI', async () => {

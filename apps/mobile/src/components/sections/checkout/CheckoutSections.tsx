@@ -114,7 +114,7 @@ export function Totals({ currency, subtotal, discount, credit = 0, tax, total }:
       <Row label={t('checkout.subtotal')} value={formatPrice(subtotal, currency)} />
       {discount > 0 ? <Row label={t('checkout.discount')} value={`−${formatPrice(discount, currency)}`} tone="accent" /> : null}
       {credit > 0 ? <Row label={t('checkout.credit')} value={`−${formatPrice(credit, currency)}`} tone="accent" /> : null}
-      <Row label={t('checkout.gstIncluded')} value={formatPrice(tax, currency)} />
+      {tax > 0 ? <Row label={t('checkout.gstIncluded')} value={formatPrice(tax, currency)} /> : null}
       <View className="mt-2 flex-row items-center justify-between border-t border-line pt-3">
         <Text variant="title">{t('checkout.total')}</Text>
         <PriceOdometer amount={total} currency={currency} variant="data-md" />

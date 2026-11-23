@@ -1,4 +1,4 @@
-import { priceBreakdown, type Coupon } from '@vela/api';
+import { priceBreakdown, taxRateFor, type Coupon } from '@vela/api';
 import { formatPrice } from '@vela/utils';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -31,7 +31,7 @@ export default function CheckoutScreen() {
 
   const rewards = useRewards();
   const credit = rewards.data && plan.data && rewards.data.currency === plan.data.currency ? rewards.data.balance : 0;
-  const breakdown = plan.data ? priceBreakdown(plan.data.price, coupon, credit) : null;
+  const breakdown = plan.data ? priceBreakdown(plan.data.price, coupon, credit, taxRateFor(plan.data.currency)) : null;
 
   function pay() {
     if (!plan.data) return;

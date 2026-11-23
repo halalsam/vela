@@ -55,7 +55,14 @@ const couponBody = z.object({
   ends_at: isoDate.default(null),
 });
 
-const deps = (c: { var: AdminEnv['Variables'] }): AdminDeps => ({ db: c.var.deps.db, env: c.var.deps.env, logger: c.var.logger, payments: c.var.deps.payments });
+const deps = (c: { var: AdminEnv['Variables'] }): AdminDeps => ({
+  db: c.var.deps.db,
+  env: c.var.deps.env,
+  logger: c.var.logger,
+  payments: c.var.deps.payments,
+  provider: c.var.deps.esimProvider,
+  backupProvider: c.var.deps.backupProvider,
+});
 
 export const adminRoutes = new Hono<AdminEnv>()
   .use('/v1/admin/*', requireUser, staffOnly)

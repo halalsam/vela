@@ -15,7 +15,9 @@ function istDate(iso: string): string {
 
 export function renderInvoicePdf(data: InvoiceData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 56, info: { Title: `Tax invoice ${data.number}`, Author: data.seller.name } });
+    const credit = data.kind === 'credit_note';
+    const title = credit ? 'Credit note' : 'Tax invoice';
+    const doc = new PDFDocument({ size: 'A4', margin: 56, info: { Title: `${title} ${data.number}`, Author: data.seller.name } });
     const chunks: Buffer[] = [];
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
@@ -35,8 +37,9 @@ export function renderInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.moveDown(0.3);
     };
 
-    doc.font('Helvetica-Bold').fontSize(20).fillColor(INK).text('Tax invoice');
+    doc.font('Helvetica-Bold').fontSize(20).fillColor(INK).text(title);
     doc.font('Helvetica').fontSize(10).fillColor(MUTED).text(`${data.number}  ·  ${istDate(data.issuedAt)}  ·  Order ${data.orderNumber}`);
+    if (credit && data.againstInvoice) doc.text(`Against tax invoice ${data.againstInvoice}. The full amount below has been refunded.`);
     rule();
 
     const top = doc.y;
@@ -68,10 +71,10 @@ export function renderInvoicePdf(data: InvoiceData): Promise<Buffer> {
       pair('SGST 9%', amount(data.sgst, data.currency));
     }
     rule();
-    pair('Total paid', amount(data.total, data.currency), true);
+    pair(credit ? 'Total refunded' : 'Total paid', amount(data.total, data.currency), true);
 
     doc.moveDown(2);
-    doc.font('Helvetica').fontSize(8).fillColor(MUTED).text('This is a computer-generated invoice and needs no signature.', left, doc.y, { width });
+    doc.font('Helvetica').fontSize(8).fillColor(MUTED).text(`This is a computer-generated ${credit ? 'credit note' : 'invoice'} and needs no signature.`, left, doc.y, { width });
     doc.end();
   });
 }

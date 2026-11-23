@@ -43,6 +43,7 @@ export type AdminOrder = {
   payments: { provider: string; provider_order_id: string; provider_payment_id: string | null; status: string; amount: number }[];
   esim: { iccid: string; status: string; data_used_mb: number; data_total_mb: number; expires_at: string | null } | null;
   invoice: { number: string; url: string } | null;
+  credit_note?: { number: string; url: string } | null;
   history: { action: string; actor_id: string; data: unknown; at: string }[];
 };
 

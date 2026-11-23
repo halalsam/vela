@@ -66,5 +66,6 @@ export type EsimProvider = {
   listPlans(): Promise<ProviderPlan[]>;
   purchase(input: { planRef: string; idempotencyKey: string }): Promise<PurchasedEsim>;
   usage(query: UsageQuery): Promise<EsimUsage>;
+  cancel?(input: { iccid: string; providerRef: string }): Promise<boolean>;
   topUp(input: { iccid: string; providerRef: string; packRef: string; idempotencyKey: string }): Promise<{ providerRef: string }>;
 };

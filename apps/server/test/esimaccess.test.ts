@@ -150,6 +150,16 @@ describe('eSIM Access client', () => {
     expect(api.calls[1]?.body).toEqual({ esimTranNo: 'T9', packageCode: 'TOPUP_JC063', transactionId: 'order-9' });
   });
 
+  it('cancels an uninstalled eSIM and reports when the supplier refuses', async () => {
+    let refuse = false;
+    const api = fakeApi(() => (refuse ? fail('200002', 'This operation is not allowed due to the order status.') : ok({})));
+    const provider = createEsimAccess({ accessCode: 'c', fetch: api.request, sleep: noSleep });
+    expect(await provider.cancel?.({ iccid: '1', providerRef: 'T1' })).toBe(true);
+    expect(api.calls[0]).toMatchObject({ path: '/esim/cancel', body: { esimTranNo: 'T1' } });
+    refuse = true;
+    expect(await provider.cancel?.({ iccid: '1', providerRef: 'T1' })).toBe(false);
+  });
+
   it('needs an access code, and production needs a real provider', () => {
     const base = { DATABASE_URL: 'postgres://x', ENCRYPTION_KEY: testKey, BETTER_AUTH_SECRET: 'x'.repeat(32) };
     expect(() => loadEnv({ ...base, ESIM_PROVIDER: 'esimaccess' })).toThrow(/eSIM Access needs its access code/);

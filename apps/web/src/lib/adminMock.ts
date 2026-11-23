@@ -190,6 +190,8 @@ export async function demoAdmin(path: string, init: { method?: string; body?: un
       order.failure_reason = `Refunded by staff: ${String(body.reason ?? '')}`;
       order.payments = order.payments.map((item) => ({ ...item, status: 'refunded' }));
       order.history = [{ action: 'order.refund', actor_id: 'staff_demo', data: { reason: body.reason }, at: new Date().toISOString() }, ...order.history];
+      if (order.invoice) order.credit_note = { number: `VL/CN/2026-27/${pad(orders.indexOf(order) + 1, 6)}`, url: '#demo-credit-note' };
+      if (order.esim?.status === 'not_started') order.esim = { ...order.esim, status: 'expired' };
       return order;
     }
     if (parts[4] === 'invoice') {

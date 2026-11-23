@@ -208,6 +208,15 @@ export function createEsimAccess(options: Options): EsimProvider {
       if (!profile) throw new Error(`eSIM Access has no profile ${query.providerRef}`);
       return toUsage(profile);
     },
+    async cancel({ providerRef }) {
+      try {
+        await call('/esim/cancel', { esimTranNo: providerRef });
+        return true;
+      } catch (error) {
+        if (error instanceof EsimAccessError) return false;
+        throw error;
+      }
+    },
     async topUp({ providerRef, packRef, idempotencyKey }) {
       const result = await call<{ topUpEsimTranNo?: string; transactionId: string }>('/esim/topup', {
         esimTranNo: providerRef,

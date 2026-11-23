@@ -131,3 +131,20 @@ export const invoiceCounter = pgTable('invoice_counter', {
   financialYear: text().primaryKey(),
   last: integer().notNull(),
 });
+
+export const creditNote = pgTable(
+  'credit_note',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    orderId: uuid()
+      .notNull()
+      .references(() => order.id),
+    invoiceId: uuid()
+      .notNull()
+      .references(() => invoice.id),
+    number: text().notNull(),
+    data: jsonb().notNull(),
+    issuedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('credit_note_number_idx').on(table.number), uniqueIndex('credit_note_order_idx').on(table.orderId)],
+);

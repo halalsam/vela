@@ -9,7 +9,7 @@ import { notFound } from '../../lib/errors';
 import type { Logger } from '../../logger';
 import { ProviderUnavailable, type EsimProvider, type PurchasedEsim } from '../esims/provider';
 import { providerFor } from '../esims/providers';
-import { issueInvoice } from '../invoices/invoice';
+import { issueCreditNote, issueInvoice } from '../invoices/invoice';
 import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
 import type { PaymentProvider } from '../payments/provider';
@@ -168,11 +168,29 @@ export async function refundOrder(deps: FulfilDeps, orderId: string): Promise<vo
   await settleRefund(deps, current, null);
 }
 
-export async function settleRefund(
-  deps: Pick<FulfilDeps, 'db' | 'payments' | 'logger'>,
-  current: typeof order.$inferSelect,
-  reason: string | null,
-): Promise<void> {
+export type RefundDeps = Pick<FulfilDeps, 'db' | 'payments' | 'logger'> & Partial<Pick<FulfilDeps, 'env' | 'provider' | 'backupProvider'>>;
+export type RefundOutcome = { supplierCancelled: boolean | null; creditNote: string | null };
+
+async function cancelWithSupplier(deps: RefundDeps, current: typeof order.$inferSelect): Promise<boolean | null> {
+  if (current.kind !== 'esim' || !current.esimId || !deps.provider) return null;
+  const [issued] = await deps.db.select().from(esim).where(eq(esim.id, current.esimId));
+  if (!issued || issued.status !== 'not_started') return false;
+  const supplier = providerFor(deps.provider, deps.backupProvider, issued.provider);
+  if (!supplier.cancel) return false;
+  try {
+    const cancelled = await supplier.cancel({ iccid: issued.iccid, providerRef: issued.providerRef });
+    if (cancelled) {
+      await deps.db.update(esim).set({ status: 'expired', updatedAt: new Date() }).where(eq(esim.id, issued.id));
+      deps.logger.info({ orderId: current.id, iccid: issued.iccid, supplier: supplier.name }, 'eSIM cancelled with supplier');
+    }
+    return cancelled;
+  } catch (error) {
+    deps.logger.warn({ orderId: current.id, err: error }, 'supplier cancel failed; refund continues');
+    return false;
+  }
+}
+
+export async function settleRefund(deps: RefundDeps, current: typeof order.$inferSelect, reason: string | null): Promise<RefundOutcome> {
   const { db, logger } = deps;
   const orderId = current.id;
   const [captured] = await db
@@ -201,6 +219,16 @@ export async function settleRefund(
     .update(order)
     .set({ status: 'refunded', ...(reason ? { failureReason: reason } : {}), updatedAt: new Date() })
     .where(eq(order.id, orderId));
+  const supplierCancelled = await cancelWithSupplier(deps, current);
+  let creditNote: string | null = null;
+  if (deps.env) {
+    try {
+      creditNote = (await issueCreditNote(db, deps.env, logger, orderId))?.number ?? null;
+    } catch (error) {
+      logger.error({ orderId, err: error }, 'credit note could not be issued');
+    }
+  }
+  return { supplierCancelled, creditNote };
 }
 
 type EsimRow = typeof esim.$inferSelect;

@@ -1,16 +1,17 @@
 import { and, count, desc, eq, ilike, lt, or, type SQL } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { auditLog, coupon, couponRedemption, creditLedger, esim, invoice, order, payment, profile } from '../../db/schema';
+import { auditLog, coupon, couponRedemption, creditLedger, creditNote, esim, invoice, order, payment, profile } from '../../db/schema';
 import type { Env } from '../../env';
 import { HttpError, notFound } from '../../lib/errors';
 import { fromMinor, toMinor, type CurrencyCode } from '../../lib/money';
 import type { Logger } from '../../logger';
 import { invoiceLink, issueInvoice } from '../invoices/invoice';
 import { settleRefund } from '../orders/fulfil';
+import type { EsimProvider } from '../esims/provider';
 import type { PaymentProvider } from '../payments/provider';
 
 export type StaffRole = 'support' | 'admin';
-export type AdminDeps = { db: Database; env: Env; logger: Logger; payments: PaymentProvider };
+export type AdminDeps = { db: Database; env: Env; logger: Logger; payments: PaymentProvider; provider?: EsimProvider; backupProvider?: EsimProvider | null };
 type OrderStatus = (typeof order.$inferSelect)['status'];
 
 export async function audit(db: Database, actorId: string, action: string, target: string, data: Record<string, unknown> = {}) {
@@ -62,6 +63,7 @@ export async function orderDetail(db: Database, env: Env, orderId: string) {
   const payments = await db.select().from(payment).where(eq(payment.orderId, orderId)).orderBy(desc(payment.createdAt));
   const [linked] = current.esimId ? await db.select().from(esim).where(eq(esim.id, current.esimId)) : [];
   const [issued] = await db.select().from(invoice).where(eq(invoice.orderId, orderId));
+  const [credited] = await db.select().from(creditNote).where(eq(creditNote.orderId, orderId));
   const history = await db.select().from(auditLog).where(eq(auditLog.target, `order:${orderId}`)).orderBy(desc(auditLog.createdAt));
   const money = (minor: number) => fromMinor(minor, current.currency);
   return {
@@ -106,6 +108,7 @@ export async function orderDetail(db: Database, env: Env, orderId: string) {
         }
       : null,
     invoice: issued ? { number: issued.number, url: invoiceLink(env, issued.id).url } : null,
+    credit_note: credited ? { number: credited.number, url: invoiceLink(env, credited.id, Date.now(), { kind: 'credit-notes' }).url } : null,
     history: history.map((item) => ({ action: item.action, actor_id: item.actorId, data: item.data, at: item.createdAt.toISOString() })),
   };
 }
@@ -116,8 +119,13 @@ export async function staffRefund(deps: AdminDeps, actorId: string, orderId: str
   const [current] = await deps.db.select().from(order).where(eq(order.id, orderId));
   if (!current) throw notFound('Order');
   if (!REFUNDABLE.includes(current.status)) throw new HttpError(409, 'not_refundable', `A ${current.status} order can’t be refunded`);
-  await settleRefund(deps, current, `Refunded by staff: ${reason}`);
-  await audit(deps.db, actorId, 'order.refund', `order:${orderId}`, { reason, previous: current.status });
+  const outcome = await settleRefund(deps, current, `Refunded by staff: ${reason}`);
+  await audit(deps.db, actorId, 'order.refund', `order:${orderId}`, {
+    reason,
+    previous: current.status,
+    supplierCancelled: outcome.supplierCancelled,
+    creditNote: outcome.creditNote,
+  });
   deps.logger.info({ orderId, actorId }, 'order refunded by staff');
   return orderDetail(deps.db, deps.env, orderId);
 }

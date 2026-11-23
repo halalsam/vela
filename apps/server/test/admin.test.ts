@@ -133,6 +133,15 @@ describe('admin', () => {
     expect(paid?.status).toBe('refunded');
     const [entry] = await db.select().from(auditLog).where(eq(auditLog.target, `order:${id}`));
     expect(entry).toMatchObject({ actorId: adminId, action: 'order.refund' });
+    const after = (await (await call('GET', `/v1/admin/orders/${id}`, staff)).json()) as { credit_note: { number: string; url: string }; esim: { status: string } };
+    expect(after.credit_note.number).toMatch(/^VL\/CN\/\d{4}-\d{2}\/000001$/);
+    expect(after.esim.status).toBe('expired');
+    expect(entry?.data).toMatchObject({ supplierCancelled: true, creditNote: after.credit_note.number });
+    const note = await harness.app.request(new URL(after.credit_note.url).pathname + new URL(after.credit_note.url).search);
+    expect(note.headers.get('content-type')).toBe('application/pdf');
+    expect(Buffer.from(await note.arrayBuffer()).subarray(0, 5).toString()).toBe('%PDF-');
+    const tampered = new URL(after.credit_note.url).pathname.replace('/credit-notes/', '/invoices/') + new URL(after.credit_note.url).search;
+    expect((await harness.app.request(tampered)).status).toBe(403);
     expect((await call('POST', `/v1/admin/orders/${id}/refund`, staff, { reason: 'again' })).status).toBe(409);
     expect((await call('POST', `/v1/admin/orders/${id}/refund`, staff, { reason: '' })).status).toBe(400);
   });

@@ -12,6 +12,7 @@ import { memoryQueue } from '../src/jobs/queue';
 import { createMockPayments } from '../src/modules/payments/mock';
 import type { PaymentProvider } from '../src/modules/payments/provider';
 import { createSupportDesk, type SupportDesk } from '../src/modules/support/support';
+import { createMockProvider } from '../src/modules/esims/providers/mock';
 
 export const testKey = 'a'.repeat(64);
 
@@ -40,7 +41,7 @@ export function createTestApp(db: Database, overrides: { payments?: PaymentProvi
   const payments = overrides.payments ?? createMockPayments();
   const auth = createAuth({ db, env: testEnv, logger: silentLogger, sms });
   const support = overrides.support ?? createSupportDesk(testEnv, db, silentLogger);
-  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth, payments, queue, support });
+  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth, payments, queue, support, esimProvider: createMockProvider() });
   return { app, auth, sms, queue, payments };
 }
 

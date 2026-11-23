@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { invoice, invoiceCounter, order, plan, profile, topUpPack } from '../../db/schema';
+import { creditNote, invoice, invoiceCounter, order, plan, profile, topUpPack } from '../../db/schema';
 import type { Env } from '../../env';
 import { fromMinor, type CurrencyCode } from '../../lib/money';
 import type { Logger } from '../../logger';
@@ -12,6 +12,8 @@ const LINK_TTL_SECONDS = 15 * 60;
 
 export type InvoiceData = {
   number: string;
+  kind?: 'invoice' | 'credit_note';
+  againstInvoice?: string;
   issuedAt: string;
   orderNumber: string;
   seller: { name: string; gstin: string | null; address: string; state: string };
@@ -101,18 +103,43 @@ export async function issueInvoice(db: Database, env: Env, logger: Logger, order
   });
 }
 
-function linkSignature(secret: string, id: string, expires: number): string {
-  return createHmac('sha256', secret).update(`invoice:${id}:${expires}`).digest('base64url');
+export type DocumentKind = 'invoices' | 'credit-notes';
+
+function linkSignature(secret: string, kind: DocumentKind, id: string, expires: number): string {
+  const scope = kind === 'invoices' ? 'invoice' : 'credit-note';
+  return createHmac('sha256', secret).update(`${scope}:${id}:${expires}`).digest('base64url');
 }
 
-export function invoiceLink(env: Env, id: string, now = Date.now()): { url: string; expiresAt: Date } {
-  const expires = Math.floor(now / 1000) + LINK_TTL_SECONDS;
-  const query = new URLSearchParams({ expires: String(expires), signature: linkSignature(env.BETTER_AUTH_SECRET, id, expires) });
-  return { url: `${env.API_PUBLIC_URL.replace(/\/$/, '')}/v1/invoices/${id}.pdf?${query}`, expiresAt: new Date(expires * 1000) };
+export function invoiceLink(env: Env, id: string, now = Date.now(), options: { kind?: DocumentKind; ttlSeconds?: number } = {}): { url: string; expiresAt: Date } {
+  const kind = options.kind ?? 'invoices';
+  const expires = Math.floor(now / 1000) + (options.ttlSeconds ?? LINK_TTL_SECONDS);
+  const query = new URLSearchParams({ expires: String(expires), signature: linkSignature(env.BETTER_AUTH_SECRET, kind, id, expires) });
+  return { url: `${env.API_PUBLIC_URL.replace(/\/$/, '')}/v1/${kind}/${id}.pdf?${query}`, expiresAt: new Date(expires * 1000) };
 }
 
-export function verifyInvoiceLink(env: Env, id: string, expires: string, signature: string, now = Date.now()): boolean {
+export function verifyInvoiceLink(env: Env, id: string, expires: string, signature: string, now = Date.now(), kind: DocumentKind = 'invoices'): boolean {
   const at = Number(expires);
   if (!Number.isFinite(at) || at * 1000 < now) return false;
-  return safeEqual(linkSignature(env.BETTER_AUTH_SECRET, id, at), signature);
+  return safeEqual(linkSignature(env.BETTER_AUTH_SECRET, kind, id, at), signature);
+}
+
+export async function issueCreditNote(db: Database, env: Env, logger: Logger, orderId: string): Promise<typeof creditNote.$inferSelect | null> {
+  const [existing] = await db.select().from(creditNote).where(eq(creditNote.orderId, orderId));
+  if (existing) return existing;
+  const [original] = await db.select().from(invoice).where(eq(invoice.orderId, orderId));
+  if (!original) return null;
+  const issuedAt = new Date();
+  const year = financialYear(issuedAt);
+  return db.transaction(async (tx) => {
+    const [counter] = await tx
+      .insert(invoiceCounter)
+      .values({ financialYear: `CN-${year}`, last: 1 })
+      .onConflictDoUpdate({ target: invoiceCounter.financialYear, set: { last: sql`${invoiceCounter.last} + 1` } })
+      .returning();
+    const number = `${env.INVOICE_PREFIX}/CN/${year}/${String(counter?.last ?? 1).padStart(6, '0')}`;
+    const data: InvoiceData = { ...(original.data as InvoiceData), number, kind: 'credit_note', againstInvoice: original.number, issuedAt: issuedAt.toISOString() };
+    const [stored] = await tx.insert(creditNote).values({ orderId, invoiceId: original.id, number, data, issuedAt }).returning();
+    logger.info({ orderId, number, againstInvoice: original.number }, 'credit note issued');
+    return stored ?? null;
+  });
 }

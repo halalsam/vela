@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
 import { invoiceLinkSchema, supportMessageSchema } from '@vela/api';
 import { and, eq } from 'drizzle-orm';
 import { requireUser } from '../auth/middleware';
-import { invoice, order } from '../db/schema';
+import { creditNote, invoice, order } from '../db/schema';
 import { HttpError, notFound } from '../lib/errors';
 import { invoiceLink, issueInvoice, verifyInvoiceLink, type InvoiceData } from '../modules/invoices/invoice';
 import { renderInvoicePdf } from '../modules/invoices/pdf';
@@ -63,14 +63,18 @@ export const supportRoutes = new OpenAPIHono<AppEnv>()
     const link = invoiceLink(env, issued.id);
     return c.json({ number: issued.number, url: link.url, expires_at: link.expiresAt.toISOString() }, 200);
   })
-  .get('/v1/invoices/:file', async (c) => {
+  .get('/v1/:kind{invoices|credit-notes}/:file', async (c) => {
+    const kind = c.req.param('kind') as 'invoices' | 'credit-notes';
     const id = c.req.param('file').replace(/\.pdf$/, '');
     const expires = c.req.query('expires') ?? '';
     const signature = c.req.query('signature') ?? '';
-    if (!/^[0-9a-f-]{36}$/i.test(id) || !verifyInvoiceLink(c.var.deps.env, id, expires, signature)) {
+    if (!/^[0-9a-f-]{36}$/i.test(id) || !verifyInvoiceLink(c.var.deps.env, id, expires, signature, Date.now(), kind)) {
       throw new HttpError(403, 'link_expired', 'This invoice link has expired. Open it again from the app.');
     }
-    const [row] = await c.var.deps.db.select().from(invoice).where(eq(invoice.id, id));
+    const [row] =
+      kind === 'invoices'
+        ? await c.var.deps.db.select().from(invoice).where(eq(invoice.id, id))
+        : await c.var.deps.db.select().from(creditNote).where(eq(creditNote.id, id));
     if (!row) throw notFound('Invoice');
     const pdf = await renderInvoicePdf(row.data as InvoiceData);
     return c.body(new Uint8Array(pdf), 200, {

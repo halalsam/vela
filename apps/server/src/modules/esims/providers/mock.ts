@@ -74,6 +74,9 @@ export function createMockProvider(options: { usageSpeed?: number; now?: () => n
     async usage(query) {
       return mockUsage(query, now(), speed);
     },
+    async cancel() {
+      return true;
+    },
     async topUp({ iccid, packRef, idempotencyKey }) {
       return { providerRef: `mock-topup-${iccid}-${packRef}-${idempotencyKey}` };
     },

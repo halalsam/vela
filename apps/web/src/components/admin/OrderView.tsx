@@ -154,9 +154,16 @@ export function OrderView({ id }: { id: string }) {
         </Section>
         <Section title="Invoice">
           {order.invoice ? (
-            <a href={order.invoice.url} target="_blank" rel="noreferrer" className={cn(type.calloutStrong, 'text-accent hover:underline')}>
-              {order.invoice.number}
-            </a>
+            <div className="flex flex-col gap-2">
+              <a href={order.invoice.url} target="_blank" rel="noreferrer" className={cn(type.calloutStrong, 'text-accent hover:underline')}>
+                {order.invoice.number}
+              </a>
+              {order.credit_note ? (
+                <a href={order.credit_note.url} target="_blank" rel="noreferrer" className={cn(type.callout, 'text-fg-secondary hover:underline')}>
+                  Credit note {order.credit_note.number}
+                </a>
+              ) : null}
+            </div>
           ) : (
             <div className="flex items-center justify-between gap-3">
               <p className={cn(type.callout, 'text-fg-secondary')}>Not issued.</p>

@@ -8,6 +8,7 @@ import { loadEnv } from './env';
 import { bossQueue } from './jobs/queue';
 import { ensureQueue, provisionJob } from './jobs/registry';
 import { createLogger } from './logger';
+import { createBackupProvider, createEsimProvider } from './modules/esims/providers';
 import { createPaymentProvider } from './modules/payments';
 import { createSupportDesk } from './modules/support/support';
 import { captureError, flushSentry, initSentry } from './sentry';
@@ -27,7 +28,18 @@ await boss.start();
 await ensureQueue(boss, provisionJob);
 const payments = createPaymentProvider(env);
 const support = createSupportDesk(env, db, logger);
-const app = createApp({ db, env, logger, version, auth, payments, queue: bossQueue(boss), support });
+const app = createApp({
+  db,
+  env,
+  logger,
+  version,
+  auth,
+  payments,
+  queue: bossQueue(boss),
+  support,
+  esimProvider: createEsimProvider(env),
+  backupProvider: createBackupProvider(env),
+});
 
 const server = serve({ fetch: app.fetch, port: env.PORT, hostname: '0.0.0.0' }, (info) => {
   logger.info({ port: info.port, env: env.APP_ENV, sha: env.GIT_SHA, payments: payments.name }, 'api listening');

@@ -6,6 +6,8 @@ import { loadEnv } from './env';
 import { catalogSync, jobs, registerJobs } from './jobs/registry';
 import { createLogger } from './logger';
 import { createEsimProvider } from './modules/esims/providers';
+import { createPaymentProvider } from './modules/payments';
+import { bossQueue } from './jobs/queue';
 import { captureError, flushSentry, initSentry } from './sentry';
 
 const env = loadEnv();
@@ -21,7 +23,7 @@ boss.on('error', (error) => {
 });
 
 await boss.start();
-await registerJobs(boss, jobs, { logger, db, env, provider });
+await registerJobs(boss, jobs, { logger, db, env, provider, payments: createPaymentProvider(env), queue: bossQueue(boss) });
 logger.info({ jobs: jobs.map((job) => job.name), provider: provider.name }, 'worker started');
 
 const [{ count } = { count: 0 }] = await db.select({ count: sql<number>`count(*)::int` }).from(plan);

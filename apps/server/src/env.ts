@@ -42,10 +42,20 @@ const envSchema = z.object({
   TWILIO_ACCOUNT_SID: optional,
   TWILIO_AUTH_TOKEN: optional,
   TWILIO_FROM: optional,
+  PAYMENT_PROVIDER: z.enum(['mock', 'razorpay']).default('mock'),
+  RAZORPAY_KEY_ID: optional,
+  RAZORPAY_KEY_SECRET: optional,
+  RAZORPAY_WEBHOOK_SECRET: optional,
   PRICING_MARGIN_PERCENT: z.coerce.number().min(0).max(300).default(40),
 });
 
 const checkedEnvSchema = envSchema.superRefine((env, context) => {
+  if (env.APP_ENV === 'production' && env.PAYMENT_PROVIDER === 'mock') {
+    context.addIssue({ code: 'custom', path: ['PAYMENT_PROVIDER'], message: 'production must take real payments' });
+  }
+  if (env.PAYMENT_PROVIDER === 'razorpay' && !(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET)) {
+    context.addIssue({ code: 'custom', path: ['RAZORPAY_KEY_ID'], message: 'Razorpay needs a key ID, key secret and webhook secret' });
+  }
   if (env.APP_ENV === 'production' && env.SMS_ROUTE !== 'live') {
     context.addIssue({ code: 'custom', path: ['SMS_ROUTE'], message: 'production must send real SMS' });
   }

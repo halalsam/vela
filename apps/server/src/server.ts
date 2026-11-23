@@ -1,11 +1,15 @@
 import { serve } from '@hono/node-server';
+import { PgBoss } from 'pg-boss';
 import { createApp } from './app';
 import { createAuth } from './auth/auth';
 import { createSmsSender } from './auth/sms';
 import { createDb } from './db/client';
 import { loadEnv } from './env';
+import { bossQueue } from './jobs/queue';
+import { ensureQueue, provisionJob } from './jobs/registry';
 import { createLogger } from './logger';
-import { flushSentry, initSentry } from './sentry';
+import { createPaymentProvider } from './modules/payments';
+import { captureError, flushSentry, initSentry } from './sentry';
 import { version } from './version';
 
 const env = loadEnv();
@@ -13,15 +17,24 @@ const logger = createLogger(env);
 initSentry(env, 'api');
 const { db, pool } = createDb(env.DATABASE_URL);
 const auth = createAuth({ db, env, logger, sms: createSmsSender(env, logger) });
-const app = createApp({ db, env, logger, version, auth });
+const boss = new PgBoss({ connectionString: env.DATABASE_URL, schema: 'pgboss', supervise: false, schedule: false });
+boss.on('error', (error) => {
+  captureError(error);
+  logger.error({ err: error }, 'pg-boss error');
+});
+await boss.start();
+await ensureQueue(boss, provisionJob);
+const payments = createPaymentProvider(env);
+const app = createApp({ db, env, logger, version, auth, payments, queue: bossQueue(boss) });
 
 const server = serve({ fetch: app.fetch, port: env.PORT, hostname: '0.0.0.0' }, (info) => {
-  logger.info({ port: info.port, env: env.APP_ENV, sha: env.GIT_SHA }, 'api listening');
+  logger.info({ port: info.port, env: env.APP_ENV, sha: env.GIT_SHA, payments: payments.name }, 'api listening');
 });
 
 async function shutdown(signal: string) {
   logger.info({ signal }, 'shutting down');
   server.close();
+  await boss.stop({ graceful: true, timeout: 10_000 });
   await pool.end();
   await flushSentry();
   process.exit(0);

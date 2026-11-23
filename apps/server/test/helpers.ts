@@ -8,6 +8,9 @@ import { createAuth } from '../src/auth/auth';
 import { createMemorySms } from '../src/auth/sms';
 import { schema, type Database } from '../src/db/client';
 import { loadEnv } from '../src/env';
+import { memoryQueue } from '../src/jobs/queue';
+import { createMockPayments } from '../src/modules/payments/mock';
+import type { PaymentProvider } from '../src/modules/payments/provider';
 
 export const testKey = 'a'.repeat(64);
 
@@ -30,9 +33,26 @@ export async function createTestDb() {
   return { db, client };
 }
 
-export function createTestApp(db: Database) {
+export function createTestApp(db: Database, overrides: { payments?: PaymentProvider } = {}) {
   const sms = createMemorySms();
+  const queue = memoryQueue();
+  const payments = overrides.payments ?? createMockPayments();
   const auth = createAuth({ db, env: testEnv, logger: silentLogger, sms });
-  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth });
-  return { app, auth, sms };
+  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth, payments, queue });
+  return { app, auth, sms, queue, payments };
+}
+
+export async function signInWithPhone(harness: ReturnType<typeof createTestApp>, phoneNumber: string): Promise<string> {
+  const post = (path: string, body: unknown) =>
+    harness.app.request(path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'http://localhost:3000' },
+      body: JSON.stringify(body),
+    });
+  await post('/v1/auth/phone-number/send-otp', { phoneNumber });
+  const code = harness.sms.sent.findLast((item) => item.phoneNumber === phoneNumber)?.code;
+  const verified = await post('/v1/auth/phone-number/verify', { phoneNumber, code });
+  const token = verified.headers.get('set-auth-token');
+  if (!token) throw new Error(`Sign-in failed with ${verified.status}`);
+  return token;
 }

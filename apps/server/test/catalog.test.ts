@@ -76,7 +76,7 @@ describe('catalog sync', () => {
 
   it('deactivates plans the provider stops selling, and revives them', async () => {
     const all = await provider.listPlans();
-    const shrunk: EsimProvider = { name: 'shrunk', listPlans: async () => all.filter((item: ProviderPlan) => item.ref !== 'th-3gb-7d') };
+    const shrunk: EsimProvider = { ...provider, name: 'shrunk', listPlans: async () => all.filter((item: ProviderPlan) => item.ref !== 'th-3gb-7d') };
     expect((await sync(shrunk)).deactivated).toBe(1);
     const [row] = await db.select().from(plan).where(eq(plan.id, 'th-3gb-7d'));
     expect(row?.active).toBe(false);

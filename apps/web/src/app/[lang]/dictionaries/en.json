@@ -106,7 +106,15 @@
     "paying": "Paying…",
     "failed": "Payment didn't go through. You haven't been charged.",
     "demo": "Demo checkout. No card is charged. Try GULF20 or FIRSTSAIL.",
-    "notFound": "This plan isn't available any more."
+    "notFound": "This plan isn't available any more.",
+    "signInTitle": "Sign in to buy",
+    "signInBody": "Your eSIMs are kept in your vela account, so you can install them on any device.",
+    "signIn": "Sign in",
+    "live": "Pay securely with UPI, cards or netbanking through Razorpay.",
+    "waiting": "Setting up your eSIM…",
+    "refunded": "We couldn't set up this eSIM, so we're refunding you in full. It can take 5–7 working days.",
+    "slow": "This is taking longer than usual. Your eSIM will appear in your account when it's ready.",
+    "description": "{{plan}} eSIM"
   },
   "success": {
     "title": "you're connected.",

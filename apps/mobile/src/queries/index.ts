@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CreateOrderInput, Order, OrderStatus } from '@vela/api';
 import { api } from '@/lib/api';
+import { collectPayment } from '@/lib/payments';
 
 export const queryKeys = {
   countries: ['countries'] as const,
@@ -9,6 +11,7 @@ export const queryKeys = {
   regionPlans: (regionId: string) => ['regionPlans', regionId] as const,
   esims: ['esims'] as const,
   esim: (iccid: string) => ['esim', iccid] as const,
+  order: (id: string) => ['order', id] as const,
   offers: ['offers'] as const,
   topUpPacks: (iccid: string) => ['topUpPacks', iccid] as const,
   dailyUsage: (iccid: string) => ['dailyUsage', iccid] as const,
@@ -41,11 +44,28 @@ export function useRedeemCoupon() {
   return useMutation({ mutationFn: api.redeemCoupon });
 }
 
-export function useCreateOrder() {
+const SETTLED: OrderStatus[] = ['fulfilled', 'provisioning_failed', 'refunded', 'expired'];
+
+export const useOrder = (orderId: string | undefined, poll: boolean) =>
+  useQuery({
+    queryKey: queryKeys.order(orderId ?? ''),
+    queryFn: () => api.getOrder(orderId ?? ''),
+    enabled: Boolean(orderId) && poll,
+    refetchInterval: (query) => (query.state.data && SETTLED.includes(query.state.data.status) ? false : 2000),
+  });
+
+export function usePurchase() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: api.createOrder,
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.esims }),
+    mutationFn: async (input: CreateOrderInput & { description: string }): Promise<Order> => {
+      const checkout = await api.createOrder(input);
+      const result = await collectPayment(checkout, input.description);
+      return result ? api.confirmPayment(checkout.order.order_id, result) : checkout.order;
+    },
+    onSuccess: (order) => {
+      client.setQueryData(queryKeys.order(order.order_id), order);
+      void client.invalidateQueries({ queryKey: queryKeys.esims });
+    },
   });
 }
 

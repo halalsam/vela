@@ -49,7 +49,7 @@ export const esimSchema = z.object({
   activated_at: z.iso.datetime().nullable(),
   expires_at: z.iso.datetime().nullable(),
   lpa_string: z.string().startsWith('LPA:1$'),
-  qr_url: z.url(),
+  qr_url: z.url().nullable(),
 });
 
 export const offerSchema = z.object({
@@ -95,15 +95,45 @@ export const couponSchema = z.object({
   currency: currencySchema,
 });
 
+export const orderStatusSchema = z.enum([
+  'awaiting_payment',
+  'expired',
+  'paid',
+  'provisioning',
+  'fulfilled',
+  'provisioning_failed',
+  'refunded',
+]);
+
 export const orderSchema = z.object({
   order_id: z.string(),
+  number: z.string(),
+  status: orderStatusSchema,
   plan_id: z.string(),
-  iccid: z.string(),
+  iccid: z.string().nullable(),
   subtotal: z.number().nonnegative(),
   discount: z.number().nonnegative(),
   tax: z.number().nonnegative(),
   total: z.number().nonnegative(),
   currency: currencySchema,
+});
+
+export const paymentIntentSchema = z.object({
+  provider: z.enum(['razorpay', 'mock']),
+  key: z.string().nullable(),
+  provider_order_id: z.string(),
+  amount_minor: z.number().int().nonnegative(),
+  currency: currencySchema,
+});
+
+export const checkoutSchema = z.object({
+  order: orderSchema,
+  payment: paymentIntentSchema.nullable(),
+});
+
+export const paymentResultSchema = z.object({
+  payment_id: z.string().min(1),
+  signature: z.string().min(1),
 });
 
 export const referralSchema = z.object({
@@ -138,6 +168,10 @@ export const profileSchema = z.object({
 
 export type Coupon = z.infer<typeof couponSchema>;
 export type Order = z.infer<typeof orderSchema>;
+export type OrderStatus = z.infer<typeof orderStatusSchema>;
+export type PaymentIntent = z.infer<typeof paymentIntentSchema>;
+export type Checkout = z.infer<typeof checkoutSchema>;
+export type PaymentResult = z.infer<typeof paymentResultSchema>;
 export type Referral = z.infer<typeof referralSchema>;
 export type Rewards = z.infer<typeof rewardsSchema>;
 export type SupportMessage = z.infer<typeof supportMessageSchema>;

@@ -1,15 +1,20 @@
 import { priceBreakdown, type Coupon } from '@vela/api';
 import { formatPrice } from '@vela/utils';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { CouponField, OrderSummary, Totals } from '@/components/sections/checkout/CheckoutSections';
 import { ErrorState, OfflineBanner } from '@/components/sections/states/StateViews';
 import { Banner, Button, Sheet, Skeleton, SwipeToPay, toast, type SwipeToPayStatus } from '@/components/ui';
 import { haptics } from '@/lib/haptics';
+import { PaymentCancelled } from '@/lib/payments';
 import { useOnline } from '@/lib/useOnline';
-import { useCreateOrder, usePlan, useRedeemCoupon } from '@/queries';
+import { usePlan, usePurchase, useRedeemCoupon } from '@/queries';
+
+function newAttemptKey(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
 
 export default function CheckoutScreen() {
   const { t } = useTranslation();
@@ -17,7 +22,8 @@ export default function CheckoutScreen() {
   const plan = usePlan(planId);
   const online = useOnline();
   const redeem = useRedeemCoupon();
-  const createOrder = useCreateOrder();
+  const purchase = usePurchase();
+  const attempt = useRef(newAttemptKey());
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [status, setStatus] = useState<SwipeToPayStatus>('idle');
@@ -29,19 +35,25 @@ export default function CheckoutScreen() {
     if (!plan.data) return;
     setFailed(false);
     setStatus('loading');
-    createOrder.mutate(
-      { planId: plan.data.id, couponCode: coupon?.code ?? null },
+    purchase.mutate(
+      {
+        planId: plan.data.id,
+        couponCode: coupon?.code ?? null,
+        idempotencyKey: attempt.current,
+        description: t('checkout.paymentDescription', { days: plan.data.validity_days }),
+      },
       {
         onSuccess: (order) => {
           setStatus('success');
           haptics.success();
           setTimeout(() => {
             router.dismiss();
-            router.push({ pathname: '/processing', params: { iccid: order.iccid, orderId: order.order_id } });
+            router.push({ pathname: '/processing', params: { orderId: order.order_id, iccid: order.iccid ?? '' } });
           }, 450);
         },
-        onError: () => {
+        onError: (error) => {
           setStatus('idle');
+          if (error instanceof PaymentCancelled) return;
           setFailed(true);
           haptics.error();
         },
@@ -91,13 +103,17 @@ export default function CheckoutScreen() {
             applied={coupon}
             busy={redeem.isPending}
             error={couponError}
-            onRemove={() => setCoupon(null)}
+            onRemove={() => {
+              setCoupon(null);
+              attempt.current = newAttemptKey();
+            }}
             onApply={(code) => {
               setCouponError(null);
               redeem.mutate(code, {
                 onSuccess: (result) => {
                   haptics.success();
                   setCoupon(result);
+                  attempt.current = newAttemptKey();
                 },
                 onError: () => {
                   haptics.error();

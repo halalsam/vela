@@ -1,14 +1,17 @@
 'use client';
 
-import { priceBreakdown, type Coupon, type Currency } from '@vela/api';
+import { priceBreakdown, type Coupon, type Currency, type Order } from '@vela/api';
+import { colors } from '@vela/tokens';
 import { formatPrice } from '@vela/utils';
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Flag, FlagStack } from '@/components/esim';
-import { Button, Card, Field } from '@/components/ui';
+import { Button, ButtonLink, Card, Field } from '@/components/ui';
+import { authClient } from '@/lib/authClient';
 import { browserApi } from '@/lib/browserApi';
 import { format, type Dictionary } from '@/lib/i18n';
 import { saveOrder } from '@/lib/orders';
+import { collectWebPayment, PaymentCancelled } from '@/lib/razorpay';
 import { cn, type } from '@/lib/type';
 
 export type CheckoutPlan = {
@@ -22,10 +25,55 @@ export type CheckoutPlan = {
 };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const POLL_MS = 2000;
+const GIVE_UP_MS = 90_000;
 
-export function CheckoutForm({ plan, labels, successBase }: { plan: CheckoutPlan; labels: Dictionary['checkout']; successBase: string }) {
+class Refunded extends Error {}
+class StillWorking extends Error {}
+
+function attemptKey(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+async function waitForEsim(order: Order): Promise<Order> {
+  const started = Date.now();
+  let current = order;
+  while (!current.iccid) {
+    if (current.status === 'provisioning_failed' || current.status === 'refunded') throw new Refunded();
+    if (Date.now() - started > GIVE_UP_MS) throw new StillWorking();
+    await new Promise((resolve) => setTimeout(resolve, POLL_MS));
+    current = await browserApi.getOrder(current.order_id);
+  }
+  return current;
+}
+
+type CheckoutProps = { plan: CheckoutPlan; labels: Dictionary['checkout']; successBase: string; accountHref: string };
+
+export function CheckoutForm(props: CheckoutProps) {
+  return authClient ? <LiveGate {...props} /> : <CheckoutFields {...props} live={false} />;
+}
+
+function LiveGate(props: CheckoutProps) {
+  const session = authClient?.useSession();
+  if (!session || session.isPending) return <div className="h-80" aria-busy />;
+  if (!session.data) {
+    return (
+      <Card className="flex max-w-md flex-col items-start gap-4 p-section">
+        <h2 className={type.displayMd}>{props.labels.signInTitle}</h2>
+        <p className={cn(type.callout, 'text-fg-secondary')}>{props.labels.signInBody}</p>
+        <ButtonLink href={props.accountHref}>{props.labels.signIn}</ButtonLink>
+      </Card>
+    );
+  }
+  const email = session.data.user.email;
+  return <CheckoutFields {...props} live initialEmail={email.endsWith('@phone.vela.invalid') ? '' : email} />;
+}
+
+function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: CheckoutProps & { live: boolean; initialEmail?: string }) {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const attempt = useRef(attemptKey());
+  const [email, setEmail] = useState(initialEmail);
+  const [notice, setNotice] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [coupon, setCoupon] = useState<Coupon | null>(null);
@@ -41,6 +89,7 @@ export function CheckoutForm({ plan, labels, successBase }: { plan: CheckoutPlan
     setCouponError(null);
     try {
       setCoupon(await browserApi.redeemCoupon(code));
+      attempt.current = attemptKey();
     } catch {
       setCouponError(labels.couponInvalid);
     } finally {
@@ -56,15 +105,30 @@ export function CheckoutForm({ plan, labels, successBase }: { plan: CheckoutPlan
     }
     setEmailError(null);
     setFailed(false);
+    setNotice(null);
     setPaying(true);
     try {
-      const order = await browserApi.createOrder({ planId: plan.id, couponCode: coupon?.code ?? null });
-      const esim = await browserApi.getEsim(order.iccid);
+      const checkout = await browserApi.createOrder({ planId: plan.id, couponCode: coupon?.code ?? null, idempotencyKey: attempt.current });
+      const result = await collectWebPayment(checkout, {
+        email,
+        description: format(labels.description, { plan: plan.title }),
+        color: colors.accent.DEFAULT,
+      });
+      const confirmed = result ? await browserApi.confirmPayment(checkout.order.order_id, result) : checkout.order;
+      if (live) setNotice(labels.waiting);
+      const order = await waitForEsim(confirmed);
+      const esim = await browserApi.getEsim(order.iccid ?? '');
       saveOrder({ order, esim, title: plan.title });
       router.push(`${successBase}?order=${order.order_id}`);
-    } catch {
-      setFailed(true);
+    } catch (error) {
       setPaying(false);
+      if (error instanceof PaymentCancelled) return;
+      if (error instanceof Refunded) setNotice(labels.refunded);
+      else if (error instanceof StillWorking) setNotice(labels.slow);
+      else {
+        setNotice(null);
+        setFailed(true);
+      }
     }
   }
 
@@ -97,7 +161,14 @@ export function CheckoutForm({ plan, labels, successBase }: { plan: CheckoutPlan
         {coupon ? (
           <Card className="flex items-center justify-between gap-3 px-section py-3">
             <span className={cn(type.calloutStrong, 'text-accent')}>{format(labels.applied, { code: coupon.code })}</span>
-            <Button variant="ghost" size="sm" onClick={() => setCoupon(null)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setCoupon(null);
+                attempt.current = attemptKey();
+              }}
+            >
               {labels.remove}
             </Button>
           </Card>
@@ -118,7 +189,7 @@ export function CheckoutForm({ plan, labels, successBase }: { plan: CheckoutPlan
             </Button>
           </div>
         )}
-        <p className={cn(type.caption, 'text-fg-tertiary')}>{labels.demo}</p>
+        <p className={cn(type.caption, 'text-fg-tertiary')}>{live ? labels.live : labels.demo}</p>
       </div>
       <Card className="flex flex-col gap-3 self-start p-section md:sticky md:top-24">
         <h2 className={cn(type.label, 'text-fg-tertiary')}>{labels.summary}</h2>
@@ -131,6 +202,11 @@ export function CheckoutForm({ plan, labels, successBase }: { plan: CheckoutPlan
             {money(totals.total)}
           </span>
         </div>
+        {notice ? (
+          <p role="status" className={cn(type.callout, 'rounded-button bg-surface-1 px-4 py-3 text-fg-secondary')}>
+            {notice}
+          </p>
+        ) : null}
         {failed ? (
           <p role="alert" className={cn(type.callout, 'rounded-button bg-danger-tint px-4 py-3 text-danger')}>
             {labels.failed}

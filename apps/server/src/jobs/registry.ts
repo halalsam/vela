@@ -1,17 +1,28 @@
-import type { Job, PgBoss } from 'pg-boss';
+import type { JobWithMetadata, PgBoss } from 'pg-boss';
 import type { Database } from '../db/client';
 import type { Env } from '../env';
 import type { Logger } from '../logger';
 import { syncCatalog } from '../modules/catalog/sync';
 import type { EsimProvider } from '../modules/esims/provider';
+import { provisionOrder, refundOrder } from '../modules/orders/fulfil';
+import { expireStaleOrders } from '../modules/orders/service';
+import type { PaymentProvider } from '../modules/payments/provider';
+import { JOB, type JobQueue, type OrderJob } from './queue';
 
-export type JobContext = { logger: Logger; db: Database; env: Env; provider: EsimProvider };
+export type JobContext = {
+  logger: Logger;
+  db: Database;
+  env: Env;
+  provider: EsimProvider;
+  payments: PaymentProvider;
+  queue: JobQueue;
+};
 
 export type JobDefinition<T extends object = object> = {
   name: string;
   schedule?: string;
   retryLimit?: number;
-  handle: (jobs: Job<T>[], context: JobContext) => Promise<void>;
+  handle: (jobs: JobWithMetadata<T>[], context: JobContext) => Promise<void>;
 };
 
 export const heartbeat: JobDefinition = {
@@ -32,12 +43,47 @@ export const catalogSync: JobDefinition = {
   },
 };
 
-export const jobs: JobDefinition[] = [heartbeat, catalogSync];
+export const provisionJob: JobDefinition<OrderJob> = {
+  name: JOB.provision,
+  retryLimit: 3,
+  handle: async (jobs, context) => {
+    for (const job of jobs) {
+      await provisionOrder(context, job.data.orderId, { finalAttempt: job.retryCount >= job.retryLimit });
+    }
+  },
+};
+
+export const refundJob: JobDefinition<OrderJob> = {
+  name: JOB.refund,
+  retryLimit: 5,
+  handle: async (jobs, context) => {
+    for (const job of jobs) {
+      await refundOrder(context, job.data.orderId);
+    }
+  },
+};
+
+export const expireOrdersJob: JobDefinition = {
+  name: JOB.expireOrders,
+  schedule: '*/5 * * * *',
+  retryLimit: 1,
+  handle: async (_jobs, { db, logger }) => {
+    const expired = await expireStaleOrders(db);
+    if (expired > 0) logger.info({ expired }, 'unpaid orders expired');
+  },
+};
+
+export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob] as JobDefinition[];
+
+export async function ensureQueue(boss: PgBoss, definition: Pick<JobDefinition, 'name' | 'retryLimit'>) {
+  if (await boss.getQueue(definition.name)) return;
+  await boss.createQueue(definition.name, { retryLimit: definition.retryLimit ?? 3, retryBackoff: true });
+}
 
 export async function registerJobs(boss: PgBoss, definitions: JobDefinition[], context: JobContext) {
   for (const definition of definitions) {
-    await boss.createQueue(definition.name, { retryLimit: definition.retryLimit ?? 3, retryBackoff: true });
-    await boss.work(definition.name, async (batch: Job<object>[]) => {
+    await ensureQueue(boss, definition);
+    await boss.work(definition.name, { includeMetadata: true }, async (batch: JobWithMetadata<object>[]) => {
       const logger = context.logger.child({ job: definition.name });
       await definition.handle(batch, { ...context, logger });
     });

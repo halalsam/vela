@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import * as mocks from './mocks';
 import {
+  checkoutSchema,
   couponSchema,
   orderSchema,
   profileSchema,
@@ -13,12 +14,15 @@ import {
   planSchema,
   regionSchema,
   topUpPackSchema,
+  type Checkout,
   type Coupon,
   type Order,
+  type PaymentResult,
   type Profile,
   type Rewards,
   type SupportMessage,
   type Country,
+  type Currency,
   type DailyUsage,
   type Esim,
   type Offer,
@@ -37,6 +41,13 @@ export class ApiError extends Error {
   }
 }
 
+export type CreateOrderInput = {
+  planId: string;
+  couponCode?: string | null;
+  currency?: Currency;
+  idempotencyKey?: string;
+};
+
 export type VelaApi = {
   getCountries(): Promise<Country[]>;
   getRegions(): Promise<Region[]>;
@@ -53,7 +64,9 @@ export type VelaApi = {
   getSupportThread(): Promise<SupportMessage[]>;
   sendSupportMessage(text: string): Promise<SupportMessage[]>;
   redeemCoupon(code: string): Promise<Coupon>;
-  createOrder(input: { planId: string; couponCode?: string | null }): Promise<Order>;
+  createOrder(input: CreateOrderInput): Promise<Checkout>;
+  confirmPayment(orderId: string, result: PaymentResult): Promise<Order>;
+  getOrder(orderId: string): Promise<Order>;
   topUp(input: { iccid: string; packId: string }): Promise<Esim>;
 };
 
@@ -106,6 +119,7 @@ function notFound(what: string): never {
 export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: MockApiOptions = {}): VelaApi {
   const esimStore: Esim[] = [...mocks.esims];
   const thread: SupportMessage[] = [...mocks.supportThread];
+  const orders = new Map<string, Order>();
 
   async function respond<T>(schema: z.ZodType<T>, data: () => unknown, options: { list?: boolean } = {}): Promise<T> {
     const mode = scenario();
@@ -160,7 +174,7 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
     },
     redeemCoupon: async (code) => respond(couponSchema, () => findCoupon(code)),
     createOrder: async ({ planId, couponCode }) =>
-      respond(orderSchema, () => {
+      respond(checkoutSchema, () => {
         const plan = findPlan(planId);
         const coupon = couponCode ? findCoupon(couponCode) : null;
         const breakdown = priceBreakdown(plan.price, coupon);
@@ -181,8 +195,13 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
           lpa_string: `LPA:1$smdp.example.com$K2-${iccid.slice(-8)}`,
           qr_url: `https://example.com/qr/${iccid}.png`,
         });
-        return { order_id: `VL-${iccid.slice(-6)}`, plan_id: plan.id, iccid, currency: plan.currency, ...breakdown };
+        const number = `VL-${iccid.slice(-6)}`;
+        const order: Order = { order_id: number, number, status: 'fulfilled', plan_id: plan.id, iccid, currency: plan.currency, ...breakdown };
+        orders.set(number, order);
+        return { order, payment: null };
       }),
+    confirmPayment: async (orderId) => respond(orderSchema, () => orders.get(orderId) ?? notFound('Order')),
+    getOrder: async (orderId) => respond(orderSchema, () => orders.get(orderId) ?? notFound('Order')),
     topUp: async ({ iccid, packId }) =>
       respond(esimSchema, () => {
         const pack = mocks.topUpPacks.find((item) => item.id === packId) ?? notFound('Top-up');

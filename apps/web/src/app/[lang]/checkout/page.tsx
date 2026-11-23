@@ -40,6 +40,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps<'
       <h1 className={type.displayXl}>{dict.checkout.title}</h1>
       <CheckoutForm
         successBase={`/${lang}/success`}
+        accountHref={`/${lang}/account`}
         labels={dict.checkout}
         plan={{
           id: plan.id,

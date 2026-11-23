@@ -98,3 +98,14 @@ source of truth. Resolved as follows:
   removes the user, sessions, profile and devices, and keeps orders and eSIMs for tax records. The
   app and website use the real flows when `EXPO_PUBLIC_API_URL` / `NEXT_PUBLIC_API_URL` are set,
   otherwise the demo flows.
+- B5 (2026-11-23): checkout runs on the server. `POST /v1/orders` (signed in, `Idempotency-Key`)
+  prices the order with the same `priceBreakdown` the app shows, checks the coupon (dates,
+  currency, countries, total and per-user limits) and creates a Razorpay order. The client pays in
+  Razorpay Checkout (`react-native-razorpay` in the app, `checkout.js` on the website) and sends the
+  result to `POST /v1/orders/:id/confirm`; the signed `payment.captured` webhook does the same if the
+  app is closed, and events are stored by ID so replays do nothing. A paid order queues
+  `esim.provision` (3 retries, the order ID as the provider's idempotency key); the last failure
+  marks the order failed and queues `esim.refund`. Unpaid orders expire after 30 minutes but a late
+  payment still counts. Razorpay takes INR only; AED and SAR wait for the Gulf provider.
+  `PAYMENT_PROVIDER=mock` (refused in production) skips the payment sheet. Not in B5 yet: receipt
+  email, GST invoice, push, credit balance; `qr_url` is null until QR images are served.

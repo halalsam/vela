@@ -16,7 +16,7 @@ export const orderStatus = pgEnum('order_status', [
   'provisioning_failed',
   'refunded',
 ]);
-export const paymentProvider = pgEnum('payment_provider', ['razorpay', 'gulf']);
+export const paymentProvider = pgEnum('payment_provider', ['razorpay', 'gulf', 'mock']);
 export const paymentStatus = pgEnum('payment_status', ['created', 'authorized', 'captured', 'failed', 'refunded']);
 export const esimStatus = pgEnum('esim_status', ['not_started', 'active', 'expired', 'depleted']);
 export const devicePlatform = pgEnum('device_platform', ['ios', 'android', 'web']);

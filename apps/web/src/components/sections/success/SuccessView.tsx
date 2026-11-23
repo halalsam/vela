@@ -63,7 +63,7 @@ export function SuccessView({ orderId, locale, labels }: { orderId: string; loca
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className={type.hero}>{labels.title}</h1>
-          <p className={cn(type.callout, 'text-fg-secondary')}>{format(labels.body, { order: entry.order.order_id, plan: entry.title })}</p>
+          <p className={cn(type.callout, 'text-fg-secondary')}>{format(labels.body, { order: entry.order.number, plan: entry.title })}</p>
         </div>
         <div className="flex flex-col gap-2">
           <ButtonLink href={installUrl} className="self-start">

@@ -15,7 +15,16 @@ export type ProviderPlan = {
   suggestedRetail: { amountMinor: number; currency: CurrencyCode }[];
 };
 
+export type PurchasedEsim = {
+  iccid: string;
+  smdp: string;
+  activationCode: string;
+  lpa: string;
+  providerRef: string;
+};
+
 export type EsimProvider = {
   name: string;
   listPlans(): Promise<ProviderPlan[]>;
+  purchase(input: { planRef: string; idempotencyKey: string }): Promise<PurchasedEsim>;
 };

@@ -5,6 +5,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { HttpError } from './lib/errors';
 import { catalogRoutes } from './routes/catalog';
 import { meRoutes } from './routes/me';
+import { orderRoutes, webhookRoutes } from './routes/orders';
 import { systemRoutes } from './routes/system';
 import { captureError } from './sentry';
 import type { AppDeps, AppEnv } from './types';
@@ -49,6 +50,8 @@ export function createApp(deps: AppDeps) {
   app.route('/', systemRoutes);
   app.route('/', catalogRoutes);
   app.route('/', meRoutes);
+  app.route('/', orderRoutes);
+  app.route('/', webhookRoutes);
   app.on(['GET', 'POST'], '/v1/auth/*', (c) => deps.auth.handler(c.req.raw));
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearer', { type: 'http', scheme: 'bearer' });

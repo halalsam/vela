@@ -345,9 +345,10 @@
     "swipe": "swipe to pay",
     "paid": "paid",
     "otherMethods": "Other payment methods",
-    "otherSoon": "UPI, cards and Apple Pay arrive with the payments integration.",
+    "otherSoon": "UPI, cards and netbanking are in the payment sheet. Apple Pay arrives with Gulf payments.",
     "failedTitle": "Payment didn't go through",
-    "failedBody": "You haven't been charged. Try again."
+    "failedBody": "You haven't been charged. Try again.",
+    "paymentDescription": "{{days}}-day eSIM"
   },
   "processing": {
     "title": "setting sail.",
@@ -357,7 +358,10 @@
     "failedTitle": "We couldn't finish setting up",
     "failedBody": "You haven't been charged twice. Try again or talk to us.",
     "retry": "Try again",
-    "support": "Talk to support"
+    "support": "Talk to support",
+    "refundedTitle": "We couldn't set up this eSIM",
+    "refundedBody": "We're refunding your payment in full. It can take 5–7 working days to reach you.",
+    "waitingBody": "This is taking longer than usual. You can leave this screen; we'll keep setting it up."
   },
   "success": {
     "title": "you're connected.",

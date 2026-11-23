@@ -1,7 +1,9 @@
 import type { Auth } from './auth/auth';
 import type { Database } from './db/client';
 import type { Env } from './env';
+import type { JobQueue } from './jobs/queue';
 import type { Logger } from './logger';
+import type { PaymentProvider } from './modules/payments/provider';
 
 export type AppDeps = {
   db: Database;
@@ -9,6 +11,8 @@ export type AppDeps = {
   logger: Logger;
   version: string;
   auth: Auth;
+  payments: PaymentProvider;
+  queue: JobQueue;
 };
 
 export type SessionUser = { id: string; email: string; name: string; phoneNumber: string | null };

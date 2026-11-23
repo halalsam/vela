@@ -190,7 +190,9 @@
   "footer": {
     "tagline": "land connected.",
     "prices": "Prices in INR and include GST.",
-    "rights": "© {{year}} vela"
+    "rights": "© {{year}} vela",
+    "privacy": "Privacy",
+    "terms": "Terms"
   },
   "notFound": {
     "title": "lost at sea.",

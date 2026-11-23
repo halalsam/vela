@@ -485,7 +485,9 @@
     "deleteTitle": "Delete your vela account?",
     "deleteBody": "This removes your profile and signs you out. eSIMs already installed keep working until they end. Receipts are kept for tax records.",
     "deleteConfirm": "Delete",
-    "deleteFailed": "Couldn't delete your account. Try again."
+    "deleteFailed": "Couldn't delete your account. Try again.",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service"
   },
   "scenarios": {
     "default": "Default",

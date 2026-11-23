@@ -14,12 +14,18 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
           <p className={cn(type.displayMd, 'text-fg-secondary')}>{dict.footer.tagline}</p>
         </div>
         <div className="flex flex-col gap-3 md:items-end">
-          <nav aria-label="Footer" className="flex gap-5">
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
             <Link href={`${path(locale)}#destinations`} className={link}>
               {dict.nav.destinations}
             </Link>
             <Link href={path(locale, '/account')} className={link}>
               {dict.nav.account}
+            </Link>
+            <Link href={path(locale, '/privacy')} className={link}>
+              {dict.footer.privacy}
+            </Link>
+            <Link href={path(locale, '/terms')} className={link}>
+              {dict.footer.terms}
             </Link>
           </nav>
           <p className={cn(type.caption, 'text-fg-tertiary')}>{dict.footer.prices}</p>

@@ -5,7 +5,7 @@ import { siteUrl } from '@/lib/site';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { countries, regions } = await loadCatalog();
-  const paths = ['', ...allDestinationSlugs(countries, regions).map((slug) => `/destinations/${slug}`)];
+  const paths = ['', '/privacy', '/terms', ...allDestinationSlugs(countries, regions).map((slug) => `/destinations/${slug}`)];
   return paths.flatMap((rest) =>
     locales.map((locale) => ({
       url: `${siteUrl}/${locale}${rest}`,

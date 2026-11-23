@@ -20,5 +20,6 @@ docker compose -f compose.yml pull migrate api worker
 docker compose -f compose.yml up -d postgres
 docker compose -f compose.yml run --rm migrate
 docker compose -f compose.yml up -d --remove-orphans api worker
+docker compose -f compose.yml up -d --build backup
 docker image prune -f >/dev/null
 echo "deployed ${APP_ENV} at ${IMAGE_TAG}"

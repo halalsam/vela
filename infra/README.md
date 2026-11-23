@@ -35,3 +35,41 @@ CI builds `ghcr.io/halalsam/vela-server:<sha>` on every push to `main` and runs
 
 Manual deploy or rollback: `./deploy.sh production <older-sha>`. Migrations must stay compatible
 with the previous release so a rollback never needs a down migration.
+
+## Backups
+
+The `backup` service dumps Postgres every night at `BACKUP_HOUR_UTC`:30 UTC (default 21:30, which is
+03:00 IST), and once when it starts. Each run:
+
+1. Dumps the database with `pg_dump` (custom format).
+2. Restores that dump into a scratch database and checks the tables and migrations, so a broken dump
+   is caught the same night.
+3. Encrypts it with [age](https://age-encryption.org) to `BACKUP_AGE_RECIPIENT`. That is a public
+   key, so the server cannot read old backups. Keep the private key offline (a password manager and
+   one printed copy).
+4. Uploads it to the S3-compatible bucket (Cloudflare R2 or Backblaze B2) set by the `RCLONE_CONFIG_S3_*`
+   settings and `BACKUP_S3_BUCKET`, checks the size, and deletes copies older than
+   `BACKUP_RETENTION_DAYS` (30).
+
+The container is unhealthy if there has been no successful backup for 30 hours. Production refuses to
+start the service without its settings.
+
+First-time setup:
+
+```bash
+docker run --rm --entrypoint age-keygen vela-backup:local > vela-backup-key.txt
+```
+
+Put the `age1…` public key from that file in `BACKUP_AGE_RECIPIENT`, move the file off the server, then
+fill in the bucket settings in `env/<environment>.env`.
+
+Useful commands on the server (`APP_ENV`, `IMAGE_TAG` and `POSTGRES_PASSWORD` exported as for a deploy):
+
+```bash
+docker compose -f compose.yml run --rm backup once
+docker compose -f compose.yml run --rm backup list
+docker compose -f compose.yml run --rm -v /path/to/key-dir:/keys:ro backup restore <file name> /keys/vela-backup-key.txt [database url]
+```
+
+Restore into a new database first and check it before pointing the app at it. Test a restore from the
+bucket with the real key every three months.

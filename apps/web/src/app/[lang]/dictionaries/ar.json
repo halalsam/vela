@@ -198,7 +198,9 @@
   "footer": {
     "tagline": "تصل وأنت متصل.",
     "prices": "الأسعار بالروبية الهندية وتشمل الضريبة.",
-    "rights": "© {{year}} vela"
+    "rights": "© {{year}} vela",
+    "privacy": "الخصوصية",
+    "terms": "الشروط"
   },
   "notFound": {
     "title": "الصفحة غير موجودة.",

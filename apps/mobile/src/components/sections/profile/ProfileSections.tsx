@@ -10,6 +10,8 @@ import { devScenarios, useDevStore, type DevScenario } from '@/stores/dev';
 import { deleteAccount } from '@/lib/auth';
 import { signOutDevice } from '@/lib/push';
 import { useSession, type LanguagePreference } from '@/stores/session';
+import * as WebBrowser from 'expo-web-browser';
+import i18n from '@/i18n';
 
 export function AccountCard() {
   const { t } = useTranslation();
@@ -115,6 +117,14 @@ export function AccountGroup() {
   );
 }
 
+const siteUrl = process.env.EXPO_PUBLIC_SITE_URL?.replace(/\/$/, '');
+
+function openLegal(page: 'privacy' | 'terms', fallback: () => void) {
+  if (!siteUrl) return fallback();
+  const language = i18n.language === 'ar' ? 'ar' : 'en';
+  void WebBrowser.openBrowserAsync(`${siteUrl}/${language}/${page}`);
+}
+
 export function HelpGroup() {
   const { t } = useTranslation();
   const soon = () => toast.show({ message: t('common.comingSoon') });
@@ -123,6 +133,8 @@ export function HelpGroup() {
       <ListRow leadingIcon="chat" title={t('profile.support')} onPress={() => router.push('/support')} />
       <ListRow leadingIcon="help" title={t('profile.helpCentre')} onPress={soon} />
       <ListRow leadingIcon="sim" title={t('profile.compatibility')} onPress={soon} />
+      <ListRow leadingIcon="lock" title={t('profile.privacy')} onPress={() => openLegal('privacy', soon)} />
+      <ListRow leadingIcon="info" title={t('profile.terms')} onPress={() => openLegal('terms', soon)} />
     </ListGroup>
   );
 }

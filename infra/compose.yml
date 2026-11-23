@@ -57,8 +57,27 @@ services:
     depends_on:
       migrate: { condition: service_completed_successfully }
 
+  backup:
+    build: ./backup
+    image: vela-backup:local
+    env_file: ./env/${APP_ENV}.env
+    environment:
+      APP_ENV: ${APP_ENV}
+      DATABASE_URL: postgres://vela:${POSTGRES_PASSWORD}@postgres:5432/vela
+    volumes:
+      - backup-status:/status
+    healthcheck:
+      test: ['CMD', 'vela-backup', 'healthy']
+      interval: 30m
+      timeout: 10s
+      start_period: 15m
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+
 volumes:
   postgres: {}
+  backup-status: {}
 
 networks:
   edge:

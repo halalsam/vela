@@ -162,3 +162,18 @@ source of truth. Resolved as follows:
   identity check when `CHATWOOT_HMAC_TOKEN` is set) and one conversation per traveller, and the app
   polls every 5 seconds. Without Chatwoot, messages are stored in `support_message` so the screen
   works on staging, but nobody can reply to them.
+- B1 (2026-11-24): eSIM Access is the provider (no minimum order, prepaid wallet). The adapter
+  uses `RT-AccessCode` auth, sells fixed-data day plans only, maps multi-country packages onto our
+  regions (or a new region named after the package), fetches top-up packs once per coverage area,
+  orders with our order ID as `transactionId` and polls `/esim/query` while the profile is
+  allocated (error `200010`). Usage comes from `/esim/query` by `esimTranNo`; their figures update
+  every 2–3 hours. There is no sandbox: test orders are real and cancelled for a refund. Webhooks are
+  not used yet (they are unsigned; use the published IP list if added). Production refuses the mock
+  provider.
+- Currencies (2026-11-24): we sell in INR, AED, SAR, EUR and USD. Exchange rates come from the ECB
+  daily feed (AED, SAR, QAR on their dollar pegs), refreshed on weekdays and at worker start.
+  Prices are cost plus `PRICING_MARGIN_PERCENT`, converted and rounded to charm endings; a provider's
+  suggested price is used only in its own currency (eSIM Access sends none). GST (18%) applies to
+  INR only until the accountant confirms how exports are taxed. Razorpay takes all five. The app
+  follows the Profile currency (default from the phone's region); the website prerenders rupee
+  prices and lets the visitor pick their currency at checkout.

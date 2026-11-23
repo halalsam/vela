@@ -4,7 +4,7 @@ import { priceBreakdown, type Coupon, type Currency, type Order } from '@vela/ap
 import { colors } from '@vela/tokens';
 import { formatPrice } from '@vela/utils';
 import { useRouter } from 'next/navigation';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Flag, FlagStack } from '@/components/esim';
 import { Button, ButtonLink, Card, Field } from '@/components/ui';
 import { authClient } from '@/lib/authClient';
@@ -81,7 +81,19 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
   const [applying, setApplying] = useState(false);
   const [paying, setPaying] = useState(false);
   const [failed, setFailed] = useState(false);
-  const totals = priceBreakdown(plan.price, coupon);
+  const [credit, setCredit] = useState(0);
+  useEffect(() => {
+    if (!live) return;
+    let cancelled = false;
+    browserApi.getRewards().then(
+      (rewards) => !cancelled && setCredit(rewards.currency === plan.currency ? rewards.balance : 0),
+      () => undefined,
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [live, plan.currency]);
+  const totals = priceBreakdown(plan.price, coupon, credit);
   const money = (amount: number) => formatPrice(amount, plan.currency);
 
   async function apply() {
@@ -195,6 +207,7 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
         <h2 className={cn(type.label, 'text-fg-tertiary')}>{labels.summary}</h2>
         <Row label={labels.subtotal} value={money(totals.subtotal)} />
         {totals.discount > 0 ? <Row label={labels.discount} value={`−${money(totals.discount)}`} accent /> : null}
+        {totals.credit > 0 ? <Row label={labels.credit} value={`−${money(totals.credit)}`} accent /> : null}
         <Row label={labels.gst} value={money(totals.tax)} />
         <div className="mt-2 flex items-center justify-between border-t border-line pt-4">
           <span className={type.title}>{labels.total}</span>

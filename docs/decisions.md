@@ -127,3 +127,18 @@ source of truth. Resolved as follows:
   removes the token on sign-out. Tapping a notice opens that eSIM's Usage screen.
 - `MOCK_USAGE_SPEED` speeds up the mock provider's clock for staging QA. Expiry warnings use real
   time, so with a high speed they fire almost at once.
+- B7 (2026-11-23): top-up packs come from the provider with each plan and sync with the catalog
+  (`top_up_pack`, `top_up_price`). `POST /v1/esims/:iccid/top-ups` creates a `top_up` order that is
+  paid exactly like an eSIM order; the worker calls the provider's top-up with the order ID as its
+  idempotency key, then adds the data (and any extra days) to the same eSIM in one transaction,
+  brings a used-up eSIM back to active and clears its low-data, used-up and expiry notices so they
+  can fire again. Top-ups are offered for eSIMs that are not started, active or used up.
+- Referral codes work in the coupon box: ₹150 (7 AED / 7 SAR) off a friend's first eSIM, never
+  your own code, and only if they weren't referred by someone else. Paying sets the friend's
+  `referred_by`. The referrer gets ₹150 credit (in their profile currency) when that eSIM first
+  connects, once per order. A real coupon with the same code wins over a referral code.
+- Travel credit lives in the append-only `credit_ledger`. It is applied automatically at checkout
+  for eSIMs and top-ups (`priceBreakdown(price, coupon, credit)`, GST on what is left), spent when
+  the order is paid and given back if the order is refunded. Credit that covers the whole price
+  skips the payment step. Two orders placed at the same moment can both use the same credit; the
+  balance never shows below zero, and the gap is small enough to leave for now.

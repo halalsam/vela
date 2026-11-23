@@ -89,6 +89,7 @@ type TotalsProps = {
   currency: Plan['currency'];
   subtotal: number;
   discount: number;
+  credit?: number;
   tax: number;
   total: number;
 };
@@ -106,12 +107,13 @@ function Row({ label, value, tone = 'secondary' }: { label: string; value: strin
   );
 }
 
-export function Totals({ currency, subtotal, discount, tax, total }: TotalsProps) {
+export function Totals({ currency, subtotal, discount, credit = 0, tax, total }: TotalsProps) {
   const { t } = useTranslation();
   return (
     <View className="gap-2 px-1">
       <Row label={t('checkout.subtotal')} value={formatPrice(subtotal, currency)} />
       {discount > 0 ? <Row label={t('checkout.discount')} value={`−${formatPrice(discount, currency)}`} tone="accent" /> : null}
+      {credit > 0 ? <Row label={t('checkout.credit')} value={`−${formatPrice(credit, currency)}`} tone="accent" /> : null}
       <Row label={t('checkout.gstIncluded')} value={formatPrice(tax, currency)} />
       <View className="mt-2 flex-row items-center justify-between border-t border-line pt-3">
         <Text variant="title">{t('checkout.total')}</Text>

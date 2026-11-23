@@ -65,17 +65,40 @@ export function usePurchase() {
     onSuccess: (order) => {
       client.setQueryData(queryKeys.order(order.order_id), order);
       void client.invalidateQueries({ queryKey: queryKeys.esims });
+      void client.invalidateQueries({ queryKey: queryKeys.rewards });
     },
   });
+}
+
+const TOP_UP_WAIT_MS = 30_000;
+
+export class TopUpPending extends Error {}
+
+async function waitUntilFulfilled(order: Order): Promise<Order> {
+  const started = Date.now();
+  let current = order;
+  while (current.status !== 'fulfilled') {
+    if (current.status === 'provisioning_failed' || current.status === 'refunded') throw new Error('Top-up failed');
+    if (Date.now() - started > TOP_UP_WAIT_MS) throw new TopUpPending();
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    current = await api.getOrder(current.order_id);
+  }
+  return current;
 }
 
 export function useTopUp() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: api.topUp,
-    onSuccess: (esim) => {
-      client.setQueryData(queryKeys.esim(esim.iccid), esim);
+    mutationFn: async (input: { iccid: string; packId: string; idempotencyKey: string; description: string }) => {
+      const checkout = await api.topUp(input);
+      const result = await collectPayment(checkout, input.description);
+      const paid = result ? await api.confirmPayment(checkout.order.order_id, result) : checkout.order;
+      return waitUntilFulfilled(paid);
+    },
+    onSettled: (_order, _error, input) => {
+      void client.invalidateQueries({ queryKey: queryKeys.esim(input.iccid) });
       void client.invalidateQueries({ queryKey: queryKeys.esims });
+      void client.invalidateQueries({ queryKey: queryKeys.rewards });
     },
   });
 }

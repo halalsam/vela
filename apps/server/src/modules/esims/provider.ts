@@ -13,6 +13,15 @@ export type ProviderPlan = {
   activation: 'on_install' | 'on_first_connection';
   cost: { amountMinor: number; currency: CurrencyCode };
   suggestedRetail: { amountMinor: number; currency: CurrencyCode }[];
+  topUps: ProviderTopUp[];
+};
+
+export type ProviderTopUp = {
+  ref: string;
+  dataMb: number;
+  extraDays: number;
+  cost: { amountMinor: number; currency: CurrencyCode };
+  suggestedRetail: { amountMinor: number; currency: CurrencyCode }[];
 };
 
 export type PurchasedEsim = {
@@ -35,8 +44,10 @@ export type UsageQuery = {
   iccid: string;
   providerRef: string;
   purchasedAt: Date;
+  planMb: number;
   totalMb: number;
   validityDays: number;
+  extraDays: number;
 };
 
 export type EsimProvider = {
@@ -44,4 +55,5 @@ export type EsimProvider = {
   listPlans(): Promise<ProviderPlan[]>;
   purchase(input: { planRef: string; idempotencyKey: string }): Promise<PurchasedEsim>;
   usage(query: UsageQuery): Promise<EsimUsage>;
+  topUp(input: { iccid: string; providerRef: string; packRef: string; idempotencyKey: string }): Promise<{ providerRef: string }>;
 };

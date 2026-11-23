@@ -38,6 +38,7 @@ export const order = pgTable(
     taxMinor: integer().notNull().default(0),
     totalMinor: integer().notNull(),
     couponCode: text().references(() => coupon.code),
+    referralCode: text(),
     idempotencyKey: text().notNull(),
     paidAt: timestamp({ withTimezone: true }),
     fulfilledAt: timestamp({ withTimezone: true }),
@@ -102,7 +103,10 @@ export const creditLedger = pgTable(
     orderId: uuid().references(() => order.id),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('credit_ledger_user_idx').on(table.userId)],
+  (table) => [
+    index('credit_ledger_user_idx').on(table.userId),
+    uniqueIndex('credit_ledger_order_reason_idx').on(table.orderId, table.reason).where(sql`${table.orderId} is not null`),
+  ],
 );
 
 export const invoice = pgTable(

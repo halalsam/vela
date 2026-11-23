@@ -1,14 +1,14 @@
 import type { Esim } from '@vela/api';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { esim, order, payment, plan } from '../../db/schema';
+import { creditLedger, esim, esimNotice, order, payment, plan, topUpPack } from '../../db/schema';
 import type { Env } from '../../env';
 import { JOB, type JobQueue } from '../../jobs/queue';
 import { decrypt, encrypt } from '../../lib/crypto';
 import { notFound } from '../../lib/errors';
 import type { Logger } from '../../logger';
 import type { EsimProvider } from '../esims/provider';
-import { sendNotice } from '../notifications/notify';
+import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
 import type { PaymentProvider } from '../payments/provider';
 
@@ -40,6 +40,10 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
     return;
   }
   try {
+    if (current.kind === 'top_up') {
+      await applyTopUp(deps, current);
+      return;
+    }
     if (!current.planId) throw new Error('Order has no plan');
     const [planRow] = await db.select().from(plan).where(eq(plan.id, current.planId));
     if (!planRow) throw new Error(`Plan ${current.planId} is missing`);
@@ -85,6 +89,42 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
   }
 }
 
+const RESET_NOTICES = ['low_data', 'depleted', 'expiry_24h', 'expiry_2h'];
+const DAY_MS = 86_400_000;
+
+async function applyTopUp(deps: FulfilDeps, current: typeof order.$inferSelect): Promise<void> {
+  const { db, logger } = deps;
+  if (!current.esimId || !current.topUpPackId) throw new Error('Top-up order has no eSIM or pack');
+  const [target] = await db.select().from(esim).where(eq(esim.id, current.esimId));
+  const [pack] = await db.select().from(topUpPack).where(eq(topUpPack.id, current.topUpPackId));
+  if (!target || !pack) throw new Error('Top-up eSIM or pack is missing');
+  await deps.provider.topUp({ iccid: target.iccid, providerRef: target.providerRef, packRef: pack.providerPackRef, idempotencyKey: current.id });
+  const updated = await db.transaction(async (tx) => {
+    const [claimed] = await tx
+      .update(order)
+      .set({ status: 'fulfilled', fulfilledAt: new Date(), failureReason: null, updatedAt: new Date() })
+      .where(and(eq(order.id, current.id), eq(order.status, 'provisioning')))
+      .returning({ id: order.id });
+    if (!claimed) return null;
+    const expiresAt = target.expiresAt && pack.extraDays > 0 ? new Date(target.expiresAt.getTime() + pack.extraDays * DAY_MS) : target.expiresAt;
+    const status = target.status === 'depleted' ? (target.activatedAt ? 'active' : 'not_started') : target.status;
+    const [row] = await tx
+      .update(esim)
+      .set({ dataTotalMb: target.dataTotalMb + pack.dataMb, expiresAt, status, updatedAt: new Date() })
+      .where(eq(esim.id, target.id))
+      .returning();
+    await tx.delete(esimNotice).where(and(eq(esimNotice.esimId, target.id), inArray(esimNotice.kind, RESET_NOTICES)));
+    return row ?? null;
+  });
+  if (!updated) return;
+  logger.info({ orderId: current.id, iccid: target.iccid, addedMb: pack.dataMb }, 'top-up applied');
+  try {
+    await pushLiveActivities(deps, updated);
+  } catch (error) {
+    logger.warn({ orderId: current.id, err: error }, 'Live Activity update after top-up failed');
+  }
+}
+
 export async function refundOrder(deps: FulfilDeps, orderId: string): Promise<void> {
   const { db, logger } = deps;
   const [current] = await db.select().from(order).where(eq(order.id, orderId));
@@ -104,6 +144,12 @@ export async function refundOrder(deps: FulfilDeps, orderId: string): Promise<vo
     });
     await db.update(payment).set({ status: 'refunded', updatedAt: new Date() }).where(eq(payment.id, captured.id));
     logger.info({ orderId, refundId }, 'payment refunded');
+  }
+  if (current.creditMinor > 0) {
+    await db
+      .insert(creditLedger)
+      .values({ userId: current.userId, amountMinor: current.creditMinor, currency: current.currency, reason: 'refund', orderId })
+      .onConflictDoNothing();
   }
   await db.update(order).set({ status: 'refunded', updatedAt: new Date() }).where(eq(order.id, orderId));
 }

@@ -16,6 +16,12 @@ export function mockPurchase(planRef: string, idempotencyKey: string): Purchased
   return { iccid, smdp: SMDP, activationCode, lpa: ['LPA:1', SMDP, activationCode].join('$'), providerRef: `mock-${iccid}` };
 }
 
+const MOCK_TOP_UPS = [
+  { gb: 1, extraDays: 0, price: 199 },
+  { gb: 3, extraDays: 0, price: 449 },
+  { gb: 5, extraDays: 7, price: 649 },
+];
+
 const CONNECTS_AFTER_MS = 5 * 60_000;
 const DAY_MS = 86_400_000;
 const BURN_RATE = 1.05;
@@ -27,9 +33,9 @@ export function mockUsage(query: UsageQuery, now: number, speed: number): EsimUs
   }
   const activatedAt = new Date(query.purchasedAt.getTime() + CONNECTS_AFTER_MS / speed);
   const validityMs = query.validityDays * DAY_MS;
-  const expiresAt = new Date(activatedAt.getTime() + validityMs / speed);
+  const expiresAt = new Date(activatedAt.getTime() + (validityMs + query.extraDays * DAY_MS) / speed);
   const active = elapsed - CONNECTS_AFTER_MS;
-  const usedMb = Math.min(query.totalMb, Math.round((query.totalMb * BURN_RATE * active) / validityMs));
+  const usedMb = Math.min(query.totalMb, Math.round((query.planMb * BURN_RATE * active) / validityMs));
   const status = usedMb >= query.totalMb ? 'depleted' : now >= expiresAt.getTime() ? 'expired' : 'active';
   return { usedMb, totalMb: query.totalMb, status, activatedAt, expiresAt };
 }
@@ -53,6 +59,13 @@ export function createMockProvider(options: { usageSpeed?: number; now?: () => n
         activation: plan.activation,
         cost: { amountMinor: Math.round(plan.price * 100 * COST_SHARE), currency: plan.currency },
         suggestedRetail: [{ amountMinor: plan.price * 100, currency: plan.currency }],
+        topUps: MOCK_TOP_UPS.map((pack) => ({
+          ref: `${plan.id}:topup-${pack.gb}gb`,
+          dataMb: pack.gb * 1024,
+          extraDays: pack.extraDays,
+          cost: { amountMinor: Math.round(pack.price * 100 * COST_SHARE), currency: plan.currency },
+          suggestedRetail: [{ amountMinor: pack.price * 100, currency: plan.currency }],
+        })),
       }));
     },
     async purchase({ planRef, idempotencyKey }) {
@@ -60,6 +73,9 @@ export function createMockProvider(options: { usageSpeed?: number; now?: () => n
     },
     async usage(query) {
       return mockUsage(query, now(), speed);
+    },
+    async topUp({ iccid, packRef, idempotencyKey }) {
+      return { providerRef: `mock-topup-${iccid}-${packRef}-${idempotencyKey}` };
     },
   };
 }

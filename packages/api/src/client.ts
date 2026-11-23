@@ -67,7 +67,7 @@ export type VelaApi = {
   createOrder(input: CreateOrderInput): Promise<Checkout>;
   confirmPayment(orderId: string, result: PaymentResult): Promise<Order>;
   getOrder(orderId: string): Promise<Order>;
-  topUp(input: { iccid: string; packId: string }): Promise<Esim>;
+  topUp(input: { iccid: string; packId: string; currency?: Currency; idempotencyKey?: string }): Promise<Checkout>;
 };
 
 export type MockScenario = 'default' | 'loading' | 'empty' | 'error' | 'lowData' | 'expired';
@@ -101,11 +101,12 @@ export function discountFor(coupon: Coupon | null, subtotal: number): number {
   return Math.min(subtotal, coupon.discount_amount ?? 0);
 }
 
-export function priceBreakdown(price: number, coupon: Coupon | null) {
+export function priceBreakdown(price: number, coupon: Coupon | null, creditAvailable = 0) {
   const discount = discountFor(coupon, price);
-  const total = price - discount;
+  const credit = Math.min(Math.max(0, creditAvailable), price - discount);
+  const total = price - discount - credit;
   const tax = Math.round(total - total / (1 + TAX_RATE));
-  return { subtotal: price, discount, tax, total };
+  return { subtotal: price, discount, credit, tax, total };
 }
 
 function wait(ms: number): Promise<void> {
@@ -177,7 +178,8 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
       respond(checkoutSchema, () => {
         const plan = findPlan(planId);
         const coupon = couponCode ? findCoupon(couponCode) : null;
-        const breakdown = priceBreakdown(plan.price, coupon);
+        const balance = scenario() === 'empty' ? 0 : mocks.rewards.balance;
+        const breakdown = priceBreakdown(plan.price, coupon, balance);
         const iccid = randomDigits(19);
         const code = plan.country_codes[0] ?? 'XX';
         esimStore.unshift({
@@ -196,14 +198,23 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
           qr_url: `https://example.com/qr/${iccid}.png`,
         });
         const number = `VL-${iccid.slice(-6)}`;
-        const order: Order = { order_id: number, number, status: 'fulfilled', plan_id: plan.id, iccid, currency: plan.currency, ...breakdown };
+        const order: Order = {
+          order_id: number,
+          number,
+          kind: 'esim',
+          status: 'fulfilled',
+          plan_id: plan.id,
+          iccid,
+          currency: plan.currency,
+          ...breakdown,
+        };
         orders.set(number, order);
         return { order, payment: null };
       }),
     confirmPayment: async (orderId) => respond(orderSchema, () => orders.get(orderId) ?? notFound('Order')),
     getOrder: async (orderId) => respond(orderSchema, () => orders.get(orderId) ?? notFound('Order')),
     topUp: async ({ iccid, packId }) =>
-      respond(esimSchema, () => {
+      respond(checkoutSchema, () => {
         const pack = mocks.topUpPacks.find((item) => item.id === packId) ?? notFound('Top-up');
         const index = esimStore.findIndex((esim) => esim.iccid === iccid);
         const esim = esimStore[index] ?? notFound('eSIM');
@@ -212,7 +223,23 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
           : esim.expires_at;
         const updated: Esim = { ...esim, data_total_mb: esim.data_total_mb + pack.data_mb, expires_at: extended };
         esimStore[index] = updated;
-        return updated;
+        const number = `VL-T${iccid.slice(-5)}`;
+        const order: Order = {
+          order_id: `${number}-${Date.now().toString(36)}`,
+          number,
+          kind: 'top_up',
+          status: 'fulfilled',
+          plan_id: esim.plan_id,
+          iccid,
+          currency: pack.currency,
+          subtotal: pack.price,
+          discount: 0,
+          credit: 0,
+          tax: Math.round(pack.price - pack.price / (1 + TAX_RATE)),
+          total: pack.price,
+        };
+        orders.set(order.order_id, order);
+        return { order, payment: null };
       }),
   };
 }

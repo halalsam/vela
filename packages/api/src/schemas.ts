@@ -108,11 +108,13 @@ export const orderStatusSchema = z.enum([
 export const orderSchema = z.object({
   order_id: z.string(),
   number: z.string(),
+  kind: z.enum(['esim', 'top_up']),
   status: orderStatusSchema,
   plan_id: z.string(),
   iccid: z.string().nullable(),
   subtotal: z.number().nonnegative(),
   discount: z.number().nonnegative(),
+  credit: z.number().nonnegative(),
   tax: z.number().nonnegative(),
   total: z.number().nonnegative(),
   currency: currencySchema,

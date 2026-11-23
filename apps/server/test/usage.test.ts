@@ -62,7 +62,7 @@ async function buyEsim(planId: string, key: string) {
 }
 
 describe('mock usage', () => {
-  const query = { iccid: '1', providerRef: 'r', purchasedAt: new Date(0), totalMb: 10_240, validityDays: 10 };
+  const query = { iccid: '1', providerRef: 'r', purchasedAt: new Date(0), planMb: 10_240, totalMb: 10_240, validityDays: 10, extraDays: 0 };
   it('starts a few minutes after purchase, then burns data and depletes before the plan ends', () => {
     expect(mockUsage(query, 2 * MIN, 1).status).toBe('not_started');
     const day5 = mockUsage(query, 5 * MIN + 5 * DAY, 1);

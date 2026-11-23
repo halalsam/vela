@@ -10,6 +10,8 @@ import {
   orderSchema,
   planSchema,
   regionSchema,
+  rewardsSchema,
+  topUpPackSchema,
   type Currency,
 } from './schemas';
 
@@ -36,6 +38,9 @@ export const httpServedMethods = [
   'getEsims',
   'getEsim',
   'getDailyUsage',
+  'getTopUpPacks',
+  'topUp',
+  'getRewards',
 ] as const;
 
 function idempotencyKey(): string {
@@ -93,6 +98,15 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     getOrder: (orderId) => get(`/v1/orders/${encodeURIComponent(orderId)}`, orderSchema),
     getEsims: () => get('/v1/esims', z.array(esimSchema)),
     getEsim: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}`, esimSchema),
+    getTopUpPacks: (iccid) =>
+      get(`/v1/esims/${encodeURIComponent(iccid)}/top-ups?${currency()}`, z.array(topUpPackSchema)),
+    topUp: (input) =>
+      send(`/v1/esims/${encodeURIComponent(input.iccid)}/top-ups`, checkoutSchema, {
+        method: 'POST',
+        headers: { 'idempotency-key': input.idempotencyKey ?? idempotencyKey() },
+        body: { pack_id: input.packId, currency: input.currency ?? options.currency?.() ?? 'INR' },
+      }),
+    getRewards: () => get(`/v1/rewards?${currency()}`, rewardsSchema),
     getDailyUsage: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}/usage/daily`, z.array(dailyUsageSchema)),
   };
 }

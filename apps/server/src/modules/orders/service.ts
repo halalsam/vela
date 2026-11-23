@@ -1,8 +1,8 @@
 import { randomInt } from 'node:crypto';
-import { priceBreakdown, type Checkout, type Coupon, type Order, type OrderStatus, type PaymentResult } from '@vela/api';
-import { and, count, desc, eq, inArray, lt, sql } from 'drizzle-orm';
+import { priceBreakdown, type Checkout, type Coupon, type Order, type OrderStatus, type PaymentResult, type TopUpPack } from '@vela/api';
+import { and, count, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { coupon, couponRedemption, esim, order, payment, webhookEvent } from '../../db/schema';
+import { coupon, couponRedemption, creditLedger, esim, order, payment, profile, topUpPack, topUpPrice, webhookEvent } from '../../db/schema';
 import type { Env } from '../../env';
 import { JOB, type JobQueue } from '../../jobs/queue';
 import { HttpError, notFound } from '../../lib/errors';
@@ -10,6 +10,7 @@ import { fromMinor, toMinor, type CurrencyCode } from '../../lib/money';
 import type { Logger } from '../../logger';
 import { planById } from '../catalog/queries';
 import type { PaymentProvider } from '../payments/provider';
+import { creditBalance, findReferrer, referralCoupon } from '../rewards/credit';
 
 export type OrderDeps = { db: Database; env: Env; payments: PaymentProvider; queue: JobQueue; logger: Logger };
 
@@ -38,11 +39,13 @@ async function toOrder(db: Database, row: OrderRow): Promise<Order> {
   return {
     order_id: row.id,
     number: row.number,
+    kind: row.kind,
     status: publicStatus(row.status),
     plan_id: row.planId ?? '',
     iccid: linked?.iccid ?? null,
     subtotal: fromMinor(row.subtotalMinor, row.currency),
     discount: fromMinor(row.discountMinor, row.currency),
+    credit: fromMinor(row.creditMinor, row.currency),
     tax: fromMinor(row.taxMinor, row.currency),
     total: fromMinor(row.totalMinor, row.currency),
     currency: row.currency,
@@ -76,6 +79,24 @@ export async function findCoupon(
     if ((used?.value ?? 0) >= row.perUserLimit) throw couponInvalid();
   }
   return row;
+}
+
+type Discount = { view: Coupon; couponCode: string | null; referralCode: string | null };
+
+export async function resolveDiscount(
+  db: Database,
+  code: string,
+  context: { currency: CurrencyCode; countryCodes?: string[]; userId?: string },
+): Promise<Discount> {
+  try {
+    const row = await findCoupon(db, code, context);
+    return { view: couponView(row, context.currency), couponCode: row.code, referralCode: null };
+  } catch (error) {
+    if (!(error instanceof HttpError)) throw error;
+    const referrer = await findReferrer(db, code, context.userId ?? null);
+    if (!referrer) throw error;
+    return { view: referralCoupon(referrer.referralCode, context.currency), couponCode: null, referralCode: referrer.referralCode };
+  }
 }
 
 async function checkoutFor(deps: OrderDeps, row: OrderRow): Promise<Checkout> {
@@ -112,9 +133,10 @@ export async function createOrder(
   const plan = await planById(db, input.planId, input.currency);
   if (!plan) throw notFound('Plan');
   const applied = input.couponCode
-    ? await findCoupon(db, input.couponCode, { currency: input.currency, countryCodes: plan.country_codes, userId })
+    ? await resolveDiscount(db, input.couponCode, { currency: input.currency, countryCodes: plan.country_codes, userId })
     : null;
-  const totals = priceBreakdown(plan.price, applied ? couponView(applied, input.currency) : null);
+  const balance = await creditBalance(db, userId, input.currency);
+  const totals = priceBreakdown(plan.price, applied?.view ?? null, fromMinor(balance, input.currency));
 
   const [inserted] = await db
     .insert(order)
@@ -127,9 +149,11 @@ export async function createOrder(
       currency: input.currency,
       subtotalMinor: toMinor(totals.subtotal, input.currency),
       discountMinor: toMinor(totals.discount, input.currency),
+      creditMinor: toMinor(totals.credit, input.currency),
       taxMinor: toMinor(totals.tax, input.currency),
       totalMinor: toMinor(totals.total, input.currency),
-      couponCode: applied?.code ?? null,
+      couponCode: applied?.couponCode ?? null,
+      referralCode: applied?.referralCode ?? null,
       idempotencyKey,
     })
     .onConflictDoNothing()
@@ -140,6 +164,11 @@ export async function createOrder(
     return checkoutFor(deps, raced);
   }
 
+  return collectPayment(deps, inserted);
+}
+
+async function collectPayment(deps: OrderDeps, inserted: OrderRow): Promise<Checkout> {
+  const { db, payments } = deps;
   if (inserted.totalMinor === 0) {
     await markPaid(deps, inserted.id);
     const [paid] = await db.select().from(order).where(eq(order.id, inserted.id));
@@ -149,7 +178,7 @@ export async function createOrder(
   const created = await payments.createPayment({
     receipt: inserted.number,
     amountMinor: inserted.totalMinor,
-    currency: input.currency,
+    currency: inserted.currency,
     orderId: inserted.id,
   });
   await db.insert(payment).values({
@@ -157,7 +186,7 @@ export async function createOrder(
     provider: payments.name,
     providerOrderId: created.providerOrderId,
     amountMinor: inserted.totalMinor,
-    currency: input.currency,
+    currency: inserted.currency,
   });
   deps.logger.info({ orderId: inserted.id, number: inserted.number, total: inserted.totalMinor }, 'order created');
   return checkoutFor(deps, inserted);
@@ -173,6 +202,21 @@ async function markPaid(deps: OrderDeps, orderId: string): Promise<boolean> {
     if (!paid) return false;
     if (paid.couponCode) {
       await tx.insert(couponRedemption).values({ couponCode: paid.couponCode, userId: paid.userId, orderId: paid.id }).onConflictDoNothing();
+    }
+    if (paid.creditMinor > 0) {
+      await tx
+        .insert(creditLedger)
+        .values({ userId: paid.userId, amountMinor: -paid.creditMinor, currency: paid.currency, reason: 'order', orderId: paid.id })
+        .onConflictDoNothing();
+    }
+    if (paid.referralCode) {
+      const [referrer] = await tx.select({ userId: profile.userId }).from(profile).where(eq(profile.referralCode, paid.referralCode));
+      if (referrer && referrer.userId !== paid.userId) {
+        await tx
+          .update(profile)
+          .set({ referredBy: referrer.userId, updatedAt: new Date() })
+          .where(and(eq(profile.userId, paid.userId), isNull(profile.referredBy)));
+      }
     }
     return true;
   });
@@ -280,4 +324,74 @@ export async function expireStaleOrders(db: Database): Promise<number> {
     )
     .returning({ id: order.id });
   return expired.length;
+}
+
+const TOP_UP_STATUSES: (typeof esim.$inferSelect.status)[] = ['not_started', 'active', 'depleted'];
+
+export async function listTopUpPacks(db: Database, userId: string, iccid: string, currency: CurrencyCode): Promise<TopUpPack[]> {
+  const [owned] = await db.select().from(esim).where(and(eq(esim.userId, userId), eq(esim.iccid, iccid)));
+  if (!owned) throw notFound('eSIM');
+  if (!TOP_UP_STATUSES.includes(owned.status)) return [];
+  const rows = await db
+    .select({ pack: topUpPack, priceMinor: topUpPrice.amountMinor })
+    .from(topUpPack)
+    .innerJoin(topUpPrice, and(eq(topUpPrice.packId, topUpPack.id), eq(topUpPrice.currency, currency)))
+    .where(and(eq(topUpPack.planId, owned.planId), eq(topUpPack.active, true)))
+    .orderBy(topUpPack.dataMb);
+  return rows.map((row) => ({
+    id: row.pack.id,
+    iccid,
+    data_mb: row.pack.dataMb,
+    extra_days: row.pack.extraDays,
+    price: fromMinor(row.priceMinor, currency),
+    currency,
+  }));
+}
+
+export async function createTopUpOrder(
+  deps: OrderDeps,
+  userId: string,
+  input: { iccid: string; packId: string; currency: CurrencyCode },
+  idempotencyKey: string,
+): Promise<Checkout> {
+  const { db } = deps;
+  const byKey = and(eq(order.userId, userId), eq(order.idempotencyKey, idempotencyKey));
+  const [existing] = await db.select().from(order).where(byKey);
+  if (existing) return checkoutFor(deps, existing);
+  if (!deps.payments.supports(input.currency)) {
+    throw new HttpError(422, 'currency_unsupported', `Payments in ${input.currency} aren’t available yet`);
+  }
+  const packs = await listTopUpPacks(db, userId, input.iccid, input.currency);
+  const pack = packs.find((item) => item.id === input.packId);
+  if (!pack) throw new HttpError(422, 'top_up_unavailable', 'This top-up isn’t available for this eSIM');
+  const [owned] = await db.select().from(esim).where(and(eq(esim.userId, userId), eq(esim.iccid, input.iccid)));
+  if (!owned) throw notFound('eSIM');
+  const balance = await creditBalance(db, userId, input.currency);
+  const totals = priceBreakdown(pack.price, null, fromMinor(balance, input.currency));
+  const [inserted] = await db
+    .insert(order)
+    .values({
+      number: orderNumber(),
+      userId,
+      kind: 'top_up',
+      status: 'awaiting_payment',
+      planId: owned.planId,
+      topUpPackId: pack.id,
+      esimId: owned.id,
+      currency: input.currency,
+      subtotalMinor: toMinor(totals.subtotal, input.currency),
+      creditMinor: toMinor(totals.credit, input.currency),
+      taxMinor: toMinor(totals.tax, input.currency),
+      totalMinor: toMinor(totals.total, input.currency),
+      idempotencyKey,
+    })
+    .onConflictDoNothing()
+    .returning();
+  if (!inserted) {
+    const [raced] = await db.select().from(order).where(byKey);
+    if (!raced) throw new Error('Order insert conflicted but no order was found');
+    return checkoutFor(deps, raced);
+  }
+  deps.logger.info({ orderId: inserted.id, pack: pack.id }, 'top-up order created');
+  return collectPayment(deps, inserted);
 }

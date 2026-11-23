@@ -29,6 +29,13 @@
       "when": 1795414175733,
       "tag": "0003_usage_push",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795415170902,
+      "tag": "0004_rewards",
+      "breakpoints": true
     }
   ]
 }

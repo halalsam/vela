@@ -1,0 +1,2 @@
+ALTER TABLE "order" ADD COLUMN "referral_code" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "credit_ledger_order_reason_idx" ON "credit_ledger" USING btree ("order_id","reason") WHERE "credit_ledger"."order_id" is not null;

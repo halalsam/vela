@@ -356,7 +356,8 @@
     "otherSoon": "UPI والبطاقات والخدمات المصرفية متاحة في نافذة الدفع. Apple Pay يصل مع مدفوعات الخليج.",
     "failedTitle": "لم يتم الدفع",
     "failedBody": "لم يتم خصم أي مبلغ. حاول مرة أخرى.",
-    "paymentDescription": "شريحة لمدة {{days}} يوم"
+    "paymentDescription": "شريحة لمدة {{days}} يوم",
+    "credit": "رصيد السفر"
   },
   "processing": {
     "title": "نُبحر الآن.",
@@ -437,7 +438,9 @@
     "now": "متبقٍ الآن {{left}}",
     "extraDays": "+{{count}} أيام",
     "packsLabel": "خيارات الشحن",
-    "done": "تمت إعادة الشحن. أُضيف {{data}}."
+    "done": "تمت إعادة الشحن. أُضيف {{data}}.",
+    "paymentDescription": "شحن {{data}}",
+    "pending": "استلمنا الدفع. ستظهر بياناتك خلال دقيقة."
   },
   "rewards": {
     "title": "المكافآت",

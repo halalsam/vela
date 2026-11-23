@@ -348,7 +348,8 @@
     "otherSoon": "UPI, cards and netbanking are in the payment sheet. Apple Pay arrives with Gulf payments.",
     "failedTitle": "Payment didn't go through",
     "failedBody": "You haven't been charged. Try again.",
-    "paymentDescription": "{{days}}-day eSIM"
+    "paymentDescription": "{{days}}-day eSIM",
+    "credit": "Travel credit"
   },
   "processing": {
     "title": "setting sail.",
@@ -429,7 +430,9 @@
     "now": "Now {{left}} left",
     "extraDays": "+{{count}} days",
     "packsLabel": "Top-up options",
-    "done": "Topped up. {{data}} added."
+    "done": "Topped up. {{data}} added.",
+    "paymentDescription": "{{data}} top-up",
+    "pending": "Payment received. Your data will appear in a minute."
   },
   "rewards": {
     "title": "rewards",

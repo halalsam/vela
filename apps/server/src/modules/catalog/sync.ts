@@ -1,6 +1,6 @@
 import { and, eq, notInArray, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { plan, planPrice, region } from '../../db/schema';
+import { plan, planPrice, region, topUpPack, topUpPrice } from '../../db/schema';
 import type { Logger } from '../../logger';
 import type { EsimProvider } from '../esims/provider';
 import { planSlug, retailPrices, uniqueId } from './pricing';
@@ -60,6 +60,40 @@ export async function syncCatalog(
           });
       }
     }
+    const packRefs: string[] = [];
+    for (const item of remote) {
+      const [owner] = await tx.select({ id: plan.id }).from(plan).where(eq(plan.providerPlanRef, item.ref));
+      if (!owner) continue;
+      for (const pack of item.topUps) {
+        packRefs.push(pack.ref);
+        const size = pack.dataMb % 1024 === 0 ? `${pack.dataMb / 1024}gb` : `${pack.dataMb}mb`;
+        const packValues = {
+          planId: owner.id,
+          dataMb: pack.dataMb,
+          extraDays: pack.extraDays,
+          costMinor: pack.cost.amountMinor,
+          costCurrency: pack.cost.currency,
+          active: true,
+        };
+        const [stored] = await tx
+          .insert(topUpPack)
+          .values({ id: `${packValues.planId}-topup-${size}${pack.extraDays ? `-${pack.extraDays}d` : ''}`, providerPackRef: pack.ref, ...packValues })
+          .onConflictDoUpdate({ target: topUpPack.providerPackRef, set: packValues })
+          .returning({ id: topUpPack.id });
+        if (!stored) continue;
+        for (const price of retailPrices(pack, options.marginPercent)) {
+          await tx
+            .insert(topUpPrice)
+            .values({ packId: stored.id, currency: price.currency, amountMinor: price.amountMinor })
+            .onConflictDoUpdate({ target: [topUpPrice.packId, topUpPrice.currency], set: { amountMinor: price.amountMinor } });
+        }
+      }
+    }
+    await tx
+      .update(topUpPack)
+      .set({ active: false })
+      .where(packRefs.length > 0 ? and(eq(topUpPack.active, true), notInArray(topUpPack.providerPackRef, packRefs)) : eq(topUpPack.active, true));
+
     const refs = remote.map((item) => item.ref);
     const stale = await tx
       .update(plan)

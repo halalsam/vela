@@ -114,7 +114,8 @@
     "waiting": "Setting up your eSIM…",
     "refunded": "We couldn't set up this eSIM, so we're refunding you in full. It can take 5–7 working days.",
     "slow": "This is taking longer than usual. Your eSIM will appear in your account when it's ready.",
-    "description": "{{plan}} eSIM"
+    "description": "{{plan}} eSIM",
+    "credit": "Travel credit"
   },
   "success": {
     "title": "you're connected.",

@@ -2,12 +2,13 @@ import type { DailyUsage } from '@vela/api';
 import { isLowData } from '@vela/utils';
 import { and, asc, eq, inArray, lte, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { esim, plan, usageSnapshot } from '../../db/schema';
+import { esim, order, plan, topUpPack, usageSnapshot } from '../../db/schema';
 import { notFound } from '../../lib/errors';
 import type { Logger } from '../../logger';
 import type { NoticeKind } from '../notifications/messages';
 import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
+import { creditReferrerForEsim } from '../rewards/credit';
 import type { EsimProvider } from './provider';
 
 export type UsageDeps = { db: Database; logger: Logger; provider: EsimProvider; push: PushSender; now?: () => Date };
@@ -38,15 +39,26 @@ export function noticesDue(row: Pick<EsimRow, 'status' | 'dataUsedMb' | 'dataTot
 export async function syncEsimUsage(deps: UsageDeps, esimId: string): Promise<{ changed: boolean; notices: NoticeKind[] }> {
   const { db } = deps;
   const now = deps.now?.() ?? new Date();
-  const [found] = await db.select({ esim, validityDays: plan.validityDays }).from(esim).innerJoin(plan, eq(plan.id, esim.planId)).where(eq(esim.id, esimId));
+  const [found] = await db
+    .select({ esim, validityDays: plan.validityDays, planMb: plan.dataMb })
+    .from(esim)
+    .innerJoin(plan, eq(plan.id, esim.planId))
+    .where(eq(esim.id, esimId));
   if (!found) return { changed: false, notices: [] };
   const before = found.esim;
+  const [extra] = await db
+    .select({ days: sql<number>`coalesce(sum(${topUpPack.extraDays}), 0)::int` })
+    .from(order)
+    .innerJoin(topUpPack, eq(topUpPack.id, order.topUpPackId))
+    .where(and(eq(order.esimId, before.id), eq(order.kind, 'top_up'), eq(order.status, 'fulfilled')));
   const usage = await deps.provider.usage({
     iccid: before.iccid,
     providerRef: before.providerRef,
     purchasedAt: before.createdAt,
+    planMb: found.planMb,
     totalMb: before.dataTotalMb,
     validityDays: found.validityDays,
+    extraDays: extra?.days ?? 0,
   });
   const changed =
     usage.usedMb !== before.dataUsedMb ||
@@ -74,6 +86,14 @@ export async function syncEsimUsage(deps: UsageDeps, esimId: string): Promise<{ 
       .insert(usageSnapshot)
       .values({ esimId: after.id, day: utcDay(now), usedMb: usage.usedMb })
       .onConflictDoUpdate({ target: [usageSnapshot.esimId, usageSnapshot.day], set: { usedMb: sql`excluded.used_mb` } });
+  }
+
+  if (before.status === 'not_started' && after.status !== 'not_started') {
+    try {
+      await creditReferrerForEsim(db, deps.logger, after.id);
+    } catch (error) {
+      deps.logger.warn({ esimId: after.id, err: error }, 'referral credit failed');
+    }
   }
 
   const sent: NoticeKind[] = [];

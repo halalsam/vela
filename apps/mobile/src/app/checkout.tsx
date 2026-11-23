@@ -10,7 +10,7 @@ import { Banner, Button, Sheet, Skeleton, SwipeToPay, toast, type SwipeToPayStat
 import { haptics } from '@/lib/haptics';
 import { PaymentCancelled } from '@/lib/payments';
 import { useOnline } from '@/lib/useOnline';
-import { usePlan, usePurchase, useRedeemCoupon } from '@/queries';
+import { usePlan, usePurchase, useRedeemCoupon, useRewards } from '@/queries';
 
 function newAttemptKey(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
@@ -29,7 +29,9 @@ export default function CheckoutScreen() {
   const [status, setStatus] = useState<SwipeToPayStatus>('idle');
   const [failed, setFailed] = useState(false);
 
-  const breakdown = plan.data ? priceBreakdown(plan.data.price, coupon) : null;
+  const rewards = useRewards();
+  const credit = rewards.data && plan.data && rewards.data.currency === plan.data.currency ? rewards.data.balance : 0;
+  const breakdown = plan.data ? priceBreakdown(plan.data.price, coupon, credit) : null;
 
   function pay() {
     if (!plan.data) return;

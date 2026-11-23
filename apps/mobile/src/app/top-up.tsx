@@ -1,6 +1,6 @@
 import { formatData, formatPrice } from '@vela/utils';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { Flag, PriceOdometer } from '@/components/esim';
@@ -8,8 +8,13 @@ import { TopUpOption } from '@/components/sections/usage/UsageSections';
 import { EmptyState, ErrorState, OfflineBanner, RowsSkeleton } from '@/components/sections/states/StateViews';
 import { Banner, Card, Sheet, SwipeToPay, Text, toast, type SwipeToPayStatus } from '@/components/ui';
 import { haptics } from '@/lib/haptics';
+import { PaymentCancelled } from '@/lib/payments';
 import { useOnline } from '@/lib/useOnline';
-import { useEsim, useTopUp, useTopUpPacks } from '@/queries';
+import { TopUpPending, useEsim, useTopUp, useTopUpPacks } from '@/queries';
+
+function newAttemptKey(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
 
 export default function TopUpScreen() {
   const { t } = useTranslation();
@@ -19,6 +24,7 @@ export default function TopUpScreen() {
   const topUp = useTopUp();
   const online = useOnline();
   const [selected, setSelected] = useState<string>();
+  const attempt = useRef(newAttemptKey());
   const [status, setStatus] = useState<SwipeToPayStatus>('idle');
   const [failed, setFailed] = useState(false);
   const list = packs.data ?? [];
@@ -29,15 +35,21 @@ export default function TopUpScreen() {
     setFailed(false);
     setStatus('loading');
     topUp.mutate(
-      { iccid, packId: pack.id },
+      { iccid, packId: pack.id, idempotencyKey: attempt.current, description: t('topUp.paymentDescription', { data: formatData(pack.data_mb) }) },
       {
         onSuccess: () => {
           setStatus('success');
           toast.show({ message: t('topUp.done', { data: formatData(pack.data_mb) }), tone: 'success' });
           setTimeout(() => router.back(), 600);
         },
-        onError: () => {
+        onError: (error) => {
           setStatus('idle');
+          if (error instanceof PaymentCancelled) return;
+          if (error instanceof TopUpPending) {
+            toast.show({ message: t('topUp.pending') });
+            setTimeout(() => router.back(), 600);
+            return;
+          }
           setFailed(true);
           haptics.error();
         },
@@ -88,7 +100,11 @@ export default function TopUpScreen() {
       ) : (
         <View accessibilityRole="radiogroup" accessibilityLabel={t('topUp.packsLabel')} className="gap-card-gap">
           {list.map((item) => (
-            <TopUpOption key={item.id} pack={item} selected={item.id === pack?.id} onPress={() => setSelected(item.id)} />
+            <TopUpOption key={item.id} pack={item} selected={item.id === pack?.id} onPress={() => {
+                setSelected(item.id);
+                attempt.current = newAttemptKey();
+              }}
+            />
           ))}
         </View>
       )}

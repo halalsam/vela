@@ -42,7 +42,7 @@ describe('scenarios and orders', () => {
     expect(first && first.data_used_mb / first.data_total_mb).toBeGreaterThan(0.9);
   });
 
-  it('applies coupons and includes 18% GST in the total', async () => {
+  it('applies coupons, then travel credit, and includes 18% GST in the total', async () => {
     const api = createMockApi({ latencyMs: 0 });
     const { order, payment } = await api.createOrder({ planId: 'jp-10gb-15d', couponCode: 'gulf20' });
     expect(payment).toBeNull();
@@ -50,8 +50,9 @@ describe('scenarios and orders', () => {
     expect(await api.getOrder(order.order_id)).toEqual(order);
     expect(order.subtotal).toBe(1199);
     expect(order.discount).toBe(240);
-    expect(order.total).toBe(959);
-    expect(order.tax).toBe(146);
+    expect(order.credit).toBe(300);
+    expect(order.total).toBe(659);
+    expect(order.tax).toBe(101);
     expect((await api.getEsims())[0]?.iccid).toBe(order.iccid);
   });
 

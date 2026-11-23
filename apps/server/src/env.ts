@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+const optional = z
+  .string()
+  .optional()
+  .transform((value) => value || undefined);
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['local', 'staging', 'production']).default('local'),
@@ -22,13 +27,40 @@ const envSchema = z.object({
     .transform((value) => value || undefined),
   GIT_SHA: z.string().default('dev'),
   ESIM_PROVIDER: z.enum(['mock']).default('mock'),
+  API_PUBLIC_URL: z.url().default('http://localhost:8787'),
+  BETTER_AUTH_SECRET: z.string().min(32, 'must be at least 32 characters'),
+  COOKIE_DOMAIN: optional,
+  APPLE_BUNDLE_ID: z.string().default('com.vela.app'),
+  APPLE_SERVICE_ID: optional,
+  APPLE_CLIENT_SECRET: optional,
+  GOOGLE_CLIENT_ID: optional,
+  GOOGLE_CLIENT_SECRET: optional,
+  GOOGLE_IOS_CLIENT_ID: optional,
+  SMS_ROUTE: z.enum(['console', 'live']).default('console'),
+  MSG91_AUTH_KEY: optional,
+  MSG91_TEMPLATE_ID: optional,
+  TWILIO_ACCOUNT_SID: optional,
+  TWILIO_AUTH_TOKEN: optional,
+  TWILIO_FROM: optional,
   PRICING_MARGIN_PERCENT: z.coerce.number().min(0).max(300).default(40),
+});
+
+const checkedEnvSchema = envSchema.superRefine((env, context) => {
+  if (env.APP_ENV === 'production' && env.SMS_ROUTE !== 'live') {
+    context.addIssue({ code: 'custom', path: ['SMS_ROUTE'], message: 'production must send real SMS' });
+  }
+  if (env.SMS_ROUTE === 'live' && !(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_FROM)) {
+    context.addIssue({ code: 'custom', path: ['TWILIO_ACCOUNT_SID'], message: 'live SMS needs Twilio for non-Indian numbers' });
+  }
+  if (env.SMS_ROUTE === 'live' && !(env.MSG91_AUTH_KEY && env.MSG91_TEMPLATE_ID)) {
+    context.addIssue({ code: 'custom', path: ['MSG91_AUTH_KEY'], message: 'live SMS needs MSG91 for Indian numbers' });
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;
 
 export function loadEnv(source: Record<string, string | undefined> = process.env): Env {
-  const parsed = envSchema.safeParse(source);
+  const parsed = checkedEnvSchema.safeParse(source);
   if (!parsed.success) {
     throw new Error(`Invalid environment:\n${z.prettifyError(parsed.error)}`);
   }

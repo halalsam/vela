@@ -2,14 +2,13 @@ import { createHttpApi, createMockApi } from '@vela/api';
 import { countries as mockCountries, plans as mockPlans } from '@vela/api/mocks';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createApp } from '../src/app';
 import { plan, planPrice } from '../src/db/schema';
 import { charmPrice, planSlug, retailPrices, uniqueId } from '../src/modules/catalog/pricing';
 import { seedReferenceData } from '../src/modules/catalog/seed';
 import { syncCatalog } from '../src/modules/catalog/sync';
 import type { EsimProvider, ProviderPlan } from '../src/modules/esims/provider';
 import { createMockProvider } from '../src/modules/esims/providers/mock';
-import { createTestDb, silentLogger, testEnv } from './helpers';
+import { createTestApp, createTestDb, silentLogger } from './helpers';
 
 let db: Awaited<ReturnType<typeof createTestDb>>['db'];
 let close: () => Promise<void>;
@@ -27,7 +26,7 @@ afterAll(async () => {
   await close();
 });
 
-const app = () => createApp({ db, env: testEnv, logger: silentLogger, version: 'test' });
+const app = () => createTestApp(db).app;
 const httpApi = (currency: 'INR' | 'AED' = 'INR') =>
   createHttpApi({
     baseUrl: 'http://vela.test/',

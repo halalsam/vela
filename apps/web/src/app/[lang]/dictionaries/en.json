@@ -161,7 +161,19 @@
     "topUpInApp": "Top up in the vela app",
     "loading": "Loading your eSIMs…",
     "error": "We couldn't load your eSIMs. Try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "liveSignInBody": "Sign in with your phone number or Google.",
+    "phone": "Mobile number with country code",
+    "phonePlaceholder": "+91 98765 43210",
+    "sendCode": "Send code",
+    "code": "6-digit code",
+    "verify": "Sign in",
+    "changeNumber": "Use a different number",
+    "google": "Continue with Google",
+    "or": "or",
+    "wrongCode": "That code isn't right. Try again.",
+    "failed": "Couldn't sign you in. Try again.",
+    "sent": "We texted a code to {{phone}}."
   },
   "footer": {
     "tagline": "land connected.",

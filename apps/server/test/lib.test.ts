@@ -48,7 +48,12 @@ describe('env', () => {
   });
 
   it('splits CORS origins', () => {
-    const env = loadEnv({ DATABASE_URL: 'postgres://x', ENCRYPTION_KEY: testKey, CORS_ORIGINS: 'https://a.com, https://b.com' });
+    const env = loadEnv({
+      DATABASE_URL: 'postgres://x',
+      ENCRYPTION_KEY: testKey,
+      BETTER_AUTH_SECRET: 'x'.repeat(32),
+      CORS_ORIGINS: 'https://a.com, https://b.com',
+    });
     expect(env.CORS_ORIGINS).toEqual(['https://a.com', 'https://b.com']);
   });
 });

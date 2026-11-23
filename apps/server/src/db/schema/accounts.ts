@@ -1,11 +1,14 @@
 import { index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { user } from './auth';
 import { timestamps } from './catalog';
 import { currency, devicePlatform, userRole } from './enums';
 
 export const profile = pgTable(
   'profile',
   {
-    userId: text().primaryKey(),
+    userId: text()
+      .primaryKey()
+      .references(() => user.id, { onDelete: 'cascade' }),
     name: text(),
     email: text(),
     phone: text(),
@@ -24,7 +27,9 @@ export const device = pgTable(
   'device',
   {
     id: uuid().primaryKey().defaultRandom(),
-    userId: text().notNull(),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
     platform: devicePlatform().notNull(),
     pushToken: text().notNull(),
     locale: text().notNull().default('en'),

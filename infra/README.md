@@ -14,7 +14,10 @@ Copy `infra/` to `/srv/vela/infra`, then for each environment create two files n
 example (never commit them):
 
 - `env/staging.env` and `env/production.env`: app settings, see `env/example.env`.
-  Generate `ENCRYPTION_KEY` with `openssl rand -hex 32`.
+  Generate `ENCRYPTION_KEY` and `BETTER_AUTH_SECRET` with `openssl rand -hex 32`. Set
+  `API_PUBLIC_URL` to the environment's API URL and `COOKIE_DOMAIN` to the shared parent domain
+  so the website's session cookie reaches the API. Production refuses to start without live SMS
+  keys (MSG91 and Twilio).
 - `env/staging.secrets` and `env/production.secrets`: `POSTGRES_PASSWORD=...`
 
 Start Caddy once (DNS for both API domains must point at the VPS):

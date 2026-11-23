@@ -3,11 +3,13 @@ import '@/i18n';
 import '@/lib/interop';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SplashGate } from '@/components/sections/SplashGate';
 import { ToastViewport } from '@/components/ui';
 import { useLanguageSync } from '@/i18n/useLanguageSync';
+import { confirmStoredSession } from '@/lib/auth';
 import { baseStackOptions, largeTitleStackOptions, sheetOptions } from '@/lib/navigation';
 import { queryClient } from '@/lib/queryClient';
 import { startWidgetSync } from '@/lib/widgetSync';
@@ -23,6 +25,10 @@ export default function RootLayout() {
   const onboardingSeen = useSession((state) => state.onboardingSeen);
   const signedIn = useSession((state) => state.signedIn);
   const inApp = onboardingSeen && signedIn;
+
+  useEffect(() => {
+    if (hydrated) void confirmStoredSession();
+  }, [hydrated]);
 
   return (
     <GestureHandlerRootView className="flex-1 bg-canvas">

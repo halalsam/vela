@@ -55,13 +55,15 @@ export function ChooseView({ busy, error, onApple, onGoogle, onPhone }: ChooseVi
 type PhoneViewProps = {
   dialCode: DialCode;
   number: string;
+  busy: boolean;
+  error: string | null;
   onDialCode: (code: DialCode) => void;
   onNumber: (value: string) => void;
   onSubmit: () => void;
   onBack: () => void;
 };
 
-export function PhoneView({ dialCode, number, onDialCode, onNumber, onSubmit, onBack }: PhoneViewProps) {
+export function PhoneView({ dialCode, number, busy, error, onDialCode, onNumber, onSubmit, onBack }: PhoneViewProps) {
   const { t } = useTranslation();
   const valid = number.replace(/\D/g, '').length >= 8;
   return (
@@ -92,7 +94,10 @@ export function PhoneView({ dialCode, number, onDialCode, onNumber, onSubmit, on
           onSubmitEditing={() => valid && onSubmit()}
         />
       </View>
-      <Button label={t('signIn.sendCode')} fullWidth disabled={!valid} onPress={onSubmit} />
+      <View className="gap-3">
+        {error ? <Banner tone="danger" title={error} /> : null}
+        <Button label={t('signIn.sendCode')} fullWidth disabled={!valid} loading={busy} onPress={onSubmit} />
+      </View>
     </View>
   );
 }
@@ -104,12 +109,13 @@ type CodeViewProps = {
   busy: boolean;
   onCode: (value: string) => void;
   onComplete: (value: string) => void;
+  onResend: () => void;
   onBack: () => void;
 };
 
 const RESEND_SECONDS = 30;
 
-export function CodeView({ phone, code, error, busy, onCode, onComplete, onBack }: CodeViewProps) {
+export function CodeView({ phone, code, error, busy, onCode, onComplete, onResend, onBack }: CodeViewProps) {
   const { t } = useTranslation();
   const now = useNow();
   const [sentAt, setSentAt] = useState(() => Date.now());
@@ -142,9 +148,17 @@ export function CodeView({ phone, code, error, busy, onCode, onComplete, onBack 
           {t('signIn.resendIn', { time: `0:${pad2(remaining)}` })}
         </Text>
       ) : (
-        <Button label={t('signIn.resend')} variant="ghost" size="sm" onPress={() => setSentAt(Date.now())} />
+        <Button
+          label={t('signIn.resend')}
+          variant="ghost"
+          size="sm"
+          onPress={() => {
+            setSentAt(Date.now());
+            onResend();
+          }}
+        />
       )}
-      {__DEV__ ? (
+      {__DEV__ && !process.env.EXPO_PUBLIC_API_URL ? (
         <Text variant="caption" tone="quaternary">
           {t('signIn.demoHint')}
         </Text>

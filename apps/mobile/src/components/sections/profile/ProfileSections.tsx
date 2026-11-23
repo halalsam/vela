@@ -6,6 +6,7 @@ import { Card, ListGroup, ListRow, MenuPicker, Skeleton, Switch, Text, toast } f
 import { directionNeedsRestart } from '@/i18n/useLanguageSync';
 import { useProfile } from '@/queries';
 import { devScenarios, useDevStore, type DevScenario } from '@/stores/dev';
+import { deleteAccount, signOutEverywhere } from '@/lib/auth';
 import { useSession, type LanguagePreference } from '@/stores/session';
 
 export function AccountCard() {
@@ -149,7 +150,7 @@ export function DeveloperGroup() {
 
 export function SignOutRow() {
   const { t } = useTranslation();
-  const signOut = useSession((state) => state.signOut);
+  const signOut = () => void signOutEverywhere();
   return (
     <ListGroup>
       <ListRow
@@ -160,6 +161,23 @@ export function SignOutRow() {
           Alert.alert(t('profile.signOutTitle'), t('profile.signOutBody'), [
             { text: t('common.cancel'), style: 'cancel' },
             { text: t('profile.signOut'), style: 'destructive', onPress: signOut },
+          ])
+        }
+      />
+      <ListRow
+        title={t('profile.deleteAccount')}
+        destructive
+        chevron={false}
+        onPress={() =>
+          Alert.alert(t('profile.deleteTitle'), t('profile.deleteBody'), [
+            { text: t('common.cancel'), style: 'cancel' },
+            {
+              text: t('profile.deleteConfirm'),
+              style: 'destructive',
+              onPress: () => {
+                deleteAccount().catch(() => toast.show({ message: t('profile.deleteFailed'), tone: 'danger' }));
+              },
+            },
           ])
         }
       />

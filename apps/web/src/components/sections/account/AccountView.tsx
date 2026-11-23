@@ -8,9 +8,11 @@ import { UsageRing } from '@/components/esim';
 import { Button, ButtonLink, Card, Field, Pill } from '@/components/ui';
 import { browserApi } from '@/lib/browserApi';
 import { format, type Dictionary, type Locale } from '@/lib/i18n';
+import { authClient } from '@/lib/authClient';
 import { readAllOrders } from '@/lib/orders';
 import { notifyStorage, useStorageValue } from '@/lib/useStorage';
 import { cn, type } from '@/lib/type';
+import { LiveSignIn } from './LiveSignIn';
 
 const SESSION_KEY = 'vela:session';
 
@@ -23,24 +25,31 @@ async function loadEsims(): Promise<Esim[]> {
 type Names = Record<string, string>;
 type State = { status: 'loading' } | { status: 'error' } | { status: 'ready'; esims: Esim[] };
 
-export function AccountView({ locale, labels, names }: { locale: Locale; labels: Dictionary['account']; names: Names }) {
+export function AccountView(props: { locale: Locale; labels: Dictionary['account']; names: Names }) {
+  return authClient ? <LiveAccount {...props} /> : <DemoAccount {...props} />;
+}
+
+function LiveAccount({ locale, labels, names }: { locale: Locale; labels: Dictionary['account']; names: Names }) {
+  const client = authClient;
+  const session = client?.useSession();
+  if (!client || !session || session.isPending) return <div className="h-80" aria-busy />;
+  if (!session.data) return <LiveSignIn labels={labels} />;
+  const user = session.data.user as { email: string; phoneNumber?: string | null };
+  const identity = user.email.endsWith('@phone.vela.invalid') ? (user.phoneNumber ?? '') : user.email;
+  return (
+    <SignedInAccount
+      locale={locale}
+      labels={labels}
+      names={names}
+      identity={identity}
+      onSignOut={() => void client.signOut()}
+    />
+  );
+}
+
+function DemoAccount({ locale, labels, names }: { locale: Locale; labels: Dictionary['account']; names: Names }) {
   const email = useStorageValue('local', SESSION_KEY);
   const [draft, setDraft] = useState('');
-  const [state, setState] = useState<State>({ status: 'loading' });
-
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    if (!email) return;
-    let cancelled = false;
-    loadEsims().then(
-      (esims) => !cancelled && setState({ status: 'ready', esims }),
-      () => !cancelled && setState({ status: 'error' }),
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [email, attempt]);
 
   function signIn(event: FormEvent) {
     event.preventDefault();
@@ -69,24 +78,56 @@ export function AccountView({ locale, labels, names }: { locale: Locale; labels:
   }
 
   return (
+    <SignedInAccount
+      locale={locale}
+      labels={labels}
+      names={names}
+      identity={email}
+      onSignOut={() => {
+        try {
+          localStorage.removeItem(SESSION_KEY);
+        } catch {
+          return;
+        }
+        notifyStorage();
+      }}
+    />
+  );
+}
+
+type SignedInProps = {
+  locale: Locale;
+  labels: Dictionary['account'];
+  names: Names;
+  identity: string;
+  onSignOut: () => void;
+};
+
+function SignedInAccount({ locale, labels, names, identity, onSignOut }: SignedInProps) {
+  const [state, setState] = useState<State>({ status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadEsims().then(
+      (esims) => !cancelled && setState({ status: 'ready', esims }),
+      () => !cancelled && setState({ status: 'error' }),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
+
+  return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col gap-2">
           <h1 className={type.hero}>{labels.title}</h1>
-          <p className={cn(type.callout, 'text-fg-secondary')}>{format(labels.signedInAs, { email })}</p>
+          <p className={cn(type.callout, 'text-fg-secondary')}>
+            <span dir="ltr">{format(labels.signedInAs, { email: identity })}</span>
+          </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            try {
-              localStorage.removeItem(SESSION_KEY);
-            } catch {
-              return;
-            }
-            notifyStorage();
-          }}
-        >
+        <Button variant="ghost" size="sm" onClick={onSignOut}>
           {labels.signOut}
         </Button>
       </div>

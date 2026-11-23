@@ -2,65 +2,67 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ChooseView, CodeView, PhoneView, type DialCode } from '@/components/sections/auth/SignInViews';
+import { SignInError, sendPhoneCode, signInWithApple, signInWithGoogle, verifyPhoneCode } from '@/lib/auth';
 import { haptics } from '@/lib/haptics';
-import { useDevStore } from '@/stores/dev';
-import { useSession, type SignInProvider } from '@/stores/session';
 
-type View_ = 'choose' | 'phone' | 'code';
-
-const WRONG_CODE = '000000';
-const MOCK_LATENCY = 700;
+type Step = 'choose' | 'phone' | 'code';
 
 export default function SignInScreen() {
   const { t } = useTranslation();
-  const signIn = useSession((state) => state.signIn);
-  const [view, setView] = useState<View_>('choose');
+  const [step, setStep] = useState<Step>('choose');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dialCode, setDialCode] = useState<DialCode>('+91');
   const [number, setNumber] = useState('');
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState(false);
+  const phoneNumber = `${dialCode}${number.replace(/\D/g, '')}`;
 
-  function finish(provider: SignInProvider) {
+  async function run(action: () => Promise<void>, onFailure?: (error: SignInError) => boolean) {
     setBusy(true);
     setError(null);
-    setTimeout(() => {
-      setBusy(false);
-      if (useDevStore.getState().scenario === 'error') {
-        haptics.error();
-        setError(t('signIn.error'));
-        if (provider === 'phone') setView('choose');
-        return;
-      }
+    try {
+      await action();
       haptics.success();
-      signIn(provider);
-    }, MOCK_LATENCY);
+    } catch (caught) {
+      const failure = caught instanceof SignInError ? caught : new SignInError('failed');
+      if (failure.reason === 'cancelled') return;
+      if (onFailure?.(failure)) return;
+      haptics.error();
+      setError(t('signIn.error'));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 bg-canvas">
       <View className="flex-1 px-section pb-safe-offset-4 pt-safe-offset-4">
-        {view === 'choose' ? (
+        {step === 'choose' ? (
           <ChooseView
             busy={busy}
             error={error}
-            onApple={() => finish('apple')}
-            onGoogle={() => finish('google')}
-            onPhone={() => setView('phone')}
+            onApple={() => void run(signInWithApple)}
+            onGoogle={() => void run(signInWithGoogle)}
+            onPhone={() => setStep('phone')}
           />
-        ) : view === 'phone' ? (
+        ) : step === 'phone' ? (
           <PhoneView
             dialCode={dialCode}
             number={number}
+            busy={busy}
+            error={error}
             onDialCode={setDialCode}
             onNumber={setNumber}
-            onSubmit={() => {
-              setCode('');
-              setCodeError(false);
-              setView('code');
-            }}
-            onBack={() => setView('choose')}
+            onSubmit={() =>
+              void run(async () => {
+                await sendPhoneCode(phoneNumber);
+                setCode('');
+                setCodeError(false);
+                setStep('code');
+              })
+            }
+            onBack={() => setStep('choose')}
           />
         ) : (
           <CodeView
@@ -72,14 +74,18 @@ export default function SignInScreen() {
               setCode(value);
               if (codeError) setCodeError(false);
             }}
-            onComplete={(value) => {
-              if (value === WRONG_CODE) {
-                setCodeError(true);
-                return;
-              }
-              finish('phone');
-            }}
-            onBack={() => setView('phone')}
+            onComplete={(value) =>
+              void run(
+                () => verifyPhoneCode(phoneNumber, value),
+                (failure) => {
+                  if (failure.reason !== 'wrong_code') return false;
+                  setCodeError(true);
+                  return true;
+                },
+              )
+            }
+            onResend={() => void run(() => sendPhoneCode(phoneNumber))}
+            onBack={() => setStep('phone')}
           />
         )}
       </View>

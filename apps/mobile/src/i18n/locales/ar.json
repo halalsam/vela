@@ -479,7 +479,12 @@
     "signOutTitle": "تسجيل الخروج من vela؟",
     "signOutBody": "تبقى شرائحك تعمل. سجّل الدخول مجددًا لإدارتها.",
     "restartNote": "أعد تشغيل vela لتغيير اتجاه الواجهة.",
-    "signedInWith": "مسجّل عبر {{provider}}"
+    "signedInWith": "مسجّل عبر {{provider}}",
+    "deleteAccount": "حذف الحساب",
+    "deleteTitle": "حذف حسابك في vela؟",
+    "deleteBody": "سيُحذف ملفك وستُسجَّل خارج التطبيق. تبقى الشرائح المثبتة تعمل حتى تنتهي. نحتفظ بالإيصالات لأغراض الضرائب.",
+    "deleteConfirm": "حذف",
+    "deleteFailed": "تعذّر حذف حسابك. حاول مرة أخرى."
   },
   "scenarios": {
     "default": "افتراضي",

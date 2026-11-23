@@ -471,7 +471,12 @@
     "signOutTitle": "Sign out of vela?",
     "signOutBody": "Your eSIMs keep working. Sign back in to manage them.",
     "restartNote": "Restart vela to switch the layout direction.",
-    "signedInWith": "Signed in with {{provider}}"
+    "signedInWith": "Signed in with {{provider}}",
+    "deleteAccount": "Delete account",
+    "deleteTitle": "Delete your vela account?",
+    "deleteBody": "This removes your profile and signs you out. eSIMs already installed keep working until they end. Receipts are kept for tax records.",
+    "deleteConfirm": "Delete",
+    "deleteFailed": "Couldn't delete your account. Try again."
   },
   "scenarios": {
     "default": "Default",

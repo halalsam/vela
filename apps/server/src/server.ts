@@ -1,5 +1,7 @@
 import { serve } from '@hono/node-server';
 import { createApp } from './app';
+import { createAuth } from './auth/auth';
+import { createSmsSender } from './auth/sms';
 import { createDb } from './db/client';
 import { loadEnv } from './env';
 import { createLogger } from './logger';
@@ -10,7 +12,8 @@ const env = loadEnv();
 const logger = createLogger(env);
 initSentry(env, 'api');
 const { db, pool } = createDb(env.DATABASE_URL);
-const app = createApp({ db, env, logger, version });
+const auth = createAuth({ db, env, logger, sms: createSmsSender(env, logger) });
+const app = createApp({ db, env, logger, version, auth });
 
 const server = serve({ fetch: app.fetch, port: env.PORT, hostname: '0.0.0.0' }, (info) => {
   logger.info({ port: info.port, env: env.APP_ENV, sha: env.GIT_SHA }, 'api listening');

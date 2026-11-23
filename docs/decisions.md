@@ -90,3 +90,11 @@ source of truth. Resolved as follows:
   CI that builds the image on every push to `main` and deploys to staging once `VPS_HOST` and the
   SSH secrets are set. better-auth tables arrive in B4, so `user_id` columns are plain text until
   then.
+- B4 (2026-11-23): sign-in runs on better-auth (`/v1/auth/*`) with Apple (native ID token, bundle
+  `com.vela.app`), Google (browser flow via the Expo plugin, enabled once client IDs are set) and
+  phone codes (MSG91 for +91, Twilio elsewhere; `SMS_ROUTE=console` logs codes outside
+  production). Phone-only accounts get a placeholder email on `phone.vela.invalid`. A profile with a
+  referral code is created for every new user. `GET /v1/me` and `DELETE /v1/me` are live; deleting
+  removes the user, sessions, profile and devices, and keeps orders and eSIMs for tax records. The
+  app and website use the real flows when `EXPO_PUBLIC_API_URL` / `NEXT_PUBLIC_API_URL` are set,
+  otherwise the demo flows.

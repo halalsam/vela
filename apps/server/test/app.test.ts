@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
-import { createApp } from '../src/app';
 import type { Database } from '../src/db/client';
 import { country, plan, planPrice, region } from '../src/db/schema';
-import { createTestDb, silentLogger, testEnv } from './helpers';
+import { createTestApp, createTestDb } from './helpers';
 
 let db: Awaited<ReturnType<typeof createTestDb>>['db'];
 let close: () => Promise<void>;
@@ -19,7 +18,7 @@ afterAll(async () => {
 });
 
 function app(database: Database = db) {
-  return createApp({ db: database, env: testEnv, logger: silentLogger, version: 'test' });
+  return createTestApp(database).app;
 }
 
 describe('system routes', () => {

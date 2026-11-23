@@ -6,11 +6,13 @@ import {
   countrySchema,
   couponSchema,
   esimSchema,
+  invoiceLinkSchema,
   offerSchema,
   orderSchema,
   planSchema,
   regionSchema,
   rewardsSchema,
+  supportMessageSchema,
   topUpPackSchema,
   type Currency,
 } from './schemas';
@@ -41,6 +43,9 @@ export const httpServedMethods = [
   'getTopUpPacks',
   'topUp',
   'getRewards',
+  'getInvoice',
+  'getSupportThread',
+  'sendSupportMessage',
 ] as const;
 
 function idempotencyKey(): string {
@@ -107,6 +112,9 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
         body: { pack_id: input.packId, currency: input.currency ?? options.currency?.() ?? 'INR' },
       }),
     getRewards: () => get(`/v1/rewards?${currency()}`, rewardsSchema),
+    getInvoice: (orderId) => get(`/v1/orders/${encodeURIComponent(orderId)}/invoice`, invoiceLinkSchema),
+    getSupportThread: () => get('/v1/support/messages', z.array(supportMessageSchema)),
+    sendSupportMessage: (text) => send('/v1/support/messages', z.array(supportMessageSchema), { method: 'POST', body: { text } }),
     getDailyUsage: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}/usage/daily`, z.array(dailyUsageSchema)),
   };
 }

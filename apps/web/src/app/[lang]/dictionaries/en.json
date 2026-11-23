@@ -147,7 +147,9 @@
     "missingTitle": "order not found.",
     "missingBody": "Open the link from your receipt email, or find your eSIM in your account.",
     "toAccount": "Go to account",
-    "home": "Back to home"
+    "home": "Back to home",
+    "invoice": "Download GST invoice",
+    "invoiceFailed": "Your invoice isn't ready yet. Try again in a minute."
   },
   "account": {
     "title": "your account.",

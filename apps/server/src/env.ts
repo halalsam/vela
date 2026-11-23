@@ -50,6 +50,15 @@ const envSchema = z.object({
   APNS_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
   FCM_SERVICE_ACCOUNT: optional,
   PAYMENT_PROVIDER: z.enum(['mock', 'razorpay']).default('mock'),
+  SELLER_NAME: z.string().default('vela'),
+  SELLER_GSTIN: optional,
+  SELLER_ADDRESS: z.string().default(''),
+  SELLER_STATE: z.string().default(''),
+  INVOICE_PREFIX: z.string().regex(/^[A-Z]{1,6}$/).default('VL'),
+  INVOICE_SAC: z.string().default('9984'),
+  CHATWOOT_URL: optional,
+  CHATWOOT_INBOX_IDENTIFIER: optional,
+  CHATWOOT_HMAC_TOKEN: optional,
   RAZORPAY_KEY_ID: optional,
   RAZORPAY_KEY_SECRET: optional,
   RAZORPAY_WEBHOOK_SECRET: optional,
@@ -62,6 +71,9 @@ const checkedEnvSchema = envSchema.superRefine((env, context) => {
   }
   if (env.PUSH_ROUTE === 'live' && !env.FCM_SERVICE_ACCOUNT) {
     context.addIssue({ code: 'custom', path: ['FCM_SERVICE_ACCOUNT'], message: 'live push needs a Firebase service account for Android' });
+  }
+  if (env.APP_ENV === 'production' && !(env.SELLER_GSTIN && env.SELLER_ADDRESS && env.SELLER_STATE)) {
+    context.addIssue({ code: 'custom', path: ['SELLER_GSTIN'], message: 'production invoices need the seller GSTIN, address and state' });
   }
   if (env.APP_ENV === 'production' && env.PAYMENT_PROVIDER === 'mock') {
     context.addIssue({ code: 'custom', path: ['PAYMENT_PROVIDER'], message: 'production must take real payments' });

@@ -142,3 +142,23 @@ source of truth. Resolved as follows:
   the order is paid and given back if the order is refunded. Credit that covers the whole price
   skips the payment step. Two orders placed at the same moment can both use the same credit; the
   balance never shows below zero, and the gap is small enough to leave for now.
+- B8 (2026-11-23): a GST invoice is issued when an INR order (eSIM or top-up) is fulfilled. Numbers
+  run per Indian financial year in IST (`VL/2026-27/000001`) from a counter row updated in the same
+  transaction. The invoice stores a fixed snapshot (seller, buyer, amounts, CGST/SGST split) and the
+  PDF is drawn from it on request with pdfkit, so it never changes after issue. Until we collect
+  the buyer's state, place of supply is the seller's state, so tax is CGST 9% + SGST 9%; the
+  accountant should confirm this, and the SAC (`INVOICE_SAC`, default `9984`). Customers get a
+  15-minute signed link from `GET /v1/orders/:id/invoice` (app Success screen, website success
+  page). Production refuses to start without `SELLER_GSTIN`, `SELLER_ADDRESS` and `SELLER_STATE`.
+  No PDFs are stored and no credit notes are issued yet.
+- Staff: `profile.role` is `customer`, `support` or `admin`; set it with
+  `node dist/grant-role.js <phone or email> <role>` on the server. `/v1/admin/*` lets support search
+  orders and see payments, eSIM, invoice and staff history; admins can also refund (full refund plus
+  any credit used), create and end coupons, and grant goodwill credit. Every staff action is written
+  to `audit_log`. The website has `/admin` (orders, order detail, coupons), English only and not
+  indexed; it uses the same sign-in as the account page.
+- Support: the app's chat now talks to `/v1/support/messages`. With `CHATWOOT_URL` and
+  `CHATWOOT_INBOX_IDENTIFIER` set, the server uses Chatwoot's public inbox API with one contact (HMAC
+  identity check when `CHATWOOT_HMAC_TOKEN` is set) and one conversation per traveller, and the app
+  polls every 5 seconds. Without Chatwoot, messages are stored in `support_message` so the screen
+  works on staging, but nobody can reply to them.

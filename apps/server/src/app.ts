@@ -4,9 +4,11 @@ import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import { HttpError } from './lib/errors';
 import { catalogRoutes } from './routes/catalog';
+import { adminRoutes } from './routes/admin';
 import { deviceRoutes } from './routes/devices';
 import { meRoutes } from './routes/me';
 import { orderRoutes, webhookRoutes } from './routes/orders';
+import { supportRoutes } from './routes/support';
 import { systemRoutes } from './routes/system';
 import { captureError } from './sentry';
 import type { AppDeps, AppEnv } from './types';
@@ -53,6 +55,8 @@ export function createApp(deps: AppDeps) {
   app.route('/', meRoutes);
   app.route('/', orderRoutes);
   app.route('/', deviceRoutes);
+  app.route('/', supportRoutes);
+  app.route('/', adminRoutes);
   app.route('/', webhookRoutes);
   app.on(['GET', 'POST'], '/v1/auth/*', (c) => deps.auth.handler(c.req.raw));
 

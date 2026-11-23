@@ -133,6 +133,12 @@ export const checkoutSchema = z.object({
   payment: paymentIntentSchema.nullable(),
 });
 
+export const invoiceLinkSchema = z.object({
+  number: z.string(),
+  url: z.url(),
+  expires_at: z.iso.datetime(),
+});
+
 export const paymentResultSchema = z.object({
   payment_id: z.string().min(1),
   signature: z.string().min(1),
@@ -174,6 +180,7 @@ export type OrderStatus = z.infer<typeof orderStatusSchema>;
 export type PaymentIntent = z.infer<typeof paymentIntentSchema>;
 export type Checkout = z.infer<typeof checkoutSchema>;
 export type PaymentResult = z.infer<typeof paymentResultSchema>;
+export type InvoiceLink = z.infer<typeof invoiceLinkSchema>;
 export type Referral = z.infer<typeof referralSchema>;
 export type Rewards = z.infer<typeof rewardsSchema>;
 export type SupportMessage = z.infer<typeof supportMessageSchema>;

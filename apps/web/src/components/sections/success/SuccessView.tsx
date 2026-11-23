@@ -2,7 +2,9 @@
 
 import QRCode from 'qrcode';
 import { useEffect, useMemo, useState } from 'react';
-import { ButtonLink, Card, focusRing } from '@/components/ui';
+import { Button, ButtonLink, Card, focusRing } from '@/components/ui';
+import { authClient } from '@/lib/authClient';
+import { browserApi } from '@/lib/browserApi';
 import { format, type Dictionary } from '@/lib/i18n';
 import { orderKey, parseOrder } from '@/lib/orders';
 import { useStorageValue } from '@/lib/useStorage';
@@ -18,6 +20,18 @@ export function SuccessView({ orderId, locale, labels }: { orderId: string; loca
   const [svg, setSvg] = useState('');
   const [platform, setPlatform] = useState<Platform>('iphone');
   const lpa = entry?.esim.lpa_string;
+  const [invoiceState, setInvoiceState] = useState<'idle' | 'opening' | 'failed'>('idle');
+
+  async function openInvoice(id: string) {
+    setInvoiceState('opening');
+    try {
+      const link = await browserApi.getInvoice(id);
+      window.open(link.url, '_blank', 'noopener');
+      setInvoiceState('idle');
+    } catch {
+      setInvoiceState('failed');
+    }
+  }
 
   useEffect(() => {
     if (!lpa) return;
@@ -64,6 +78,14 @@ export function SuccessView({ orderId, locale, labels }: { orderId: string; loca
         <div className="flex flex-col gap-2">
           <h1 className={type.hero}>{labels.title}</h1>
           <p className={cn(type.callout, 'text-fg-secondary')}>{format(labels.body, { order: entry.order.number, plan: entry.title })}</p>
+          {authClient ? (
+            <div className="flex flex-col items-start gap-1">
+              <Button variant="ghost" size="sm" disabled={invoiceState === 'opening'} onClick={() => void openInvoice(entry.order.order_id)}>
+                {labels.invoice}
+              </Button>
+              {invoiceState === 'failed' ? <p className={cn(type.caption, 'text-danger')}>{labels.invoiceFailed}</p> : null}
+            </div>
+          ) : null}
         </div>
         <div className="flex flex-col gap-2">
           <ButtonLink href={installUrl} className="self-start">

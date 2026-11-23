@@ -13,7 +13,7 @@ function preferredLocale(request: NextRequest): Locale {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasLocale = locales.some((locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`));
-  if (hasLocale) return;
+  if (hasLocale || pathname === '/admin' || pathname.startsWith('/admin/')) return;
   request.nextUrl.pathname = `/${preferredLocale(request)}${pathname === '/' ? '' : pathname}`;
   return NextResponse.redirect(request.nextUrl);
 }

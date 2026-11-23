@@ -9,6 +9,7 @@ import { bossQueue } from './jobs/queue';
 import { ensureQueue, provisionJob } from './jobs/registry';
 import { createLogger } from './logger';
 import { createPaymentProvider } from './modules/payments';
+import { createSupportDesk } from './modules/support/support';
 import { captureError, flushSentry, initSentry } from './sentry';
 import { version } from './version';
 
@@ -25,10 +26,12 @@ boss.on('error', (error) => {
 await boss.start();
 await ensureQueue(boss, provisionJob);
 const payments = createPaymentProvider(env);
-const app = createApp({ db, env, logger, version, auth, payments, queue: bossQueue(boss) });
+const support = createSupportDesk(env, db, logger);
+const app = createApp({ db, env, logger, version, auth, payments, queue: bossQueue(boss), support });
 
 const server = serve({ fetch: app.fetch, port: env.PORT, hostname: '0.0.0.0' }, (info) => {
   logger.info({ port: info.port, env: env.APP_ENV, sha: env.GIT_SHA, payments: payments.name }, 'api listening');
+  if (support.name === 'local') logger.warn('Chatwoot is not configured: support messages are stored locally');
 });
 
 async function shutdown(signal: string) {

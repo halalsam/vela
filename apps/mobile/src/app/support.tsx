@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View, type ScrollViewInstan
 import { MessageBubble, TypingBubble, type ChatMessage } from '@/components/sections/support/SupportSections';
 import { ErrorState, OfflineBanner, RowsSkeleton } from '@/components/sections/states/StateViews';
 import { Chip, IconButton, Input, Text } from '@/components/ui';
+import { usingLiveCatalog } from '@/lib/api';
 import { useOnline } from '@/lib/useOnline';
 import { useSendSupportMessage, useSupportThread } from '@/queries';
 
@@ -34,7 +35,7 @@ export default function SupportScreen() {
     const trimmed = text.trim();
     if (!trimmed || !online) return;
     setDraft('');
-    send.mutate(trimmed, { onSuccess: () => setTyping(true) });
+    send.mutate(trimmed, { onSuccess: () => !usingLiveCatalog && setTyping(true) });
   }
 
   const messages: ChatMessage[] = [...(thread.data ?? []), ...agentReplies];

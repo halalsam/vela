@@ -8,6 +8,7 @@ import { decrypt, encrypt } from '../../lib/crypto';
 import { notFound } from '../../lib/errors';
 import type { Logger } from '../../logger';
 import type { EsimProvider } from '../esims/provider';
+import { issueInvoice } from '../invoices/invoice';
 import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
 import type { PaymentProvider } from '../payments/provider';
@@ -69,6 +70,7 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
       .set({ status: 'fulfilled', esimId: stored.id, fulfilledAt: new Date(), failureReason: null, updatedAt: new Date() })
       .where(eq(order.id, current.id));
     logger.info({ orderId, iccid: bought.iccid }, 'order fulfilled');
+    await issueInvoiceSafely(deps, orderId);
     try {
       await sendNotice(deps, stored, 'ready');
     } catch (error) {
@@ -86,6 +88,14 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
       .where(eq(order.id, current.id));
     await deps.queue.send(JOB.refund, { orderId }, { singletonKey: orderId });
     logger.error({ orderId, reason }, 'provisioning failed for good, refund queued');
+  }
+}
+
+async function issueInvoiceSafely(deps: FulfilDeps, orderId: string) {
+  try {
+    await issueInvoice(deps.db, deps.env, deps.logger, orderId);
+  } catch (error) {
+    deps.logger.error({ orderId, err: error }, 'invoice could not be issued');
   }
 }
 
@@ -118,6 +128,7 @@ async function applyTopUp(deps: FulfilDeps, current: typeof order.$inferSelect):
   });
   if (!updated) return;
   logger.info({ orderId: current.id, iccid: target.iccid, addedMb: pack.dataMb }, 'top-up applied');
+  await issueInvoiceSafely(deps, current.id);
   try {
     await pushLiveActivities(deps, updated);
   } catch (error) {
@@ -126,9 +137,18 @@ async function applyTopUp(deps: FulfilDeps, current: typeof order.$inferSelect):
 }
 
 export async function refundOrder(deps: FulfilDeps, orderId: string): Promise<void> {
-  const { db, logger } = deps;
-  const [current] = await db.select().from(order).where(eq(order.id, orderId));
+  const [current] = await deps.db.select().from(order).where(eq(order.id, orderId));
   if (!current || current.status !== 'provisioning_failed') return;
+  await settleRefund(deps, current, null);
+}
+
+export async function settleRefund(
+  deps: Pick<FulfilDeps, 'db' | 'payments' | 'logger'>,
+  current: typeof order.$inferSelect,
+  reason: string | null,
+): Promise<void> {
+  const { db, logger } = deps;
+  const orderId = current.id;
   const [captured] = await db
     .select()
     .from(payment)
@@ -151,7 +171,10 @@ export async function refundOrder(deps: FulfilDeps, orderId: string): Promise<vo
       .values({ userId: current.userId, amountMinor: current.creditMinor, currency: current.currency, reason: 'refund', orderId })
       .onConflictDoNothing();
   }
-  await db.update(order).set({ status: 'refunded', updatedAt: new Date() }).where(eq(order.id, orderId));
+  await db
+    .update(order)
+    .set({ status: 'refunded', ...(reason ? { failureReason: reason } : {}), updatedAt: new Date() })
+    .where(eq(order.id, orderId));
 }
 
 type EsimRow = typeof esim.$inferSelect;

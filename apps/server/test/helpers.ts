@@ -11,6 +11,7 @@ import { loadEnv } from '../src/env';
 import { memoryQueue } from '../src/jobs/queue';
 import { createMockPayments } from '../src/modules/payments/mock';
 import type { PaymentProvider } from '../src/modules/payments/provider';
+import { createSupportDesk, type SupportDesk } from '../src/modules/support/support';
 
 export const testKey = 'a'.repeat(64);
 
@@ -33,12 +34,13 @@ export async function createTestDb() {
   return { db, client };
 }
 
-export function createTestApp(db: Database, overrides: { payments?: PaymentProvider } = {}) {
+export function createTestApp(db: Database, overrides: { payments?: PaymentProvider; support?: SupportDesk } = {}) {
   const sms = createMemorySms();
   const queue = memoryQueue();
   const payments = overrides.payments ?? createMockPayments();
   const auth = createAuth({ db, env: testEnv, logger: silentLogger, sms });
-  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth, payments, queue });
+  const support = overrides.support ?? createSupportDesk(testEnv, db, silentLogger);
+  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth, payments, queue, support });
   return { app, auth, sms, queue, payments };
 }
 

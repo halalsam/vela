@@ -370,7 +370,9 @@
     "installHere": "Install on this phone",
     "manual": "Manual install",
     "guide": "View install guide",
-    "installUnsupported": "Use the QR code on another phone, or the manual codes below."
+    "installUnsupported": "Use the QR code on another phone, or the manual codes below.",
+    "invoice": "Download GST invoice",
+    "invoiceFailed": "Your invoice isn't ready yet. Try again in a minute."
   },
   "install": {
     "title": "install guide",

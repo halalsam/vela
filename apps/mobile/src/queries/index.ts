@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreateOrderInput, Order, OrderStatus } from '@vela/api';
-import { api } from '@/lib/api';
+import { api, usingLiveCatalog } from '@/lib/api';
 import { collectPayment } from '@/lib/payments';
 
 export const queryKeys = {
@@ -38,7 +38,8 @@ export const useDailyUsage = (iccid: string | undefined) =>
   useQuery({ queryKey: queryKeys.dailyUsage(iccid ?? ''), queryFn: () => api.getDailyUsage(iccid ?? ''), enabled: Boolean(iccid) });
 export const useProfile = () => useQuery({ queryKey: queryKeys.profile, queryFn: api.getProfile });
 export const useRewards = () => useQuery({ queryKey: queryKeys.rewards, queryFn: api.getRewards });
-export const useSupportThread = () => useQuery({ queryKey: queryKeys.support, queryFn: api.getSupportThread });
+export const useSupportThread = () =>
+  useQuery({ queryKey: queryKeys.support, queryFn: api.getSupportThread, refetchInterval: usingLiveCatalog ? 5000 : false });
 
 export function useRedeemCoupon() {
   return useMutation({ mutationFn: api.redeemCoupon });

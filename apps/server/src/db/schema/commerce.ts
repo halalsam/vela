@@ -120,7 +120,13 @@ export const invoice = pgTable(
     gstin: text(),
     placeOfSupply: text(),
     pdfKey: text(),
+    data: jsonb().notNull(),
     issuedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex('invoice_number_idx').on(table.number), uniqueIndex('invoice_order_idx').on(table.orderId)],
 );
+
+export const invoiceCounter = pgTable('invoice_counter', {
+  financialYear: text().primaryKey(),
+  last: integer().notNull(),
+});

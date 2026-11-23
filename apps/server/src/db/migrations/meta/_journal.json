@@ -36,6 +36,13 @@
       "when": 1795415170902,
       "tag": "0004_rewards",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795417055386,
+      "tag": "0005_invoices_support",
+      "breakpoints": true
     }
   ]
 }

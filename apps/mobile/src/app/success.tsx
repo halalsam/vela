@@ -6,11 +6,13 @@ import { ScrollView, View } from 'react-native';
 import { QrCard, QrHint, SignalRipple, VelaSplash } from '@/components/esim';
 import { InstallActions } from '@/components/sections/purchase/PurchaseSections';
 import { ErrorState } from '@/components/sections/states/StateViews';
-import { Button, Skeleton, Text } from '@/components/ui';
+import { Button, Skeleton, Text, toast } from '@/components/ui';
 import { useEsimTitle } from '@/hooks/usePlanTitle';
+import * as WebBrowser from 'expo-web-browser';
+import { api, usingLiveCatalog } from '@/lib/api';
 import { haptics } from '@/lib/haptics';
 import { registerPush } from '@/lib/push';
-import { useEsim } from '@/queries';
+import { useEsim, useOrder } from '@/queries';
 
 export default function SuccessScreen() {
   const { t } = useTranslation();
@@ -20,6 +22,20 @@ export default function SuccessScreen() {
   }, []);
   const { iccid, orderId = '' } = useLocalSearchParams<{ iccid: string; orderId: string }>();
   const esim = useEsim(iccid);
+  const order = useOrder(orderId, usingLiveCatalog && Boolean(orderId));
+  const [opening, setOpening] = useState(false);
+
+  async function openInvoice() {
+    setOpening(true);
+    try {
+      const link = await api.getInvoice(orderId);
+      await WebBrowser.openBrowserAsync(link.url);
+    } catch {
+      toast.show({ message: t('success.invoiceFailed'), tone: 'danger' });
+    } finally {
+      setOpening(false);
+    }
+  }
   const esimTitle = useEsimTitle();
   const [revealed, setRevealed] = useState(false);
 
@@ -59,7 +75,7 @@ export default function SuccessScreen() {
                 {t('success.title')}
               </Text>
               <Text variant="callout" tone="secondary" align="center">
-                {t('success.body', { plan: esimTitle(esim.data), order: orderId })}
+                {t('success.body', { plan: esimTitle(esim.data), order: order.data?.number ?? orderId })}
               </Text>
             </View>
             <QrHint />
@@ -70,6 +86,9 @@ export default function SuccessScreen() {
               fullWidth
               onPress={() => router.replace({ pathname: '/install', params: { iccid: esim.data.iccid } })}
             />
+            {usingLiveCatalog && orderId ? (
+              <Button label={t('success.invoice')} variant="ghost" fullWidth loading={opening} onPress={() => void openInvoice()} />
+            ) : null}
           </>
         )}
       </ScrollView>

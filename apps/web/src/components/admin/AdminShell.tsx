@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { PanelSkeleton } from '@/components/sections/Loading';
 import { ButtonLink, Card, Container } from '@/components/ui';
 import { adminConfigured, adminFetch, AdminError, type StaffRole } from '@/lib/adminApi';
 import { authClient } from '@/lib/authClient';
@@ -30,6 +31,14 @@ function Notice({ title, body, action }: { title: string; body: string; action?:
   );
 }
 
+function AdminLoading() {
+  return (
+    <Container className="py-16">
+      <PanelSkeleton />
+    </Container>
+  );
+}
+
 export function AdminShell({ children }: { children: ReactNode }) {
   const session = authClient?.useSession();
   const pathname = usePathname();
@@ -53,11 +62,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   if (!adminConfigured || !authClient) {
     return <Notice title="admin" body="Set NEXT_PUBLIC_API_URL to use the admin. It talks to the live API only." />;
   }
-  if (!session || session.isPending) return <div className="h-80" aria-busy />;
+  if (!session || session.isPending) return <AdminLoading />;
   if (!session.data) {
     return <Notice title="staff sign-in" body="Sign in with your staff account, then come back here." action={<ButtonLink href="/en/account">Sign in</ButtonLink>} />;
   }
-  if (access.state === 'loading') return <div className="h-80" aria-busy />;
+  if (access.state === 'loading') return <AdminLoading />;
   if (access.state === 'denied') return <Notice title="no access" body={access.message} />;
 
   return (

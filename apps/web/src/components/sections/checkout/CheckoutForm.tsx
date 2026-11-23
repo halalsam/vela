@@ -1,5 +1,6 @@
 'use client';
 
+import { PanelSkeleton } from '@/components/sections/Loading';
 import { priceBreakdown, SELLING_CURRENCIES, taxRateFor, type Coupon, type Currency, type Order, type SellingCurrency } from '@vela/api';
 import { colors } from '@vela/tokens';
 import { formatPrice } from '@vela/utils';
@@ -56,7 +57,7 @@ export function CheckoutForm(props: CheckoutProps) {
 
 function LiveGate(props: CheckoutProps) {
   const session = authClient?.useSession();
-  if (!session || session.isPending) return <div className="h-80" aria-busy />;
+  if (!session || session.isPending) return <PanelSkeleton className="max-w-xl" />;
   if (!session.data) {
     return (
       <Card className="flex max-w-md flex-col items-start gap-4 p-section">

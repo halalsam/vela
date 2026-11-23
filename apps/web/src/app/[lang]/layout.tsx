@@ -4,6 +4,7 @@ import { preload } from 'react-dom';
 import { brandName } from '@vela/brand';
 import { colors } from '@vela/tokens';
 import { SiteFooter } from '@/components/sections/SiteFooter';
+import { NavigationProgress } from '@/components/sections/NavigationProgress';
 import { SiteHeader } from '@/components/sections/SiteHeader';
 import { dirFor, isLocale, locales } from '@/lib/i18n';
 import { siteUrl } from '@/lib/site';
@@ -64,6 +65,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
   return (
     <html lang={lang} dir={dirFor(lang)}>
       <body className="flex min-h-dvh flex-col">
+        <NavigationProgress />
         <a
           href="#main"
           className="sr-only rounded-pill bg-fg px-4 py-2 text-fg-inverse focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50"

@@ -1,5 +1,6 @@
 'use client';
 
+import { PanelSkeleton } from '@/components/sections/Loading';
 import QRCode from 'qrcode';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, ButtonLink, Card, focusRing } from '@/components/ui';
@@ -38,7 +39,7 @@ export function SuccessView({ orderId, locale, labels }: { orderId: string; loca
     void QRCode.toString(lpa, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#0A0A0A', light: '#FFFFFF' } }).then(setSvg);
   }, [lpa]);
 
-  if (entry === undefined) return <div className="h-96" aria-busy />;
+  if (entry === undefined) return <PanelSkeleton className="max-w-xl" />;
 
   if (entry === null) {
     return (

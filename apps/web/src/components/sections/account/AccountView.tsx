@@ -1,5 +1,6 @@
 'use client';
 
+import { PanelSkeleton } from '@/components/sections/Loading';
 import type { Esim } from '@vela/api';
 import { formatData, formatShortDate, isLowData, remainingFraction } from '@vela/utils';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -32,7 +33,7 @@ export function AccountView(props: { locale: Locale; labels: Dictionary['account
 function LiveAccount({ locale, labels, names }: { locale: Locale; labels: Dictionary['account']; names: Names }) {
   const client = authClient;
   const session = client?.useSession();
-  if (!client || !session || session.isPending) return <div className="h-80" aria-busy />;
+  if (!client || !session || session.isPending) return <PanelSkeleton className="max-w-xl" />;
   if (!session.data) return <LiveSignIn labels={labels} />;
   const user = session.data.user as { email: string; phoneNumber?: string | null };
   const identity = user.email.endsWith('@phone.vela.invalid') ? (user.phoneNumber ?? '') : user.email;
@@ -62,7 +63,7 @@ function DemoAccount({ locale, labels, names }: { locale: Locale; labels: Dictio
     notifyStorage();
   }
 
-  if (email === undefined) return <div className="h-80" aria-busy />;
+  if (email === undefined) return <PanelSkeleton className="max-w-xl" />;
 
   if (!email) {
     return (

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { colors } from '@vela/tokens';
 import { AdminShell } from '@/components/admin/AdminShell';
+import { NavigationProgress } from '@/components/sections/NavigationProgress';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" dir="ltr">
       <body className="flex min-h-dvh flex-col">
+        <NavigationProgress />
         <main className="flex-1">
           <AdminShell>{children}</AdminShell>
         </main>

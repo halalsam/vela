@@ -47,6 +47,9 @@ const envSchema = z.object({
   TWILIO_FROM: optional,
   MOCK_USAGE_SPEED: z.coerce.number().min(1).max(100_000).default(1),
   PUSH_ROUTE: z.enum(['console', 'live']).default('console'),
+  EMAIL_ROUTE: z.enum(['console', 'live']).default('console'),
+  RESEND_API_KEY: optional,
+  EMAIL_FROM: optional,
   APNS_KEY_ID: optional,
   APNS_TEAM_ID: optional,
   APNS_PRIVATE_KEY: optional,
@@ -69,6 +72,9 @@ const envSchema = z.object({
 });
 
 const checkedEnvSchema = envSchema.superRefine((env, context) => {
+  if (env.EMAIL_ROUTE === 'live' && !(env.RESEND_API_KEY && env.EMAIL_FROM)) {
+    context.addIssue({ code: 'custom', path: ['RESEND_API_KEY'], message: 'live email needs a Resend API key and a from address' });
+  }
   if (env.ESIM_BACKUP_PROVIDER === 'esimgo' && !env.ESIM_GO_API_KEY) {
     context.addIssue({ code: 'custom', path: ['ESIM_GO_API_KEY'], message: 'eSIM Go needs its API key' });
   }

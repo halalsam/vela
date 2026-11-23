@@ -6,6 +6,7 @@ import { refreshRates } from '../modules/catalog/fx';
 import { syncCatalog } from '../modules/catalog/sync';
 import type { EsimProvider } from '../modules/esims/provider';
 import { syncTrackedEsims } from '../modules/esims/usage';
+import type { EmailSender } from '../modules/notifications/email';
 import type { PushSender } from '../modules/notifications/push';
 import { provisionOrder, refundOrder } from '../modules/orders/fulfil';
 import { expireStaleOrders } from '../modules/orders/service';
@@ -21,6 +22,7 @@ export type JobContext = {
   payments: PaymentProvider;
   queue: JobQueue;
   push: PushSender;
+  email: EmailSender;
 };
 
 export type JobDefinition<T extends object = object> = {

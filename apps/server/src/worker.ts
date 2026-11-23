@@ -7,6 +7,7 @@ import { catalogSync, jobs, registerJobs } from './jobs/registry';
 import { createLogger } from './logger';
 import { refreshRates } from './modules/catalog/fx';
 import { createBackupProvider, createEsimProvider } from './modules/esims/providers';
+import { createEmailSender } from './modules/notifications/email';
 import { createPushSender } from './modules/notifications/push';
 import { createPaymentProvider } from './modules/payments';
 import { bossQueue } from './jobs/queue';
@@ -28,7 +29,7 @@ boss.on('error', (error) => {
 await boss.start();
 const push = createPushSender(env, logger);
 if (env.PUSH_ROUTE !== 'live') logger.warn('push route is console: notifications are logged, not sent');
-await registerJobs(boss, jobs, { logger, db, env, provider, backupProvider, payments: createPaymentProvider(env), queue: bossQueue(boss), push });
+await registerJobs(boss, jobs, { logger, db, env, provider, backupProvider, payments: createPaymentProvider(env), queue: bossQueue(boss), push, email: createEmailSender(env, logger) });
 logger.info({ jobs: jobs.map((job) => job.name), provider: provider.name, backup: backupProvider?.name ?? null }, 'worker started');
 
 const [{ count } = { count: 0 }] = await db.select({ count: sql<number>`count(*)::int` }).from(plan);

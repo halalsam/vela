@@ -10,7 +10,9 @@ import type { Logger } from '../../logger';
 import { ProviderUnavailable, type EsimProvider, type PurchasedEsim } from '../esims/provider';
 import { providerFor } from '../esims/providers';
 import { issueCreditNote, issueInvoice } from '../invoices/invoice';
+import type { EmailSender } from '../notifications/email';
 import { pushLiveActivities, sendNotice } from '../notifications/notify';
+import { sendReceipt } from '../notifications/receipt';
 import type { PushSender } from '../notifications/push';
 import type { PaymentProvider } from '../payments/provider';
 
@@ -23,6 +25,7 @@ export type FulfilDeps = {
   payments: PaymentProvider;
   queue: JobQueue;
   push: PushSender;
+  email?: EmailSender;
 };
 
 function labelFor(row: typeof plan.$inferSelect): string {
@@ -101,6 +104,13 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
       await sendNotice(deps, stored, 'ready');
     } catch (error) {
       logger.warn({ orderId, err: error }, 'ready push failed');
+    }
+    if (deps.email) {
+      try {
+        await sendReceipt({ db, env: deps.env, logger, email: deps.email }, orderId);
+      } catch (error) {
+        logger.warn({ orderId, err: error }, 'receipt email failed');
+      }
     }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);

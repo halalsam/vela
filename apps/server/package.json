@@ -27,6 +27,7 @@
     "pg": "^8.23.1",
     "pg-boss": "^12.38.2",
     "pino": "^10.4.0",
+    "qrcode": "^1.5.4",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -34,6 +35,7 @@
     "@types/node": "^24.19.2",
     "@types/pdfkit": "0.17.7",
     "@types/pg": "^8.23.1",
+    "@types/qrcode": "^1.5.6",
     "@vela/api": "workspace:*",
     "@vela/utils": "workspace:*",
     "drizzle-kit": "~0.31.11",

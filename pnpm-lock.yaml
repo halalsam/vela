@@ -207,6 +207,9 @@ importers:
       pino:
         specifier: ^10.4.0
         version: 10.4.0
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -223,6 +226,9 @@ importers:
       '@types/pg':
         specifier: ^8.23.1
         version: 8.23.1
+      '@types/qrcode':
+        specifier: ^1.5.6
+        version: 1.5.6
       '@vela/api':
         specifier: workspace:*
         version: link:../../packages/api

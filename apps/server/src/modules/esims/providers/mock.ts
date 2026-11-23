@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { plans, regionPlans } from '@vela/api/mocks';
-import type { EsimProvider, ProviderPlan, PurchasedEsim } from '../provider';
+import type { EsimProvider, EsimUsage, ProviderPlan, PurchasedEsim, UsageQuery } from '../provider';
 
 const COST_SHARE = 0.62;
 const SMDP = 'smdp.mock.vela.invalid';
@@ -16,7 +16,27 @@ export function mockPurchase(planRef: string, idempotencyKey: string): Purchased
   return { iccid, smdp: SMDP, activationCode, lpa: ['LPA:1', SMDP, activationCode].join('$'), providerRef: `mock-${iccid}` };
 }
 
-export function createMockProvider(): EsimProvider {
+const CONNECTS_AFTER_MS = 5 * 60_000;
+const DAY_MS = 86_400_000;
+const BURN_RATE = 1.05;
+
+export function mockUsage(query: UsageQuery, now: number, speed: number): EsimUsage {
+  const elapsed = (now - query.purchasedAt.getTime()) * speed;
+  if (elapsed < CONNECTS_AFTER_MS) {
+    return { usedMb: 0, totalMb: query.totalMb, status: 'not_started', activatedAt: null, expiresAt: null };
+  }
+  const activatedAt = new Date(query.purchasedAt.getTime() + CONNECTS_AFTER_MS / speed);
+  const validityMs = query.validityDays * DAY_MS;
+  const expiresAt = new Date(activatedAt.getTime() + validityMs / speed);
+  const active = elapsed - CONNECTS_AFTER_MS;
+  const usedMb = Math.min(query.totalMb, Math.round((query.totalMb * BURN_RATE * active) / validityMs));
+  const status = usedMb >= query.totalMb ? 'depleted' : now >= expiresAt.getTime() ? 'expired' : 'active';
+  return { usedMb, totalMb: query.totalMb, status, activatedAt, expiresAt };
+}
+
+export function createMockProvider(options: { usageSpeed?: number; now?: () => number } = {}): EsimProvider {
+  const speed = options.usageSpeed ?? 1;
+  const now = options.now ?? Date.now;
   return {
     name: 'mock',
     async listPlans(): Promise<ProviderPlan[]> {
@@ -37,6 +57,9 @@ export function createMockProvider(): EsimProvider {
     },
     async purchase({ planRef, idempotencyKey }) {
       return mockPurchase(planRef, idempotencyKey);
+    },
+    async usage(query) {
+      return mockUsage(query, now(), speed);
     },
   };
 }

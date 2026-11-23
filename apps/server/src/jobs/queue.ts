@@ -4,6 +4,7 @@ export const JOB = {
   provision: 'esim.provision',
   refund: 'esim.refund',
   expireOrders: 'orders.expire',
+  usage: 'esim.usage',
 } as const;
 
 export type OrderJob = { orderId: string };

@@ -9,6 +9,7 @@ import { seedReferenceData } from '../src/modules/catalog/seed';
 import { syncCatalog } from '../src/modules/catalog/sync';
 import type { EsimProvider } from '../src/modules/esims/provider';
 import { createMockProvider } from '../src/modules/esims/providers/mock';
+import { createMemoryPush } from '../src/modules/notifications/push';
 import { provisionOrder, refundOrder, type FulfilDeps } from '../src/modules/orders/fulfil';
 import { expireStaleOrders } from '../src/modules/orders/service';
 import { createMockPayments, MOCK_SIGNATURE } from '../src/modules/payments/mock';
@@ -48,7 +49,7 @@ async function checkout(planId: string, key: string, couponCode: string | null =
 }
 
 function fulfilDeps(overrides: Partial<FulfilDeps> = {}): FulfilDeps & { queue: ReturnType<typeof memoryQueue> } {
-  return { db, env: testEnv, logger: silentLogger, provider, payments: createMockPayments(), queue: memoryQueue(), ...overrides } as FulfilDeps & {
+  return { db, env: testEnv, logger: silentLogger, provider, payments: createMockPayments(), queue: memoryQueue(), push: createMemoryPush(), ...overrides } as FulfilDeps & {
     queue: ReturnType<typeof memoryQueue>;
   };
 }

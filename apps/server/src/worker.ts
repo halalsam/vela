@@ -6,6 +6,7 @@ import { loadEnv } from './env';
 import { catalogSync, jobs, registerJobs } from './jobs/registry';
 import { createLogger } from './logger';
 import { createEsimProvider } from './modules/esims/providers';
+import { createPushSender } from './modules/notifications/push';
 import { createPaymentProvider } from './modules/payments';
 import { bossQueue } from './jobs/queue';
 import { captureError, flushSentry, initSentry } from './sentry';
@@ -23,7 +24,9 @@ boss.on('error', (error) => {
 });
 
 await boss.start();
-await registerJobs(boss, jobs, { logger, db, env, provider, payments: createPaymentProvider(env), queue: bossQueue(boss) });
+const push = createPushSender(env, logger);
+if (env.PUSH_ROUTE !== 'live') logger.warn('push route is console: notifications are logged, not sent');
+await registerJobs(boss, jobs, { logger, db, env, provider, payments: createPaymentProvider(env), queue: bossQueue(boss), push });
 logger.info({ jobs: jobs.map((job) => job.name), provider: provider.name }, 'worker started');
 
 const [{ count } = { count: 0 }] = await db.select({ count: sql<number>`count(*)::int` }).from(plan);

@@ -504,5 +504,8 @@
     "agentReply": "Thanks. I'm checking your line now and will reply here in a minute.",
     "installCard": "Turn on Data Roaming",
     "installCardBody": "Install guide · step {{step}}"
+  },
+  "notifications": {
+    "channel": "Trip updates"
   }
 }

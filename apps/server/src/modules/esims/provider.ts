@@ -23,8 +23,25 @@ export type PurchasedEsim = {
   providerRef: string;
 };
 
+export type EsimUsage = {
+  usedMb: number;
+  totalMb: number;
+  status: 'not_started' | 'active' | 'expired' | 'depleted';
+  activatedAt: Date | null;
+  expiresAt: Date | null;
+};
+
+export type UsageQuery = {
+  iccid: string;
+  providerRef: string;
+  purchasedAt: Date;
+  totalMb: number;
+  validityDays: number;
+};
+
 export type EsimProvider = {
   name: string;
   listPlans(): Promise<ProviderPlan[]>;
   purchase(input: { planRef: string; idempotencyKey: string }): Promise<PurchasedEsim>;
+  usage(query: UsageQuery): Promise<EsimUsage>;
 };

@@ -109,3 +109,21 @@ source of truth. Resolved as follows:
   payment still counts. Razorpay takes INR only; AED and SAR wait for the Gulf provider.
   `PAYMENT_PROVIDER=mock` (refused in production) skips the payment sheet. Not in B5 yet: receipt
   email, GST invoice, push, credit balance; `qr_url` is null until QR images are served.
+- B6 (2026-11-23): the worker's `esim.usage` job runs every 15 minutes for eSIMs that are not
+  started or active. It asks the provider for usage, updates the eSIM, keeps one cumulative
+  snapshot per UTC day (`/v1/esims/:iccid/usage/daily` turns these into data used per day for the
+  last 7 days) and sends notices: eSIM ready (after provisioning), low data (the app's own rule:
+  15% or 512 MB left), data used up, 24 hours left (plans of 3+ days) and 2 hours left. Each notice
+  goes out once per eSIM (`esim_notice`), in each device's language. Pushes go straight to APNs
+  (token auth) and FCM HTTP v1; `PUSH_ROUTE=console` logs them instead. Tokens the services reject
+  are deleted.
+- Live Activities now start with `pushType: .token`; the app posts each token to
+  `/v1/esims/:iccid/live-activity` and the worker sends `update` pushes when usage changes and an
+  `end` push when the eSIM expires or runs out. Content-state dates are seconds since 2001, because
+  ActivityKit decodes with the default `Date` strategy. Labels are written on the server in the
+  activity's language.
+- The app registers its device token after sign-in if notifications are already allowed, asks for
+  permission on the Success screen after a purchase, re-registers when the language changes and
+  removes the token on sign-out. Tapping a notice opens that eSIM's Usage screen.
+- `MOCK_USAGE_SPEED` speeds up the mock provider's clock for staging QA. Expiry warnings use real
+  time, so with a high speed they fire almost at once.

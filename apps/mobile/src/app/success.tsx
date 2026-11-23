@@ -1,6 +1,6 @@
 import { colors } from '@vela/tokens';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { QrCard, QrHint, SignalRipple, VelaSplash } from '@/components/esim';
@@ -9,10 +9,15 @@ import { ErrorState } from '@/components/sections/states/StateViews';
 import { Button, Skeleton, Text } from '@/components/ui';
 import { useEsimTitle } from '@/hooks/usePlanTitle';
 import { haptics } from '@/lib/haptics';
+import { registerPush } from '@/lib/push';
 import { useEsim } from '@/queries';
 
 export default function SuccessScreen() {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    void registerPush({ prompt: true });
+  }, []);
   const { iccid, orderId = '' } = useLocalSearchParams<{ iccid: string; orderId: string }>();
   const esim = useEsim(iccid);
   const esimTitle = useEsimTitle();

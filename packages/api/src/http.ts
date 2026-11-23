@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ApiError, type VelaApi } from './client';
 import {
   checkoutSchema,
+  dailyUsageSchema,
   countrySchema,
   couponSchema,
   esimSchema,
@@ -34,6 +35,7 @@ export const httpServedMethods = [
   'getOrder',
   'getEsims',
   'getEsim',
+  'getDailyUsage',
 ] as const;
 
 function idempotencyKey(): string {
@@ -91,5 +93,6 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     getOrder: (orderId) => get(`/v1/orders/${encodeURIComponent(orderId)}`, orderSchema),
     getEsims: () => get('/v1/esims', z.array(esimSchema)),
     getEsim: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}`, esimSchema),
+    getDailyUsage: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}/usage/daily`, z.array(dailyUsageSchema)),
   };
 }

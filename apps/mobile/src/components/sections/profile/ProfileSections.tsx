@@ -6,7 +6,8 @@ import { Card, ListGroup, ListRow, MenuPicker, Skeleton, Switch, Text, toast } f
 import { directionNeedsRestart } from '@/i18n/useLanguageSync';
 import { useProfile } from '@/queries';
 import { devScenarios, useDevStore, type DevScenario } from '@/stores/dev';
-import { deleteAccount, signOutEverywhere } from '@/lib/auth';
+import { deleteAccount } from '@/lib/auth';
+import { signOutDevice } from '@/lib/push';
 import { useSession, type LanguagePreference } from '@/stores/session';
 
 export function AccountCard() {
@@ -150,7 +151,7 @@ export function DeveloperGroup() {
 
 export function SignOutRow() {
   const { t } = useTranslation();
-  const signOut = () => void signOutEverywhere();
+  const signOut = () => void signOutDevice();
   return (
     <ListGroup>
       <ListRow

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, toast } from '@/components/ui';
 import { liveActivity } from '@/lib/liveActivity';
+import { forgetLiveActivity } from '@/lib/push';
 import { tripStartFor } from '@/lib/widgetSync';
 
 export function LiveActivityToggle({ esim }: { esim: Esim }) {
@@ -16,6 +17,7 @@ export function LiveActivityToggle({ esim }: { esim: Esim }) {
     try {
       if (tracking) {
         await liveActivity.end(esim.iccid);
+        void forgetLiveActivity(esim.iccid);
         setTracking(false);
       } else {
         await liveActivity.start(tripStartFor(esim));

@@ -11,6 +11,7 @@ import { ToastViewport } from '@/components/ui';
 import { useLanguageSync } from '@/i18n/useLanguageSync';
 import { confirmStoredSession } from '@/lib/auth';
 import { baseStackOptions, largeTitleStackOptions, sheetOptions } from '@/lib/navigation';
+import { startPushSync } from '@/lib/push';
 import { queryClient } from '@/lib/queryClient';
 import { startWidgetSync } from '@/lib/widgetSync';
 import { useSession } from '@/stores/session';
@@ -29,6 +30,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (hydrated) void confirmStoredSession();
   }, [hydrated]);
+
+  useEffect(() => {
+    if (hydrated && inApp) return startPushSync();
+    return undefined;
+  }, [hydrated, inApp]);
 
   return (
     <GestureHandlerRootView className="flex-1 bg-canvas">

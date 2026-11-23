@@ -44,8 +44,30 @@ struct TripStartRecord: Record {
 }
 
 public class VelaLiveActivityModule: Module {
+  private var watched = Set<String>()
+
+  private func watchToken(_ activity: Activity<VelaTripAttributes>) {
+    guard !watched.contains(activity.id) else { return }
+    watched.insert(activity.id)
+    let iccid = activity.attributes.iccid
+    Task { [weak self] in
+      for await data in activity.pushTokenUpdates {
+        let token = data.map { String(format: "%02x", $0) }.joined()
+        self?.sendEvent("onPushToken", ["iccid": iccid, "token": token])
+      }
+    }
+  }
+
   public func definition() -> ModuleDefinition {
     Name("VelaLiveActivity")
+
+    Events("onPushToken")
+
+    OnStartObserving {
+      for activity in Activity<VelaTripAttributes>.activities {
+        self.watchToken(activity)
+      }
+    }
 
     Function("isSupported") { () -> Bool in
       ActivityAuthorizationInfo().areActivitiesEnabled
@@ -61,7 +83,8 @@ public class VelaLiveActivityModule: Module {
       }
       let attributes = VelaTripAttributes(iccid: input.iccid, label: input.label, flag: input.flag)
       let content = ActivityContent(state: input.state.contentState, staleDate: nil)
-      let activity = try Activity.request(attributes: attributes, content: content, pushType: nil)
+      let activity = try Activity.request(attributes: attributes, content: content, pushType: .token)
+      self.watchToken(activity)
       return activity.id
     }
 

@@ -4,6 +4,8 @@ import type { Env } from '../env';
 import type { Logger } from '../logger';
 import { syncCatalog } from '../modules/catalog/sync';
 import type { EsimProvider } from '../modules/esims/provider';
+import { syncTrackedEsims } from '../modules/esims/usage';
+import type { PushSender } from '../modules/notifications/push';
 import { provisionOrder, refundOrder } from '../modules/orders/fulfil';
 import { expireStaleOrders } from '../modules/orders/service';
 import type { PaymentProvider } from '../modules/payments/provider';
@@ -16,6 +18,7 @@ export type JobContext = {
   provider: EsimProvider;
   payments: PaymentProvider;
   queue: JobQueue;
+  push: PushSender;
 };
 
 export type JobDefinition<T extends object = object> = {
@@ -73,7 +76,17 @@ export const expireOrdersJob: JobDefinition = {
   },
 };
 
-export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob] as JobDefinition[];
+export const usageJob: JobDefinition = {
+  name: JOB.usage,
+  schedule: '*/15 * * * *',
+  retryLimit: 0,
+  handle: async (_jobs, context) => {
+    const result = await syncTrackedEsims(context, { limit: 2000 });
+    context.logger.info(result, 'usage synced');
+  },
+};
+
+export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob] as JobDefinition[];
 
 export async function ensureQueue(boss: PgBoss, definition: Pick<JobDefinition, 'name' | 'retryLimit'>) {
   if (await boss.getQueue(definition.name)) return;

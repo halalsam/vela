@@ -8,6 +8,8 @@ import { decrypt, encrypt } from '../../lib/crypto';
 import { notFound } from '../../lib/errors';
 import type { Logger } from '../../logger';
 import type { EsimProvider } from '../esims/provider';
+import { sendNotice } from '../notifications/notify';
+import type { PushSender } from '../notifications/push';
 import type { PaymentProvider } from '../payments/provider';
 
 export type FulfilDeps = {
@@ -17,6 +19,7 @@ export type FulfilDeps = {
   provider: EsimProvider;
   payments: PaymentProvider;
   queue: JobQueue;
+  push: PushSender;
 };
 
 function labelFor(row: typeof plan.$inferSelect): string {
@@ -55,13 +58,18 @@ export async function provisionOrder(deps: FulfilDeps, orderId: string, options:
         activationCodeEnc: encrypt(bought.activationCode, deps.env.ENCRYPTION_KEY),
       })
       .onConflictDoNothing();
-    const [stored] = await db.select({ id: esim.id, userId: esim.userId }).from(esim).where(eq(esim.iccid, bought.iccid));
+    const [stored] = await db.select().from(esim).where(eq(esim.iccid, bought.iccid));
     if (!stored || stored.userId !== current.userId) throw new Error('Provider returned an ICCID that belongs to someone else');
     await db
       .update(order)
       .set({ status: 'fulfilled', esimId: stored.id, fulfilledAt: new Date(), failureReason: null, updatedAt: new Date() })
       .where(eq(order.id, current.id));
     logger.info({ orderId, iccid: bought.iccid }, 'order fulfilled');
+    try {
+      await sendNotice(deps, stored, 'ready');
+    } catch (error) {
+      logger.warn({ orderId, err: error }, 'ready push failed');
+    }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
     if (!options.finalAttempt) {

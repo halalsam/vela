@@ -42,6 +42,13 @@ const envSchema = z.object({
   TWILIO_ACCOUNT_SID: optional,
   TWILIO_AUTH_TOKEN: optional,
   TWILIO_FROM: optional,
+  MOCK_USAGE_SPEED: z.coerce.number().min(1).max(100_000).default(1),
+  PUSH_ROUTE: z.enum(['console', 'live']).default('console'),
+  APNS_KEY_ID: optional,
+  APNS_TEAM_ID: optional,
+  APNS_PRIVATE_KEY: optional,
+  APNS_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
+  FCM_SERVICE_ACCOUNT: optional,
   PAYMENT_PROVIDER: z.enum(['mock', 'razorpay']).default('mock'),
   RAZORPAY_KEY_ID: optional,
   RAZORPAY_KEY_SECRET: optional,
@@ -50,6 +57,12 @@ const envSchema = z.object({
 });
 
 const checkedEnvSchema = envSchema.superRefine((env, context) => {
+  if (env.PUSH_ROUTE === 'live' && !(env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY)) {
+    context.addIssue({ code: 'custom', path: ['APNS_KEY_ID'], message: 'live push needs an APNs key ID, team ID and private key' });
+  }
+  if (env.PUSH_ROUTE === 'live' && !env.FCM_SERVICE_ACCOUNT) {
+    context.addIssue({ code: 'custom', path: ['FCM_SERVICE_ACCOUNT'], message: 'live push needs a Firebase service account for Android' });
+  }
   if (env.APP_ENV === 'production' && env.PAYMENT_PROVIDER === 'mock') {
     context.addIssue({ code: 'custom', path: ['PAYMENT_PROVIDER'], message: 'production must take real payments' });
   }

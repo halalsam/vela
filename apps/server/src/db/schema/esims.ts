@@ -51,13 +51,25 @@ export const liveActivity = pgTable(
     esimId: uuid()
       .notNull()
       .references(() => esim.id, { onDelete: 'cascade' }),
-    deviceId: uuid()
-      .notNull()
-      .references(() => device.id, { onDelete: 'cascade' }),
+    deviceId: uuid().references(() => device.id, { onDelete: 'set null' }),
+    userId: text().notNull(),
+    locale: text().notNull().default('en'),
     pushToken: text().notNull(),
     startedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     endedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (table) => [uniqueIndex('live_activity_token_idx').on(table.pushToken), index('live_activity_esim_idx').on(table.esimId)],
+);
+
+export const esimNotice = pgTable(
+  'esim_notice',
+  {
+    esimId: uuid()
+      .notNull()
+      .references(() => esim.id, { onDelete: 'cascade' }),
+    kind: text().notNull(),
+    sentAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.esimId, table.kind] })],
 );

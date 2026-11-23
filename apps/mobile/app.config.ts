@@ -46,6 +46,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'com.vela.app',
+    ...(process.env.GOOGLE_SERVICES_JSON ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON } : {}),
     adaptiveIcon: {
       backgroundColor: MATTE_BLACK,
       foregroundImage: './assets/brand/adaptive-foreground.png',
@@ -71,6 +72,7 @@ const config: ExpoConfig = {
     ['expo-localization', { supportsRTL: true, supportedLocales: ['en', 'ar'] }],
     'expo-image',
     'expo-apple-authentication',
+    'expo-notifications',
     '@bacons/apple-targets',
   ],
   experiments: {

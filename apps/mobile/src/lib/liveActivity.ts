@@ -17,7 +17,10 @@ export type TripStart = {
   state: TripState;
 };
 
+export type PushTokenEvent = { iccid: string; token: string };
+
 type NativeModule = {
+  addListener(event: 'onPushToken', listener: (event: PushTokenEvent) => void): { remove(): void };
   isSupported(): boolean;
   list(): { id: string; iccid: string }[];
   start(input: TripStart): Promise<string>;
@@ -45,4 +48,8 @@ export const liveActivity = {
   start: async (input: TripStart) => native?.start(input),
   update: async (iccid: string, state: TripState) => native?.update(iccid, state),
   end: async (iccid: string) => native?.end(iccid),
+  onPushToken: (listener: (event: PushTokenEvent) => void): (() => void) => {
+    const subscription = native?.addListener('onPushToken', listener);
+    return () => subscription?.remove();
+  },
 };

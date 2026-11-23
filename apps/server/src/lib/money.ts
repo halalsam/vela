@@ -1,6 +1,6 @@
-export type CurrencyCode = 'INR' | 'AED' | 'SAR' | 'QAR' | 'USD';
+export type CurrencyCode = 'INR' | 'AED' | 'SAR' | 'QAR' | 'USD' | 'EUR';
 
-const MINOR_UNITS: Record<CurrencyCode, number> = { INR: 100, AED: 100, SAR: 100, QAR: 100, USD: 100 };
+const MINOR_UNITS: Record<CurrencyCode, number> = { INR: 100, AED: 100, SAR: 100, QAR: 100, USD: 100, EUR: 100 };
 
 export function toMinor(amount: number, currency: CurrencyCode): number {
   return Math.round(amount * MINOR_UNITS[currency]);

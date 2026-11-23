@@ -81,6 +81,10 @@ export type MockApiOptions = {
 
 export const TAX_RATE = 0.18;
 
+export function taxRateFor(currency: Currency): number {
+  return currency === 'INR' ? TAX_RATE : 0;
+}
+
 function lowData(esim: Esim): Esim {
   if (esim.status !== 'active') return esim;
   return { ...esim, data_used_mb: Math.round(esim.data_total_mb * 0.94) };
@@ -103,11 +107,11 @@ export function discountFor(coupon: Coupon | null, subtotal: number): number {
   return Math.min(subtotal, coupon.discount_amount ?? 0);
 }
 
-export function priceBreakdown(price: number, coupon: Coupon | null, creditAvailable = 0) {
+export function priceBreakdown(price: number, coupon: Coupon | null, creditAvailable = 0, taxRate = TAX_RATE) {
   const discount = discountFor(coupon, price);
   const credit = Math.min(Math.max(0, creditAvailable), price - discount);
   const total = price - discount - credit;
-  const tax = Math.round(total - total / (1 + TAX_RATE));
+  const tax = taxRate > 0 ? Math.round(total - total / (1 + taxRate)) : 0;
   return { subtotal: price, discount, credit, tax, total };
 }
 

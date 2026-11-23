@@ -1,4 +1,4 @@
-export type CurrencyCode = 'INR' | 'AED' | 'SAR' | 'QAR' | 'USD';
+export type CurrencyCode = 'INR' | 'AED' | 'SAR' | 'QAR' | 'USD' | 'EUR';
 export type AppLanguage = 'en' | 'ar';
 
 const localeByCurrency: Record<CurrencyCode, string> = {
@@ -7,6 +7,7 @@ const localeByCurrency: Record<CurrencyCode, string> = {
   SAR: 'en-SA',
   QAR: 'en-QA',
   USD: 'en-US',
+  EUR: 'en-IE',
 };
 
 const formatters = new Map<string, Intl.NumberFormat>();

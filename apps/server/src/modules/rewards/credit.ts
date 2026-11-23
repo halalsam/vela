@@ -5,7 +5,7 @@ import { creditLedger, esim, order, profile } from '../../db/schema';
 import { fromMinor, type CurrencyCode } from '../../lib/money';
 import type { Logger } from '../../logger';
 
-export const REFERRAL_REWARD_MINOR: Record<CurrencyCode, number> = { INR: 15_000, AED: 700, SAR: 700, QAR: 700, USD: 200 };
+export const REFERRAL_REWARD_MINOR: Record<CurrencyCode, number> = { INR: 15_000, AED: 700, SAR: 700, QAR: 700, USD: 200, EUR: 200 };
 
 type ProfileRow = typeof profile.$inferSelect;
 const PAID: (typeof order.$inferSelect.status)[] = ['paid', 'provisioning', 'fulfilled'];

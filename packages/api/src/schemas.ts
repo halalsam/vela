@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export const currencySchema = z.enum(['INR', 'AED', 'SAR', 'QAR', 'USD']);
+export const currencySchema = z.enum(['INR', 'AED', 'SAR', 'QAR', 'USD', 'EUR']);
+export const SELLING_CURRENCIES = ['INR', 'AED', 'SAR', 'EUR', 'USD'] as const;
+export type SellingCurrency = (typeof SELLING_CURRENCIES)[number];
 export const countryCodeSchema = z.string().regex(/^[A-Z]{2}$/);
 
 export const planSchema = z.object({

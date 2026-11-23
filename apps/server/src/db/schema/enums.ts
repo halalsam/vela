@@ -1,6 +1,6 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 
-export const currency = pgEnum('currency', ['INR', 'AED', 'SAR', 'QAR', 'USD']);
+export const currency = pgEnum('currency', ['INR', 'AED', 'SAR', 'QAR', 'USD', 'EUR']);
 export const planType = pgEnum('plan_type', ['country', 'regional', 'global']);
 export const regionType = pgEnum('region_type', ['regional', 'global']);
 export const activationPolicy = pgEnum('activation_policy', ['on_install', 'on_first_connection']);

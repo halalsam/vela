@@ -35,7 +35,7 @@ const envSchema = z.object({
   API_PUBLIC_URL: z.url().default('http://localhost:8787'),
   BETTER_AUTH_SECRET: z.string().min(32, 'must be at least 32 characters'),
   COOKIE_DOMAIN: optional,
-  APPLE_BUNDLE_ID: z.string().default('com.vela.app'),
+  APPLE_BUNDLE_ID: z.string().default('com.sammk21.vela'),
   APPLE_SERVICE_ID: optional,
   APPLE_CLIENT_SECRET: optional,
   GOOGLE_CLIENT_ID: optional,

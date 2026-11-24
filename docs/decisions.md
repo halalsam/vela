@@ -67,7 +67,7 @@ source of truth. Resolved as follows:
 - One widget extension, `apps/mobile/targets/widget`, built by `@bacons/apple-targets` on prebuild.
   It holds the usage widget (small, medium, Lock Screen ring, rectangular and inline) and the trip
   Live Activity with its Dynamic Island layouts. Minimum iOS 16.4, same as the app.
-- The app writes a JSON snapshot of the user's eSIMs to the App Group `group.com.vela.app` every time
+- The app writes a JSON snapshot of the user's eSIMs to the App Group `group.com.sammk21.vela` every time
   the eSIM list loads, then reloads the widget timelines. Strings are localised by the app before
   they are written, so the widget follows the app language.
 - Live Activities start from Usage › "Show on Lock Screen" through the local module
@@ -76,7 +76,7 @@ source of truth. Resolved as follows:
 - The widget uses the vela symbol as a template image (rendered from the kit SVG) and the system
   font; Manrope is not bundled into the extension.
 - Before the first device build: set `ios.appleTeamId` in `app.config.ts`, and register the App Group
-  for both bundle IDs (`com.vela.app`, `com.vela.app.VelaWidgets`) in the Apple Developer portal.
+  for both bundle IDs (`com.sammk21.vela`, `com.sammk21.vela.VelaWidgets`) in the Apple Developer portal.
 
 ## 2026-11-20 · Backend
 
@@ -91,7 +91,7 @@ source of truth. Resolved as follows:
   SSH secrets are set. better-auth tables arrive in B4, so `user_id` columns are plain text until
   then.
 - B4 (2026-11-23): sign-in runs on better-auth (`/v1/auth/*`) with Apple (native ID token, bundle
-  `com.vela.app`), Google (browser flow via the Expo plugin, enabled once client IDs are set) and
+  `com.sammk21.vela`), Google (browser flow via the Expo plugin, enabled once client IDs are set) and
   phone codes (MSG91 for +91, Twilio elsewhere; `SMS_ROUTE=console` logs codes outside
   production). Phone-only accounts get a placeholder email on `phone.vela.invalid`. A profile with a
   referral code is created for every new user. `GET /v1/me` and `DELETE /v1/me` are live; deleting
@@ -205,3 +205,6 @@ source of truth. Resolved as follows:
 - App (2026-11-24): Profile now opens an order history with GST invoices (`GET /v1/orders`), a help
   centre and a device compatibility guide; Other payment methods opens the Razorpay sheet with the
   live API.
+- App ID (2026-11-24): the bundle ID changed from `com.vela.app` to `com.sammk21.vela` (App Group
+  `group.com.sammk21.vela`, widget `com.sammk21.vela.VelaWidgets`), because `com.vela.app` is likely
+  already taken on Apple's side. It can be changed again before the App Store launch.

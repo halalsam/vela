@@ -32,7 +32,7 @@ on earlier ones. Settings named in `code` go in `infra/env/production.env` on th
 | eSIM Access | Account, wallet top-up, access code | `ESIM_PROVIDER=esimaccess`, `ESIM_ACCESS_CODE` |
 | eSIM Go (backup) | Account, wallet top-up, API key | `ESIM_BACKUP_PROVIDER=esimgo`, `ESIM_GO_API_KEY` |
 | Razorpay | Live mode, International Payments, Apple Pay domain verification, automatic capture, webhook to `/v1/webhooks/razorpay` (`payment.captured`, `payment.failed`, `refund.processed`) | `PAYMENT_PROVIDER=razorpay`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` |
-| Apple Developer (organisation) | Team ID, App ID `com.vela.app`, App Group, Sign in with Apple, Services ID for the website, APNs key (.p8) | `APPLE_SERVICE_ID`, `APPLE_CLIENT_SECRET`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_ENV=production`; `ios.appleTeamId` in `app.config.ts` |
+| Apple Developer (organisation) | Team ID, App ID `com.sammk21.vela`, App Group, Sign in with Apple, Services ID for the website, APNs key (.p8) | `APPLE_SERVICE_ID`, `APPLE_CLIENT_SECRET`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_ENV=production`; `ios.appleTeamId` in `app.config.ts` |
 | Google Cloud | OAuth client IDs (web and iOS) | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_IOS_CLIENT_ID` |
 | Firebase | Project, Android app, service account | `FCM_SERVICE_ACCOUNT`; `GOOGLE_SERVICES_JSON` for the Android build |
 | MSG91 | Account, DLT-approved OTP template | `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID` |
@@ -72,7 +72,7 @@ password manager, never in git.
       the privacy policy, account deletion (Profile › Delete account) noted for review, screenshots in
       English and Arabic.
 - [ ] Google Play: data safety form, privacy policy URL, signed build with `GOOGLE_SERVICES_JSON`.
-- [ ] Register the App Group for both bundle IDs (`com.vela.app`, `com.vela.app.VelaWidgets`).
+- [ ] Register the App Group for both bundle IDs (`com.sammk21.vela`, `com.sammk21.vela.VelaWidgets`).
 
 ## 5. Test with real money, on real phones
 

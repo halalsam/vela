@@ -5,13 +5,13 @@ import type { Logger } from '../logger';
 import { refreshRates } from '../modules/catalog/fx';
 import { syncCatalog } from '../modules/catalog/sync';
 import type { EsimProvider } from '../modules/esims/provider';
-import { syncTrackedEsims } from '../modules/esims/usage';
+import { queueTrackedEsims, syncEsimUsage } from '../modules/esims/usage';
 import type { EmailSender } from '../modules/notifications/email';
 import type { PushSender } from '../modules/notifications/push';
 import { provisionOrder, refundOrder } from '../modules/orders/fulfil';
 import { expireStaleOrders } from '../modules/orders/service';
 import type { PaymentProvider } from '../modules/payments/provider';
-import { JOB, type JobQueue, type OrderJob } from './queue';
+import { JOB, type EsimJob, type JobQueue, type OrderJob } from './queue';
 
 export type JobContext = {
   logger: Logger;
@@ -29,6 +29,7 @@ export type JobDefinition<T extends object = object> = {
   name: string;
   schedule?: string;
   retryLimit?: number;
+  batchSize?: number;
   handle: (jobs: JobWithMetadata<T>[], context: JobContext) => Promise<void>;
 };
 
@@ -85,8 +86,19 @@ export const usageJob: JobDefinition = {
   schedule: '*/15 * * * *',
   retryLimit: 0,
   handle: async (_jobs, context) => {
-    const result = await syncTrackedEsims(context, { limit: 2000 });
-    context.logger.info(result, 'usage synced');
+    const queued = await queueTrackedEsims(context.db, context.queue, { limit: 20_000 });
+    context.logger.info({ queued }, 'usage checks queued');
+  },
+};
+
+export const usageOneJob: JobDefinition<EsimJob> = {
+  name: JOB.usageOne,
+  retryLimit: 2,
+  batchSize: 5,
+  handle: async (jobs, context) => {
+    for (const job of jobs) {
+      await syncEsimUsage(context, job.data.esimId);
+    }
   },
 };
 
@@ -99,7 +111,7 @@ export const fxJob: JobDefinition = {
   },
 };
 
-export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob, fxJob] as JobDefinition[];
+export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob, usageOneJob, fxJob] as JobDefinition[];
 
 export async function ensureQueue(boss: PgBoss, definition: Pick<JobDefinition, 'name' | 'retryLimit'>) {
   if (await boss.getQueue(definition.name)) return;
@@ -109,7 +121,7 @@ export async function ensureQueue(boss: PgBoss, definition: Pick<JobDefinition, 
 export async function registerJobs(boss: PgBoss, definitions: JobDefinition[], context: JobContext) {
   for (const definition of definitions) {
     await ensureQueue(boss, definition);
-    await boss.work(definition.name, { includeMetadata: true }, async (batch: JobWithMetadata<object>[]) => {
+    await boss.work(definition.name, { includeMetadata: true, batchSize: definition.batchSize ?? 1 }, async (batch: JobWithMetadata<object>[]) => {
       const logger = context.logger.child({ job: definition.name });
       await definition.handle(batch, { ...context, logger });
     });

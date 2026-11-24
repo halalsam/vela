@@ -103,6 +103,8 @@ describe('referrals', () => {
     const [benEsim] = await db.select().from(esim).where(eq(esim.userId, await userIdFor('+919822200002')));
     if (!benEsim) throw new Error('no eSIM');
     const usageDeps = { db, logger: silentLogger, provider, push, now: () => new Date(clock) };
+    await post('/v1/devices', { platform: 'ios', push_token: 'asha-phone-0001', locale: 'en' }, asha);
+    push.sent.length = 0;
     clock = benEsim.createdAt.getTime() + 2 * MIN;
     await syncEsimUsage(usageDeps, benEsim.id);
     expect(await creditBalance(db, await userIdFor('+919822200001'), 'INR')).toBe(0);
@@ -114,6 +116,8 @@ describe('referrals', () => {
     const rewards = await get<Rewards>('/v1/rewards', asha);
     expect(rewards.balance).toBe(150);
     expect(rewards.referrals[0]).toMatchObject({ status: 'travelled', reward: 150 });
+    const credited = push.sent.filter((item) => item.kind === 'notify' && item.token === 'asha-phone-0001');
+    expect(credited.map((item) => item.kind === 'notify' && item.message.title)).toEqual(['You earned ₹150 travel credit']);
   });
 });
 

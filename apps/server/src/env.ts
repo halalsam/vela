@@ -28,6 +28,8 @@ const envSchema = z.object({
   GIT_SHA: z.string().default('dev'),
   ESIM_PROVIDER: z.enum(['mock', 'esimaccess']).default('mock'),
   ESIM_ACCESS_CODE: optional,
+  ESIM_ACCESS_WEBHOOK_TOKEN: optional,
+  ESIM_ACCESS_WEBHOOK_IP_CHECK: z.stringbool().default(false),
   ESIM_BACKUP_PROVIDER: z.enum(['none', 'esimgo']).default('none'),
   ESIM_GO_API_KEY: optional,
   API_PUBLIC_URL: z.url().default('http://localhost:8787'),

@@ -50,6 +50,24 @@ export async function sendNotice(deps: NotifyDeps, row: EsimRow, kind: NoticeKin
   return true;
 }
 
+export async function notifyUser(
+  deps: NotifyDeps,
+  userId: string,
+  build: (locale: Locale) => { title: string; body: string },
+  data: Record<string, string>,
+): Promise<number> {
+  const devices = await deps.db.select().from(device).where(eq(device.userId, userId));
+  const stale: string[] = [];
+  let sent = 0;
+  for (const target of devices) {
+    const result = await deps.push.notify({ platform: target.platform, token: target.pushToken }, { ...build(toLocale(target.locale)), data });
+    if (result === 'sent') sent += 1;
+    if (result === 'invalid_token') stale.push(target.id);
+  }
+  if (stale.length > 0) await deps.db.delete(device).where(inArray(device.id, stale));
+  return sent;
+}
+
 export function tripContentState(row: Pick<EsimRow, 'status' | 'dataUsedMb' | 'dataTotalMb' | 'expiresAt'>, locale: Locale) {
   const state = { status: row.status, usedMb: row.dataUsedMb, totalMb: row.dataTotalMb };
   return {

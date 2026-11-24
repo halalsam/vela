@@ -6,6 +6,7 @@ import { HttpError } from './lib/errors';
 import { catalogRoutes } from './routes/catalog';
 import { adminRoutes } from './routes/admin';
 import { deviceRoutes } from './routes/devices';
+import { esimWebhookRoutes } from './routes/esimWebhooks';
 import { meRoutes } from './routes/me';
 import { orderRoutes, webhookRoutes } from './routes/orders';
 import { supportRoutes } from './routes/support';
@@ -58,6 +59,7 @@ export function createApp(deps: AppDeps) {
   app.route('/', supportRoutes);
   app.route('/', adminRoutes);
   app.route('/', webhookRoutes);
+  app.route('/', esimWebhookRoutes);
   app.on(['GET', 'POST'], '/v1/auth/*', (c) => deps.auth.handler(c.req.raw));
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearer', { type: 'http', scheme: 'bearer' });

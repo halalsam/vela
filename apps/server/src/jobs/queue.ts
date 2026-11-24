@@ -5,10 +5,12 @@ export const JOB = {
   refund: 'esim.refund',
   expireOrders: 'orders.expire',
   usage: 'esim.usage',
+  usageOne: 'esim.usage.one',
   fx: 'fx.refresh',
 } as const;
 
 export type OrderJob = { orderId: string };
+export type EsimJob = { esimId: string };
 
 export type JobQueue = {
   send(name: string, data: object, options?: { singletonKey?: string }): Promise<void>;

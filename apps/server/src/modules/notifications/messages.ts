@@ -51,3 +51,13 @@ export function leftLabel(state: UsageState): string {
   if (state.status === 'not_started') return formatData(state.totalMb);
   return formatData(Math.max(0, state.totalMb - state.usedMb));
 }
+
+const referral: Record<Locale, { title: string; body: string }> = {
+  en: { title: 'You earned {{amount}} travel credit', body: 'Your friend’s eSIM just connected. Your credit applies at checkout automatically.' },
+  ar: { title: 'حصلت على رصيد سفر بقيمة {{amount}}', body: 'اتصلت شريحة صديقك للتو. يُطبَّق رصيدك تلقائيًا عند الدفع.' },
+};
+
+export function referralMessage(locale: Locale, amount: string) {
+  const entry = referral[locale];
+  return { title: fill(entry.title, { amount }), body: fill(entry.body, { amount }) };
+}

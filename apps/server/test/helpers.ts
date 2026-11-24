@@ -35,13 +35,14 @@ export async function createTestDb() {
   return { db, client };
 }
 
-export function createTestApp(db: Database, overrides: { payments?: PaymentProvider; support?: SupportDesk } = {}) {
+export function createTestApp(db: Database, overrides: { payments?: PaymentProvider; support?: SupportDesk; env?: typeof testEnv } = {}) {
+  const env = overrides.env ?? testEnv;
   const sms = createMemorySms();
   const queue = memoryQueue();
   const payments = overrides.payments ?? createMockPayments();
   const auth = createAuth({ db, env: testEnv, logger: silentLogger, sms });
   const support = overrides.support ?? createSupportDesk(testEnv, db, silentLogger);
-  const app = createApp({ db, env: testEnv, logger: silentLogger, version: 'test', auth, payments, queue, support, esimProvider: createMockProvider() });
+  const app = createApp({ db, env, logger: silentLogger, version: 'test', auth, payments, queue, support, esimProvider: createMockProvider() });
   return { app, auth, sms, queue, payments };
 }
 

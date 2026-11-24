@@ -4,6 +4,10 @@ import type { Database } from '../../db/client';
 import { creditLedger, esim, order, profile } from '../../db/schema';
 import { fromMinor, type CurrencyCode } from '../../lib/money';
 import type { Logger } from '../../logger';
+import { formatPrice } from '@vela/utils';
+import { referralMessage } from '../notifications/messages';
+import { notifyUser } from '../notifications/notify';
+import type { PushSender } from '../notifications/push';
 
 export const REFERRAL_REWARD_MINOR: Record<CurrencyCode, number> = { INR: 15_000, AED: 700, SAR: 700, QAR: 700, USD: 200, EUR: 200 };
 
@@ -36,7 +40,7 @@ export async function findReferrer(db: Database, code: string, userId: string | 
   return (previous?.value ?? 0) > 0 ? null : referrer;
 }
 
-export async function creditReferrerForEsim(db: Database, logger: Logger, esimId: string): Promise<boolean> {
+export async function creditReferrerForEsim(db: Database, logger: Logger, esimId: string, push?: PushSender): Promise<boolean> {
   const [bought] = await db
     .select({ id: order.id, userId: order.userId, referralCode: order.referralCode })
     .from(order)
@@ -55,8 +59,17 @@ export async function creditReferrerForEsim(db: Database, logger: Logger, esimId
     })
     .onConflictDoNothing()
     .returning({ id: creditLedger.id });
-  if (inserted.length > 0) logger.info({ referrer: referrer.userId, orderId: bought.id }, 'referral credit added');
-  return inserted.length > 0;
+  if (inserted.length === 0) return false;
+  logger.info({ referrer: referrer.userId, orderId: bought.id }, 'referral credit added');
+  if (push) {
+    const amount = formatPrice(fromMinor(REFERRAL_REWARD_MINOR[referrer.currency], referrer.currency), referrer.currency);
+    try {
+      await notifyUser({ db, logger, push }, referrer.userId, (locale) => referralMessage(locale, amount), { kind: 'referral_credit' });
+    } catch (error) {
+      logger.warn({ err: error, referrer: referrer.userId }, 'referral credit push failed');
+    }
+  }
+  return true;
 }
 
 export async function rewardsFor(db: Database, userId: string, currency: CurrencyCode): Promise<Rewards> {

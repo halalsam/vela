@@ -9,6 +9,7 @@ import type { NoticeKind } from '../notifications/messages';
 import { pushLiveActivities, sendNotice } from '../notifications/notify';
 import type { PushSender } from '../notifications/push';
 import { creditReferrerForEsim } from '../rewards/credit';
+import { JOB, type JobQueue } from '../../jobs/queue';
 import type { EsimProvider } from './provider';
 import { providerFor } from './providers';
 
@@ -91,7 +92,7 @@ export async function syncEsimUsage(deps: UsageDeps, esimId: string): Promise<{ 
 
   if (before.status === 'not_started' && after.status !== 'not_started') {
     try {
-      await creditReferrerForEsim(db, deps.logger, after.id);
+      await creditReferrerForEsim(db, deps.logger, after.id, deps.push);
     } catch (error) {
       deps.logger.warn({ esimId: after.id, err: error }, 'referral credit failed');
     }
@@ -103,6 +104,19 @@ export async function syncEsimUsage(deps: UsageDeps, esimId: string): Promise<{ 
   }
   if (changed) await pushLiveActivities(deps, after);
   return { changed, notices: sent };
+}
+
+export async function queueTrackedEsims(db: Database, queue: JobQueue, options: { limit: number }): Promise<number> {
+  const rows = await db
+    .select({ id: esim.id })
+    .from(esim)
+    .where(inArray(esim.status, ['not_started', 'active']))
+    .orderBy(sql`${esim.usageSyncedAt} asc nulls first`)
+    .limit(options.limit);
+  for (const row of rows) {
+    await queue.send(JOB.usageOne, { esimId: row.id }, { singletonKey: row.id });
+  }
+  return rows.length;
 }
 
 export async function syncTrackedEsims(deps: UsageDeps, options: { limit: number }): Promise<{ synced: number; failed: number }> {

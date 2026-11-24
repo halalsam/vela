@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84.0" height="84.0" viewBox="1691.650 2763.400 84.000 84.000" fill="none"><defs><clipPath id="clip49_693_3709">
+<rect width="84" height="84" fill="white" transform="translate(1691.65 2763.4)" />
+</clipPath>
+</defs><g>
+<g clip-path="url(#clip49_693_3709)">
+<rect width="84" height="84" transform="translate(1691.65 2763.4)" fill="white" />
+<path d="M1686.05 2763.4H1803.65V2785.8H1686.05V2763.4Z" fill-rule="evenodd" clip-rule="evenodd" fill="#FFDA2C" />
+<path d="M1686.05 2805.4H1803.65V2825H1686.05V2805.4Z" fill-rule="evenodd" clip-rule="evenodd" fill="#F93939" />
+<path d="M1686.05 2825H1803.65V2847.4H1686.05V2825Z" fill-rule="evenodd" clip-rule="evenodd" fill="#232C80" />
+<path d="M1686.05 2763.4L1753.25 2805.4L1686.05 2847.4V2763.4Z" fill-rule="evenodd" clip-rule="evenodd" fill="#00B731" />
+<path d="M1719.65 2824.11C1718.02 2824.69 1716.29 2825 1714.48 2825C1704.96 2825 1697.25 2816.23 1697.25 2805.4C1697.25 2794.58 1704.97 2785.8 1714.48 2785.8C1716.28 2785.8 1718.02 2786.12 1719.65 2786.7C1712.66 2789.2 1707.59 2796.63 1707.59 2805.4C1707.59 2814.18 1712.66 2821.61 1719.65 2824.11ZM1719.65 2791.4H1725.25V2797H1719.65V2791.4ZM1719.65 2802.6H1725.25V2808.2H1719.65V2802.6ZM1719.65 2813.8H1725.25V2819.4H1719.65V2813.8Z" fill-rule="evenodd" clip-rule="evenodd" fill="white" />
+</g>
+</g>
+</svg>

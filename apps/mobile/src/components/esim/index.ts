@@ -1,6 +1,8 @@
 export { ActiveEsimCard, type ActiveEsimCardProps } from './ActiveEsimCard';
 export { CountryRow, RegionRow, type CountryRowProps, type RegionRowProps } from './CountryRow';
 export { EsimRow, type EsimRowProps } from './EsimRow';
+export { CountryMap, type CountryMapProps } from './CountryMap';
+export { FlagMarquee, type FlagMarqueeProps } from './FlagMarquee';
 export { Flag, FlagStack, type FlagProps, type FlagSize, type FlagStackProps } from './Flag';
 export { InstallStep, type InstallStepProps, type InstallStepState } from './InstallStep';
 export { ManualCodeRow, type ManualCodeRowProps } from './ManualCodeRow';

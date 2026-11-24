@@ -122,6 +122,11 @@ export const orderSchema = z.object({
   currency: currencySchema,
 });
 
+export const orderSummarySchema = orderSchema.extend({
+  created_at: z.iso.datetime(),
+  invoice_number: z.string().nullable(),
+});
+
 export const paymentIntentSchema = z.object({
   provider: z.enum(['razorpay', 'mock']),
   key: z.string().nullable(),
@@ -179,6 +184,7 @@ export const profileSchema = z.object({
 export type Coupon = z.infer<typeof couponSchema>;
 export type Order = z.infer<typeof orderSchema>;
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
+export type OrderSummary = z.infer<typeof orderSummarySchema>;
 export type PaymentIntent = z.infer<typeof paymentIntentSchema>;
 export type Checkout = z.infer<typeof checkoutSchema>;
 export type PaymentResult = z.infer<typeof paymentResultSchema>;

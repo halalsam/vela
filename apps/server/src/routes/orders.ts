@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import { checkoutSchema, couponSchema, esimSchema, orderSchema, paymentResultSchema, rewardsSchema, topUpPackSchema } from '@vela/api';
+import { checkoutSchema, couponSchema, esimSchema, orderSchema, orderSummarySchema, paymentResultSchema, rewardsSchema, topUpPackSchema } from '@vela/api';
 import { requireUser } from '../auth/middleware';
 import { HttpError } from '../lib/errors';
 import { esimByIccid, listEsims } from '../modules/orders/fulfil';
@@ -9,6 +9,7 @@ import {
   createTopUpOrder,
   getOrder,
   handlePaymentWebhook,
+  listOrdersFor,
   listTopUpPacks,
   resolveDiscount,
   type OrderDeps,
@@ -57,6 +58,14 @@ const createOrderRoute = createRoute({
     404: failure('Plan not found'),
     422: failure('Coupon or currency not usable'),
   },
+});
+
+const listOrdersRoute = createRoute({
+  method: 'get',
+  path: '/v1/orders',
+  tags: ['checkout'],
+  ...signedIn,
+  responses: { 200: json(z.array(orderSummarySchema), 'Paid orders, newest first, with their GST invoice number'), 401: failure('Not signed in') },
 });
 
 const getOrderRoute = createRoute({
@@ -160,6 +169,7 @@ export const orderRoutes = new OpenAPIHono<AppEnv>()
     );
     return c.json(checkout, 200);
   })
+  .openapi(listOrdersRoute, async (c) => c.json(await listOrdersFor(c.var.deps.db, c.var.user.id), 200))
   .openapi(getOrderRoute, async (c) => c.json(await getOrder(c.var.deps.db, c.var.user.id, c.req.valid('param').id), 200))
   .openapi(confirmRoute, async (c) => {
     const result = await confirmPayment(orderDeps(c.var.deps, c.var.logger), c.var.user.id, c.req.valid('param').id, c.req.valid('json'));

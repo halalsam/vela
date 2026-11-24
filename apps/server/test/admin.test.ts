@@ -103,6 +103,16 @@ describe('invoices', () => {
   });
 });
 
+describe('order history', () => {
+  it('lists the customer’s paid orders, newest first, with invoice numbers', async () => {
+    const list = (await (await call('GET', '/v1/orders', customer)).json()) as { number: string; invoice_number: string | null; status: string; created_at: string }[];
+    expect(list).toHaveLength(2);
+    expect(Date.parse(list[0]?.created_at ?? '')).toBeGreaterThanOrEqual(Date.parse(list[1]?.created_at ?? ''));
+    expect(list.every((item) => item.status === 'fulfilled' && /^VL\//.test(item.invoice_number ?? ''))).toBe(true);
+    expect(await (await call('GET', '/v1/orders', staff)).json()).toEqual([]);
+  });
+});
+
 describe('admin', () => {
   it('is closed to customers and opens by role', async () => {
     expect((await call('GET', '/v1/admin/orders', staff)).status).toBe(403);

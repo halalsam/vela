@@ -1,8 +1,8 @@
 import { randomInt } from 'node:crypto';
-import { priceBreakdown, taxRateFor, type Checkout, type Coupon, type Order, type OrderStatus, type PaymentResult, type TopUpPack } from '@vela/api';
-import { and, count, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
+import { priceBreakdown, taxRateFor, type Checkout, type Coupon, type Order, type OrderStatus, type OrderSummary, type PaymentResult, type TopUpPack } from '@vela/api';
+import { and, count, desc, eq, inArray, isNull, lt, notInArray, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { coupon, couponRedemption, creditLedger, esim, order, payment, plan, profile, topUpPack, topUpPrice, webhookEvent } from '../../db/schema';
+import { coupon, couponRedemption, creditLedger, esim, invoice, order, payment, plan, profile, topUpPack, topUpPrice, webhookEvent } from '../../db/schema';
 import type { Env } from '../../env';
 import { JOB, type JobQueue } from '../../jobs/queue';
 import { HttpError, notFound } from '../../lib/errors';
@@ -257,6 +257,19 @@ async function ownedOrder(db: Database, userId: string, orderId: string): Promis
   const [row] = await db.select().from(order).where(and(eq(order.id, orderId), eq(order.userId, userId)));
   if (!row) throw notFound('Order');
   return row;
+}
+
+export async function listOrdersFor(db: Database, userId: string): Promise<OrderSummary[]> {
+  const rows = await db
+    .select({ order, invoiceNumber: invoice.number })
+    .from(order)
+    .leftJoin(invoice, eq(invoice.orderId, order.id))
+    .where(and(eq(order.userId, userId), notInArray(order.status, ['draft', 'awaiting_payment', 'expired'])))
+    .orderBy(desc(order.createdAt))
+    .limit(100);
+  return Promise.all(
+    rows.map(async (row) => ({ ...(await toOrder(db, row.order)), created_at: row.order.createdAt.toISOString(), invoice_number: row.invoiceNumber })),
+  );
 }
 
 export async function getOrder(db: Database, userId: string, orderId: string): Promise<Order> {

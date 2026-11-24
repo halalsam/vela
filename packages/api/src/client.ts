@@ -4,6 +4,7 @@ import {
   checkoutSchema,
   couponSchema,
   orderSchema,
+  orderSummarySchema,
   profileSchema,
   rewardsSchema,
   supportMessageSchema,
@@ -18,6 +19,7 @@ import {
   type Coupon,
   type InvoiceLink,
   type Order,
+  type OrderSummary,
   type PaymentResult,
   type Profile,
   type Rewards,
@@ -68,6 +70,7 @@ export type VelaApi = {
   createOrder(input: CreateOrderInput): Promise<Checkout>;
   confirmPayment(orderId: string, result: PaymentResult): Promise<Order>;
   getOrder(orderId: string): Promise<Order>;
+  getOrders(): Promise<OrderSummary[]>;
   getInvoice(orderId: string): Promise<InvoiceLink>;
   topUp(input: { iccid: string; packId: string; currency?: Currency; idempotencyKey?: string }): Promise<Checkout>;
 };
@@ -219,6 +222,34 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
       }),
     confirmPayment: async (orderId) => respond(orderSchema, () => orders.get(orderId) ?? notFound('Order')),
     getOrder: async (orderId) => respond(orderSchema, () => orders.get(orderId) ?? notFound('Order')),
+    getOrders: async () =>
+      respond(
+        z.array(orderSummarySchema),
+        () => {
+          const placed = [...orders.values()].reverse().map((item) => ({ ...item, created_at: new Date().toISOString(), invoice_number: null }));
+          const past = mocks.esims.slice(0, 2).map((esim, index) => {
+            const total = index === 0 ? 1199 : 899;
+            return {
+              order_id: `VL-PAST${index + 1}`,
+              number: `VL-K7Q2${String(index + 41).padStart(4, '0')}`,
+              kind: 'esim' as const,
+              status: 'fulfilled' as const,
+              plan_id: esim.plan_id,
+              iccid: esim.iccid,
+              subtotal: total,
+              discount: 0,
+              credit: 0,
+              tax: Math.round(total - total / (1 + TAX_RATE)),
+              total,
+              currency: 'INR' as const,
+              created_at: new Date(Date.now() - (index + 1) * 9 * 86_400_000).toISOString(),
+              invoice_number: `VL/2026-27/${String(120 + index).padStart(6, '0')}`,
+            };
+          });
+          return [...placed, ...past];
+        },
+        { list: true },
+      ),
     getInvoice: async () => notFound('Invoice'),
     topUp: async ({ iccid, packId }) =>
       respond(checkoutSchema, () => {

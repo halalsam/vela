@@ -9,6 +9,7 @@ import {
   invoiceLinkSchema,
   offerSchema,
   orderSchema,
+  orderSummarySchema,
   planSchema,
   regionSchema,
   rewardsSchema,
@@ -44,6 +45,7 @@ export const httpServedMethods = [
   'topUp',
   'getRewards',
   'getInvoice',
+  'getOrders',
   'getSupportThread',
   'sendSupportMessage',
 ] as const;
@@ -101,6 +103,7 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     confirmPayment: (orderId, result) =>
       send(`/v1/orders/${encodeURIComponent(orderId)}/confirm`, orderSchema, { method: 'POST', body: result }),
     getOrder: (orderId) => get(`/v1/orders/${encodeURIComponent(orderId)}`, orderSchema),
+    getOrders: () => get('/v1/orders', z.array(orderSummarySchema)),
     getEsims: () => get('/v1/esims', z.array(esimSchema)),
     getEsim: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}`, esimSchema),
     getTopUpPacks: (iccid) =>

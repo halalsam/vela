@@ -38,6 +38,8 @@ on earlier ones. Settings named in `code` go in `infra/env/production.env` on th
 | MSG91 | Account, DLT-approved OTP template | `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID` |
 | Twilio | Account, sending number | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` |
 | Chatwoot | API inbox (HMAC identity on) | `CHATWOOT_URL`, `CHATWOOT_INBOX_IDENTIFIER`, `CHATWOOT_HMAC_TOKEN` |
+| Resend | Verified sending domain, API key | `EMAIL_ROUTE=live`, `RESEND_API_KEY`, `EMAIL_FROM` |
+| eSIM Access webhooks | Webhook URL `/v1/webhooks/esimaccess?token=…` set in their developer console | `ESIM_ACCESS_WEBHOOK_TOKEN`, `ESIM_ACCESS_WEBHOOK_IP_CHECK=true` |
 | Sentry | Project | `SENTRY_DSN` |
 | Cloudflare R2 or Backblaze B2 | Bucket and access key for backups | `BACKUP_S3_BUCKET`, `RCLONE_CONFIG_S3_*`, `BACKUP_AGE_RECIPIENT` |
 
@@ -104,7 +106,7 @@ Use one or two cheap plans and refund them afterwards.
 ## Later
 
 - Gulf local payment methods (mada, KNET) need a Gulf company and Tap or Stripe.
-- Credit notes for refunded orders that already had an invoice.
-- Receipt emails with the QR code (needs an email provider).
-- Per-eSIM usage jobs once there are thousands of active eSIMs.
-- eSIM Access and eSIM Go webhooks for faster usage and order updates.
+- eSIM Go webhooks (eSIM Access webhooks are in place).
+- Cancelling eSIM Go eSIMs on refund (only eSIM Access cancels today).
+- Storing invoice and credit note PDFs in the bucket instead of drawing them on request.
+- Website destination pages rendered per currency instead of swapped in the browser.

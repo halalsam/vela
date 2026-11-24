@@ -187,3 +187,21 @@ source of truth. Resolved as follows:
   that finds the stamp fails for a manual check in the eSIM Go portal. Each eSIM records its
   supplier, usage goes to that supplier, and top-ups are offered only on eSIMs from the main supplier.
 - The website admin has a demo mode with sample data when `NEXT_PUBLIC_API_URL` is not set.
+- Refunds (2026-11-24): a refund also cancels the eSIM with its supplier when it was never installed
+  (eSIM Access returns the money to the wallet; eSIM Go has no cancel), and issues a credit note
+  numbered `VL/CN/<year>/NNNNNN` against the GST invoice. Both results go into the audit log.
+- Receipts (2026-11-24): customers with an email address get one receipt per eSIM through Resend, in
+  their language, with an iPhone one-tap install link, the manual codes, the QR code attached and a
+  30-day invoice link. Phone-only accounts get none. `EMAIL_ROUTE=console` logs instead.
+- Server extras (2026-11-24): referrers get a push when their travel credit arrives. eSIM Access
+  webhooks arrive at `/v1/webhooks/esimaccess?token=…` (optionally limited to their sender IPs),
+  are stored once by `notifyId` and queue a usage check for the eSIM they name; order status
+  events are ignored because provisioning polls. The 15-minute usage job now queues one
+  `esim.usage.one` job per tracked eSIM. New regions from the supplier get cleaned English names and
+  Arabic names from a dictionary, falling back to English.
+- Website (2026-11-24): with the live API, browse prices are swapped in the browser to the visitor's
+  currency (pages stay prerendered in rupees), and the account page can top up eSIMs through
+  Razorpay.
+- App (2026-11-24): Profile now opens an order history with GST invoices (`GET /v1/orders`), a help
+  centre and a device compatibility guide; Other payment methods opens the Razorpay sheet with the
+  live API.

@@ -8,11 +8,13 @@ import { Chip, IconButton, Input, Text } from '@/components/ui';
 import { usingLiveCatalog } from '@/lib/api';
 import { useOnline } from '@/lib/useOnline';
 import { useSendSupportMessage, useSupportThread } from '@/queries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const REPLY_DELAY = 1400;
 const replies = ['support.reply1', 'support.reply2', 'support.reply3'] as const;
 
 export default function SupportScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const thread = useSupportThread();
   const send = useSendSupportMessage();
@@ -41,7 +43,11 @@ export default function SupportScreen() {
   const messages: ChatMessage[] = [...(thread.data ?? []), ...agentReplies];
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={100} className="flex-1 bg-canvas">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={100}
+      className="flex-1 bg-canvas"
+    >
       <Stack.Screen
         options={{
           headerTitle: () => (
@@ -75,7 +81,7 @@ export default function SupportScreen() {
         )}
         {typing ? <TypingBubble /> : null}
       </ScrollView>
-      <View className="gap-3 border-t border-line px-gutter pb-safe-offset-2 pt-3">
+      <View className="gap-3 border-t border-line px-gutter pt-3" style={{ paddingBottom: insets.bottom + 8 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
           {replies.map((key) => (
             <Chip key={key} label={t(key)} disabled={!online} onPress={() => submit(t(key))} />
@@ -94,7 +100,13 @@ export default function SupportScreen() {
             returnKeyType="send"
             onSubmitEditing={() => submit(draft)}
           />
-          <IconButton icon="arrowUpForward" variant="primary" accessibilityLabel={t('support.send')} disabled={!draft.trim() || !online} onPress={() => submit(draft)} />
+          <IconButton
+            icon="arrowUpForward"
+            variant="primary"
+            accessibilityLabel={t('support.send')}
+            disabled={!draft.trim() || !online}
+            onPress={() => submit(draft)}
+          />
         </View>
       </View>
     </KeyboardAvoidingView>

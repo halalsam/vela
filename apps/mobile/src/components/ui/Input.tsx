@@ -54,7 +54,7 @@ export function Input({
       <View
         className={cn(
           'flex-row items-center gap-2 border ps-4',
-          isSearch ? 'h-11 rounded-pill bg-surface-2' : 'h-button rounded-button bg-surface-1',
+          isSearch ? 'h-11 rounded-button bg-surface-2' : 'h-button rounded-button bg-surface-1',
           showClear ? 'pe-1' : 'pe-4',
           error ? 'border-danger' : focused ? 'border-fg-tertiary' : 'border-line',
         )}

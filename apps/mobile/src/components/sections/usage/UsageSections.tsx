@@ -1,5 +1,5 @@
 import type { DailyUsage, Esim, TopUpPack } from '@vela/api';
-import { durations } from '@vela/tokens';
+import { colors, durations, radii } from '@vela/tokens';
 import { formatData, formatPrice, formatShortDate } from '@vela/utils';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,6 @@ import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withDelay
 import { Card, ListGroup, ListRow, Pill, Text, toast } from '@/components/ui';
 import { useCopy } from '@/hooks/useCopy';
 import { useEsimTitle } from '@/hooks/usePlanTitle';
-import { cn } from '@/lib/cn';
 import { velaEasing } from '@/lib/motion';
 
 const BAR_MAX = 88;
@@ -20,8 +19,15 @@ function Bar({ fraction, index, highlight }: { fraction: number; index: number; 
     if (reduceMotion) return;
     grow.set(withDelay(index * 60, withTiming(1, { duration: durations.slow * 1.5, easing: velaEasing })));
   }, [grow, index, reduceMotion]);
-  const style = useAnimatedStyle(() => ({ height: Math.max(4, fraction * BAR_MAX * grow.get()) }));
-  return <Animated.View style={style} className={cn('w-full rounded-chip', highlight ? 'bg-accent' : 'bg-surface-3')} />;
+  // Static values live inside the worklet: static styles passed next to an animated style were dropped on device.
+  const fill = highlight ? colors.accent.DEFAULT : colors.surface[3];
+  const style = useAnimatedStyle(() => ({
+    width: '100%',
+    borderRadius: radii.chip,
+    backgroundColor: fill,
+    height: Math.max(4, fraction * BAR_MAX * grow.get()),
+  }));
+  return <Animated.View style={style} />;
 }
 
 export function UsageBars({ days }: { days: readonly DailyUsage[] }) {
@@ -38,7 +44,11 @@ export function UsageBars({ days }: { days: readonly DailyUsage[] }) {
           {t('usage.avgPerDay', { value: formatData(average) })}
         </Text>
       </View>
-      <View className="h-[112px] flex-row items-end gap-2.5" accessible accessibilityLabel={t('usage.avgPerDay', { value: formatData(average) })}>
+      <View
+        className="h-[112px] flex-row items-end gap-2.5"
+        accessible
+        accessibilityLabel={t('usage.avgPerDay', { value: formatData(average) })}
+      >
         {days.map((day, index) => (
           <View key={day.date} className="flex-1 items-center gap-1.5">
             <Bar fraction={day.used_mb / max} index={index} highlight={index === days.length - 1} />
@@ -80,7 +90,13 @@ export function UsageDetails({ esim }: { esim: Esim }) {
 export function TopUpOption({ pack, selected, onPress }: { pack: TopUpPack; selected: boolean; onPress: () => void }) {
   const { t } = useTranslation();
   return (
-    <Card selected={selected} onPress={onPress} haptic="selection" accessibilityLabel={`+${formatData(pack.data_mb)}, ${formatPrice(pack.price, pack.currency)}`} className="flex-row items-center gap-3">
+    <Card
+      selected={selected}
+      onPress={onPress}
+      haptic="selection"
+      accessibilityLabel={`+${formatData(pack.data_mb)}, ${formatPrice(pack.price, pack.currency)}`}
+      className="flex-row items-center gap-3"
+    >
       <View className="flex-1 flex-row items-baseline gap-2">
         <Text variant="data-md">{`+${formatData(pack.data_mb)}`}</Text>
         {pack.extra_days > 0 ? <Pill label={t('topUp.extraDays', { count: pack.extra_days })} tone="accent" size="sm" /> : null}

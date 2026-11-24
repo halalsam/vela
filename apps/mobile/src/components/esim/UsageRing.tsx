@@ -4,14 +4,7 @@ import { dataParts, formatData, isLowData, remainingFraction } from '@vela/utils
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import {
-  cancelAnimation,
-  useDerivedValue,
-  useReducedMotion,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import { cancelAnimation, useDerivedValue, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { Text } from '@/components/ui';
 import { useCountUp } from '@/hooks/useCountUp';
 import { useRingDraw } from '@/hooks/useRingDraw';
@@ -20,10 +13,12 @@ import { cn } from '@/lib/cn';
 export type UsageRingSize = 'sm' | 'md' | 'lg';
 export type UsageRingState = 'active' | 'low' | 'expired' | 'pending';
 
-const spec: Record<UsageRingSize, { px: number; stroke: number; frame: string }> = {
-  sm: { px: 32, stroke: 4, frame: 'h-8 w-8' },
-  md: { px: 112, stroke: 10, frame: 'h-28 w-28' },
-  lg: { px: 200, stroke: 16, frame: 'h-[200px] w-[200px]' },
+// The frame is sized in exact points from `px`. Tailwind steps like `h-28` resolve
+// against NativeWind's native rem (14), giving 98pt and cropping the 112pt ring.
+const spec: Record<UsageRingSize, { px: number; stroke: number }> = {
+  sm: { px: 32, stroke: 4 },
+  md: { px: 112, stroke: 9 },
+  lg: { px: 200, stroke: 14 },
 };
 
 const strokeColor: Record<UsageRingState, string> = {
@@ -56,9 +51,11 @@ export function UsageRing({ usedMb, totalMb, size = 'md', state, showCenter = si
   const progress = useRingDraw(fraction);
   const remaining = Math.max(0, totalMb - usedMb);
   const parts = dataParts(ringState === 'pending' ? totalMb : remaining);
-  const shown = useCountUp(Number(parts.value), { decimals: parts.value.includes('.') ? 1 : 0 });
+  const shown = useCountUp(Number(parts.value), {
+    decimals: parts.value.includes('.') ? 1 : 0,
+  });
   const pulse = useSharedValue(0.2);
-  const { px, stroke, frame } = spec[size];
+  const { px, stroke } = spec[size];
   const radius = (px - stroke) / 2;
   const center = px / 2;
   const top = stroke / 2;
@@ -80,14 +77,27 @@ export function UsageRing({ usedMb, totalMb, size = 'md', state, showCenter = si
     <View
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={t('esim.ringLabel', { left: formatData(remaining), total: formatData(totalMb) })}
+      accessibilityLabel={t('esim.ringLabel', {
+        left: formatData(remaining),
+        total: formatData(totalMb),
+      })}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(fraction * 100) }}
-      className={cn('items-center justify-center', frame, className)}
+      style={{ width: px, height: px }}
+      className={cn('items-center justify-center', className)}
     >
-      <Canvas className="absolute inset-0">
+      <Canvas style={{ position: 'absolute', top: 0, left: 0, width: px, height: px }}>
         <Circle cx={center} cy={center} r={radius} style="stroke" strokeWidth={stroke} color={colors.surface[3]} />
         {ringState === 'low' ? (
-          <Path path={arc} style="stroke" strokeWidth={stroke} strokeCap="round" color={colors.warning.DEFAULT} start={0} end={progress} opacity={glowOpacity}>
+          <Path
+            path={arc}
+            style="stroke"
+            strokeWidth={stroke}
+            strokeCap="round"
+            color={colors.warning.DEFAULT}
+            start={0}
+            end={progress}
+            opacity={glowOpacity}
+          >
             <BlurMask blur={stroke} style="normal" />
           </Path>
         ) : null}
@@ -104,7 +114,10 @@ export function UsageRing({ usedMb, totalMb, size = 'md', state, showCenter = si
       </Canvas>
       {showCenter ? (
         <View className="items-center">
-          <Text variant={size === 'lg' ? 'data-lg' : 'data-sm'} tone={ringState === 'expired' ? 'danger' : ringState === 'low' ? 'warning' : 'primary'}>
+          <Text
+            variant={size === 'lg' ? 'data-lg' : 'data-sm'}
+            tone={ringState === 'expired' ? 'danger' : ringState === 'low' ? 'warning' : 'primary'}
+          >
             {ringState === 'expired' ? '0' : shown}
             <Text variant={size === 'lg' ? 'body' : 'caption'} tone="secondary">
               {` ${parts.unit}`}

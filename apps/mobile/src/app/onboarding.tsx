@@ -4,10 +4,12 @@ import { FlatList, useWindowDimensions, View } from 'react-native';
 import { NotifyPage, SailPage, StepsPage } from '@/components/sections/onboarding/OnboardingPages';
 import { Button, PageDots } from '@/components/ui';
 import { useSession } from '@/stores/session';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const pages = ['sail', 'steps', 'notify'] as const;
 
 export default function OnboardingScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<(typeof pages)[number]>>(null);
@@ -21,7 +23,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <View className="flex-1 bg-canvas pb-safe pt-safe">
+    <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <View className="h-tap flex-row justify-end px-gutter">
         {last ? null : (
           <Button label={t('onboarding.skip')} variant="ghost" size="sm" haptic={false} onPress={() => goTo(pages.length - 1)} />

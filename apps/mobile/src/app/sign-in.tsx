@@ -4,10 +4,12 @@ import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { ChooseView, CodeView, PhoneView, type DialCode } from '@/components/sections/auth/SignInViews';
 import { SignInError, sendPhoneCode, signInWithApple, signInWithGoogle, verifyPhoneCode } from '@/lib/auth';
 import { haptics } from '@/lib/haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Step = 'choose' | 'phone' | 'code';
 
 export default function SignInScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>('choose');
   const [busy, setBusy] = useState(false);
@@ -37,7 +39,7 @@ export default function SignInScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 bg-canvas">
-      <View className="flex-1 px-section pb-safe-offset-4 pt-safe-offset-4">
+      <View className="flex-1 px-section" style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }}>
         {step === 'choose' ? (
           <ChooseView
             busy={busy}

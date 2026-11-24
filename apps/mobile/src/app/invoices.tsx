@@ -42,7 +42,7 @@ export default function InvoicesScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-16 pt-2">
+    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-24 pt-2">
       <Stack.Screen options={{ title: t('invoices.title') }} />
       <OfflineBanner />
       {isPending ? (

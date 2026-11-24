@@ -14,7 +14,7 @@ import { OfflineBanner } from '@/components/sections/states/StateViews';
 export default function ProfileScreen() {
   const { t } = useTranslation();
   return (
-    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-6 px-gutter pb-16 pt-2">
+    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-6 px-gutter pb-36 pt-2">
       <Stack.Screen options={{ title: t('screens.profile') }} />
       <OfflineBanner />
       <AccountCard />

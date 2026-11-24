@@ -1,4 +1,4 @@
-import { durations } from '@vela/tokens';
+import { colors, durations } from '@vela/tokens';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
@@ -27,7 +27,10 @@ export function Tabs<K extends string>({ items, value, onChange, accessibilityLa
   const { isRTL } = useDirection();
   const reduceMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
-  const index = Math.max(0, items.findIndex((item) => item.key === value));
+  const index = Math.max(
+    0,
+    items.findIndex((item) => item.key === value),
+  );
   const position = useSharedValue(index);
   const segment = items.length > 0 ? width / items.length : 0;
 
@@ -38,6 +41,12 @@ export function Tabs<K extends string>({ items, value, onChange, accessibilityLa
   const underlineStyle = useAnimatedStyle(() => {
     const offset = position.get() * segment + UNDERLINE_INSET;
     return {
+      position: 'absolute',
+      bottom: -1,
+      left: 0,
+      height: 2,
+      borderRadius: 999,
+      backgroundColor: colors.fg.DEFAULT,
       width: Math.max(0, segment - UNDERLINE_INSET * 2),
       transform: [{ translateX: isRTL ? -offset : offset }],
     };
@@ -73,7 +82,7 @@ export function Tabs<K extends string>({ items, value, onChange, accessibilityLa
           );
         })}
       </View>
-      {width > 0 ? <Animated.View style={underlineStyle} className="absolute -bottom-px left-0 h-0.5 rounded-pill bg-fg" /> : null}
+      {width > 0 ? <Animated.View style={underlineStyle} /> : null}
     </View>
   );
 }

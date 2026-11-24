@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { InstallStep } from '@/components/esim';
 import { Banner, Button, StepBar, toast } from '@/components/ui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const steps = [1, 2, 3, 4] as const;
 
 export default function InstallScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const [current, setCurrent] = useState(1);
   const last = current === steps.length;
@@ -37,7 +39,7 @@ export default function InstallScreen() {
         </View>
         {tip ? <Banner tone="info" title={tip} /> : null}
       </ScrollView>
-      <View className="flex-row gap-3 border-t border-line px-section pb-safe-offset-3 pt-3">
+      <View className="flex-row gap-3 border-t border-line px-section pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         {current > 1 ? <Button label={t('common.back')} variant="secondary" onPress={() => setCurrent((value) => value - 1)} /> : null}
         <View className="flex-1">
           {last ? (
@@ -50,7 +52,13 @@ export default function InstallScreen() {
               }}
             />
           ) : (
-            <Button label={t('common.next')} fullWidth icon="arrowForward" iconPosition="end" onPress={() => setCurrent((value) => value + 1)} />
+            <Button
+              label={t('common.next')}
+              fullWidth
+              icon="arrowForward"
+              iconPosition="end"
+              onPress={() => setCurrent((value) => value + 1)}
+            />
           )}
         </View>
       </View>

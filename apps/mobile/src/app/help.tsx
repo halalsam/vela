@@ -8,7 +8,7 @@ const QUESTIONS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const;
 export default function HelpScreen() {
   const { t } = useTranslation();
   return (
-    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-16 pt-2">
+    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-24 pt-2">
       <Stack.Screen options={{ title: t('help.title') }} />
       <Text variant="callout" tone="secondary">
         {t('help.intro')}

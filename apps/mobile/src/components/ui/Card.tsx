@@ -46,13 +46,8 @@ export function Card({
   className,
   containerClassName,
 }: CardProps) {
-  const { onPressIn, onPressOut, animatedStyle } = usePressScale({ brightenBorder: !selected });
-  const surface = cn(
-    'rounded-card border',
-    selected ? 'border-fg bg-surface-2' : variantClass[variant],
-    paddingClass[padding],
-    className,
-  );
+  const { onPressIn, onPressOut, animatedStyle } = usePressScale();
+  const surface = cn('rounded-card border', selected ? 'border-fg bg-surface-2' : variantClass[variant], paddingClass[padding], className);
 
   if (!onPress) {
     return <View className={cn(surface, containerClassName)}>{children}</View>;
@@ -74,8 +69,9 @@ export function Card({
       accessibilityState={{ selected }}
       className={containerClassName}
     >
-      <Animated.View style={animatedStyle} className={surface}>
-        {children}
+      <Animated.View style={animatedStyle}>
+        {/* Surface classes live on a plain View: on this Reanimated Animated.View, className next to an animated style was dropped (unstyled buttons/cards). */}
+        <View className={surface}>{children}</View>
       </Animated.View>
     </Pressable>
   );

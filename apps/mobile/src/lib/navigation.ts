@@ -17,6 +17,10 @@ export const largeTitleStackOptions: StaticStackOptions = {
   ...baseStackOptions,
   headerLargeTitleEnabled: true,
   headerTransparent: true,
+  // Without a blur the transparent header lets scrolled content run under the title and status bar.
+  headerBlurEffect: 'systemChromeMaterialDark',
+  headerLargeStyle: { backgroundColor: colors.canvas.DEFAULT },
+  headerLargeTitleShadowVisible: false,
   headerLargeTitleStyle: {
     fontFamily: fontFamilies.display,
     fontSize: typeScale['display-xl'].fontSize,

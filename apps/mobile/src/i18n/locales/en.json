@@ -38,7 +38,7 @@
   "brandCheck": {
     "label": "Type check",
     "display": "land connected.",
-    "body": "Manrope for every word you read in the app.",
+    "body": "Satoshi for every word you read in the app.",
     "data": "3.80 GB",
     "arabic": "تصل وأنت متصل"
   },
@@ -68,7 +68,7 @@
       "install": "Install steps"
     },
     "notes": {
-      "typography": "Display is Instrument Serif, lowercase. Data numbers use tabular figures.",
+      "typography": "Display is Cabinet Grotesk, lowercase. Data numbers use tabular figures.",
       "otp": "Type 000000 to see the error state.",
       "toast": "Toasts drop from the top and clear after 1.2 s.",
       "swipe": "Release before the end and the thumb springs back.",
@@ -226,7 +226,15 @@
     "stepDone": "Done",
     "offerEnds": "Ends in {{time}}",
     "useCode": "Use code {{code}}",
-    "processing": "Setting up your eSIM"
+    "processing": "Setting up your eSIM",
+    "unitLeft": "{{unit}} left",
+    "unitReady": "{{unit}} ready",
+    "expires": "Expires {{date}}",
+    "countdown": "{{time}} left",
+    "startsOnLanding": "Starts automatically when you land",
+    "ready": "Ready",
+    "setupGuide": "Setup guide",
+    "topUpNow": "Top up now"
   },
   "states": {
     "errorTitle": "Something went wrong",
@@ -286,7 +294,8 @@
     "codeLabel": "6-digit code",
     "changeNumber": "Change number",
     "error": "Couldn't sign you in. Try again.",
-    "demoHint": "Demo: any code works except 000000."
+    "demoHint": "Demo: any code works except 000000.",
+    "apple": "Continue with Apple"
   },
   "home": {
     "greetingMorning": "good morning.",
@@ -304,7 +313,10 @@
     "lowBody": "{{left}} left · top up to stay online",
     "expiredTitle": "Your {{country}} plan has ended",
     "expiredBody": "Buy again in two taps.",
-    "buyAgain": "Buy again"
+    "buyAgain": "Buy again",
+    "activeCount": "{{count}} active",
+    "readyCount": "{{count}} ready to go",
+    "endedTitle": "{{country}} plan ended"
   },
   "explore": {
     "countries": "Countries",

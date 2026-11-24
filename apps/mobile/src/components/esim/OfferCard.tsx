@@ -37,7 +37,7 @@ export function OfferCard({ offer, onPress }: OfferCardProps) {
   const localized = useLocalized();
   const { isRTL } = useDirection();
   const reduceMotion = useReducedMotion();
-  const { onPressIn, onPressOut, animatedStyle } = usePressScale({ brightenBorder: true });
+  const { onPressIn, onPressOut, animatedStyle } = usePressScale();
   const [size, setSize] = useState({ width: 0, height: 0 });
   const sweep = useSharedValue(0);
 
@@ -46,7 +46,10 @@ export function OfferCard({ offer, onPress }: OfferCardProps) {
     sweep.set(
       withRepeat(
         withSequence(
-          withTiming(1, { duration: durations.sweep, easing: Easing.inOut(Easing.quad) }),
+          withTiming(1, {
+            duration: durations.sweep,
+            easing: Easing.inOut(Easing.quad),
+          }),
           withTiming(1, { duration: durations.sweepRest }),
           withTiming(0, { duration: 0 }),
         ),
@@ -69,7 +72,9 @@ export function OfferCard({ offer, onPress }: OfferCardProps) {
   const meta = offer.code
     ? t('esim.useCode', { code: offer.code })
     : endsIn && !endsIn.expired
-      ? t('esim.offerEnds', { time: t('esim.days', { count: Math.max(1, endsIn.days) }) })
+      ? t('esim.offerEnds', {
+          time: t('esim.days', { count: Math.max(1, endsIn.days) }),
+        })
       : null;
 
   return (
@@ -84,36 +89,51 @@ export function OfferCard({ offer, onPress }: OfferCardProps) {
       accessibilityLabel={[localized(offer.tag), localized(offer.title), localized(offer.body), meta].filter(Boolean).join(', ')}
       className="w-[280px]"
     >
-      <Animated.View
-        style={animatedStyle}
-        onLayout={(event) => setSize({ width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height })}
-        className="h-44 overflow-hidden rounded-card border border-line border-t-line-highlight bg-surface-2 p-section"
-      >
-        {size.width > 0 ? (
-          <Canvas className="absolute inset-0">
-            <Rect x={0} y={0} width={size.width} height={size.height}>
-              <RadialGradient c={vec(isRTL ? 0 : size.width, 0)} r={size.width * 0.75} colors={GLOW} />
-            </Rect>
-            {reduceMotion ? null : (
+      <Animated.View style={animatedStyle}>
+        <View
+          onLayout={(event) =>
+            setSize({
+              width: event.nativeEvent.layout.width,
+              height: event.nativeEvent.layout.height,
+            })
+          }
+          style={{ height: 176 }}
+          className="overflow-hidden rounded-card border border-line border-t-line-highlight bg-surface-2 p-section"
+        >
+          {size.width > 0 ? (
+            <Canvas
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: size.width,
+                height: size.height,
+              }}
+            >
               <Rect x={0} y={0} width={size.width} height={size.height}>
-                <LinearGradient start={sweepStart} end={sweepEnd} colors={SWEEP} />
+                <RadialGradient c={vec(isRTL ? 0 : size.width, 0)} r={size.width * 0.75} colors={GLOW} />
               </Rect>
-            )}
-          </Canvas>
-        ) : null}
-        <View className="flex-1 justify-between">
-          <Pill label={localized(offer.tag)} tone="accent" caps size="sm" />
-          <View className="gap-1">
-            <Text variant="display-md">{localized(offer.title)}</Text>
-            <Text variant="callout" tone="secondary" numberOfLines={2}>
-              {localized(offer.body)}
-            </Text>
-          </View>
-          {meta ? (
-            <Text variant="label-sm" tone="accent">
-              {meta}
-            </Text>
+              {reduceMotion ? null : (
+                <Rect x={0} y={0} width={size.width} height={size.height}>
+                  <LinearGradient start={sweepStart} end={sweepEnd} colors={SWEEP} />
+                </Rect>
+              )}
+            </Canvas>
           ) : null}
+          <View className="flex-1 justify-between">
+            <Pill label={localized(offer.tag)} tone="accent" caps size="sm" />
+            <View className="gap-1">
+              <Text variant="display-md">{localized(offer.title)}</Text>
+              <Text variant="callout" tone="secondary" numberOfLines={2}>
+                {localized(offer.body)}
+              </Text>
+            </View>
+            {meta ? (
+              <Text variant="label-sm" tone="accent">
+                {meta}
+              </Text>
+            ) : null}
+          </View>
         </View>
       </Animated.View>
     </Pressable>

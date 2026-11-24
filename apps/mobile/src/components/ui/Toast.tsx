@@ -10,6 +10,7 @@ import { reducedFadeIn, reducedFadeOut, velaEasing } from '@/lib/motion';
 import { Icon } from './Icon';
 import { Text } from './Text';
 import type { Tone } from './tone';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type ToastTone = 'neutral' | 'success' | 'warning' | 'danger';
 
@@ -67,6 +68,7 @@ function Overlay({ children }: { children: ReactNode }) {
 }
 
 export function ToastViewport() {
+  const insets = useSafeAreaInsets();
   const current = useToastStore((state) => state.current);
   const hide = useToastStore((state) => state.hide);
   const reduceMotion = useReducedMotion();
@@ -84,13 +86,13 @@ export function ToastViewport() {
 
   return (
     <Overlay>
-      <View className="pointer-events-box-none absolute inset-x-0 top-0 items-center px-gutter pt-safe">
+      <View className="pointer-events-box-none absolute inset-x-0 top-0 items-center px-gutter" style={{ paddingTop: insets.top }}>
         {current ? (
           <Animated.View
             key={current.id}
             entering={reduceMotion ? reducedFadeIn : FadeInUp.duration(durations.base).easing(velaEasing)}
             exiting={reduceMotion ? reducedFadeOut : FadeOutUp.duration(durations.fast)}
-            className="mt-2 flex-row items-center gap-2 rounded-pill border border-line border-t-line-highlight bg-surface-3 px-4 py-2.5"
+            className="mt-2 flex-row items-center gap-2 rounded-button border border-line border-t-line-highlight bg-surface-3 px-4 py-2.5"
           >
             <Icon name={current.icon ?? iconByTone[tone]} size={15} tone={iconTone[tone]} />
             <Text variant="callout" weight="medium" numberOfLines={2}>

@@ -9,8 +9,10 @@ import { CardSkeleton, ErrorState, OfflineBanner } from '@/components/sections/s
 import { Banner, Button, Card } from '@/components/ui';
 import { useEsimTitle } from '@/hooks/usePlanTitle';
 import { useDailyUsage, useEsim } from '@/queries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function UsageScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { iccid } = useLocalSearchParams<{ iccid: string }>();
   const esim = useEsim(iccid);
@@ -34,7 +36,9 @@ export default function UsageScreen() {
           <>
             {low ? <Banner tone="warning" title={t('usage.lowTitle')} body={t('usage.lowBody')} /> : null}
             {ended ? <Banner tone="danger" title={t('usage.expiredTitle')} body={t('usage.expiredBody')} /> : null}
-            {data.status === 'not_started' ? <Banner tone="info" icon="clock" title={t('usage.notStartedTitle')} body={t('usage.notStartedBody')} /> : null}
+            {data.status === 'not_started' ? (
+              <Banner tone="info" icon="clock" title={t('usage.notStartedTitle')} body={t('usage.notStartedBody')} />
+            ) : null}
             <Card padding="lg" className="items-center gap-5">
               <UsageRing
                 usedMb={data.data_used_mb}
@@ -51,7 +55,7 @@ export default function UsageScreen() {
         )}
       </ScrollView>
       {data ? (
-        <View className="absolute inset-x-gutter bottom-safe-offset-3">
+        <View className="absolute inset-x-gutter" style={{ bottom: insets.bottom + 12 }}>
           {ended ? (
             <Button
               label={t('esims.buyAgain')}
@@ -59,7 +63,11 @@ export default function UsageScreen() {
               onPress={() => code && router.push({ pathname: '/country/[code]', params: { code } })}
             />
           ) : data.status === 'not_started' ? (
-            <Button label={t('usage.installGuide')} fullWidth onPress={() => router.push({ pathname: '/install', params: { iccid: data.iccid } })} />
+            <Button
+              label={t('usage.installGuide')}
+              fullWidth
+              onPress={() => router.push({ pathname: '/install', params: { iccid: data.iccid } })}
+            />
           ) : (
             <Button
               label={t('esims.topUp')}

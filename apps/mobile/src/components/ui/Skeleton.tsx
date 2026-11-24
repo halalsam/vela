@@ -1,5 +1,5 @@
 import { Canvas, LinearGradient, Rect, vec } from '@shopify/react-native-skia';
-import { durations } from '@vela/tokens';
+import { colors, durations } from '@vela/tokens';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, {
@@ -32,7 +32,13 @@ export function Skeleton({ className }: SkeletonProps) {
   useEffect(() => {
     progress.set(
       reduceMotion
-        ? withRepeat(withTiming(1, { duration: durations.shimmer, reduceMotion: ReduceMotion.Never }), -1, true, undefined, ReduceMotion.Never)
+        ? withRepeat(
+            withTiming(1, { duration: durations.shimmer, reduceMotion: ReduceMotion.Never }),
+            -1,
+            true,
+            undefined,
+            ReduceMotion.Never,
+          )
         : withRepeat(withTiming(1, { duration: durations.shimmer, easing: Easing.linear }), -1, false),
     );
     return () => cancelAnimation(progress);
@@ -52,7 +58,16 @@ export function Skeleton({ className }: SkeletonProps) {
     return vec(x + band / 2, size.height);
   });
 
-  const pulseStyle = useAnimatedStyle(() => ({ opacity: interpolate(progress.get(), [0, 1], [0.55, 1]) }));
+  // Static values live inside the worklet: static styles passed next to an animated style were dropped on device.
+  const pulseStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: colors.surface[3],
+    opacity: interpolate(progress.get(), [0, 1], [0.55, 1]),
+  }));
 
   return (
     <View
@@ -62,7 +77,7 @@ export function Skeleton({ className }: SkeletonProps) {
       className={cn('overflow-hidden rounded-chip bg-surface-2', className)}
     >
       {reduceMotion ? (
-        <Animated.View style={pulseStyle} className="absolute inset-0 bg-surface-3" />
+        <Animated.View style={pulseStyle} />
       ) : size.width > 0 ? (
         <Canvas className="absolute inset-0">
           <Rect x={0} y={0} width={size.width} height={size.height}>

@@ -49,13 +49,15 @@ export function GlobalCard({ region }: { region: Region }) {
   const localized = useLocalized();
   return (
     <DestinationLink code={region.id}>
-      <Card padding="lg" className="gap-5" accessibilityLabel={localized(region.name)}>
-        <FlagStack codes={region.country_codes} size="lg" max={5} />
-        <View className="gap-2">
-          <Text variant="display-lg">{t('explore.globalTitle')}</Text>
-          <Text tone="secondary">{t('explore.globalBody', { count: region.country_codes.length })}</Text>
+      <Card padding="md" className="gap-3" accessibilityLabel={localized(region.name)}>
+        <FlagStack codes={region.country_codes} size="md" max={5} />
+        <View className="gap-1">
+          <Text variant="display-md">{t('explore.globalTitle')}</Text>
+          <Text variant="callout" tone="secondary">
+            {t('explore.globalBody', { count: region.country_codes.length })}
+          </Text>
         </View>
-        <Pill label={t('esim.from', { price: formatPrice(region.from_price, region.currency) })} tone="accent" />
+        <Pill label={t('esim.from', { price: formatPrice(region.from_price, region.currency) })} tone="accent" size="sm" />
       </Card>
     </DestinationLink>
   );

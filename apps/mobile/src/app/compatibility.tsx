@@ -8,7 +8,7 @@ const SECTIONS = ['check', 'iphone', 'android', 'unlocked', 'settings'] as const
 export default function CompatibilityScreen() {
   const { t } = useTranslation();
   return (
-    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-16 pt-2">
+    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-24 pt-2">
       <Stack.Screen options={{ title: t('compatibility.title') }} />
       <Text variant="callout" tone="secondary">
         {t('compatibility.intro')}

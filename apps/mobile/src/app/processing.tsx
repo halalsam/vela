@@ -7,10 +7,12 @@ import { ProcessingSteps } from '@/components/sections/purchase/PurchaseSections
 import { ErrorState } from '@/components/sections/states/StateViews';
 import { Button, Text } from '@/components/ui';
 import { useEsim, useOrder } from '@/queries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SLOW_AFTER_MS = 60_000;
 
 export default function ProcessingScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ iccid?: string; orderId: string }>();
   const known = params.iccid ? params.iccid : undefined;
@@ -32,7 +34,7 @@ export default function ProcessingScreen() {
 
   if (refunded) {
     return (
-      <View className="flex-1 justify-center gap-4 bg-canvas px-section pb-safe pt-safe">
+      <View className="flex-1 justify-center gap-4 bg-canvas px-section" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <ErrorState title={t('processing.refundedTitle')} body={t('processing.refundedBody')} />
         <Button label={t('processing.support')} variant="ghost" fullWidth onPress={() => router.replace('/support')} />
       </View>
@@ -40,7 +42,7 @@ export default function ProcessingScreen() {
   }
 
   return (
-    <View className="flex-1 justify-center gap-10 bg-canvas px-section pb-safe pt-safe">
+    <View className="flex-1 justify-center gap-10 bg-canvas px-section" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       {esim.isError || order.isError ? (
         <View className="gap-4">
           <ErrorState

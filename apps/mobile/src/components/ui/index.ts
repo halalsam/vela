@@ -1,3 +1,4 @@
+export { GoogleLogo } from './GoogleLogo';
 export { Banner, type BannerProps, type BannerTone } from './Banner';
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
 export { Card, type CardPadding, type CardProps, type CardVariant } from './Card';

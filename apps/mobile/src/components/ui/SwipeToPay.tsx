@@ -1,4 +1,4 @@
-import { durations } from '@vela/tokens';
+import { colors, durations } from '@vela/tokens';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
@@ -38,15 +38,7 @@ const INSET = 4;
 const COMPLETE_AT = 0.85;
 const FLICK_VELOCITY = 1200;
 
-export function SwipeToPay({
-  label,
-  amount,
-  successLabel,
-  onComplete,
-  status = 'idle',
-  disabled = false,
-  className,
-}: SwipeToPayProps) {
+export function SwipeToPay({ label, amount, successLabel, onComplete, status = 'idle', disabled = false, className }: SwipeToPayProps) {
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const reduceMotion = useReducedMotion();
@@ -104,13 +96,35 @@ export function SwipeToPay({
     },
   });
 
+  // Static values live inside the worklet: static styles passed next to an animated style were dropped on device.
   const thumbStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    left: 4,
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
+    backgroundColor: colors.fg.DEFAULT,
     transform: [{ translateX: isRTL ? -x.get() : x.get() }],
   }));
 
-  const fillStyle = useAnimatedStyle(() => ({ width: x.get() + THUMB }));
+  const fillStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    top: 4,
+    bottom: 4,
+    left: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    width: x.get() + THUMB,
+  }));
 
   const labelStyle = useAnimatedStyle(() => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingStart: 56,
     opacity: interpolate(x.get(), [0, Math.max(1, maxX * 0.6)], [1, 0], Extrapolation.CLAMP),
   }));
 
@@ -135,7 +149,7 @@ export function SwipeToPay({
           className,
         )}
       >
-        <Animated.View style={fillStyle} className="absolute bottom-1 left-1 top-1 rounded-pill bg-fg/10" />
+        <Animated.View style={fillStyle} />
         {status === 'success' && successLabel ? (
           <Animated.View entering={reducedFadeIn} className="items-center">
             <Text variant="body" weight="semibold">
@@ -143,14 +157,14 @@ export function SwipeToPay({
             </Text>
           </Animated.View>
         ) : (
-          <Animated.View style={labelStyle} className="flex-row items-center justify-center gap-2 ps-14">
+          <Animated.View style={labelStyle}>
             <Text variant="body" weight="semibold" tone="secondary">
               {label}
             </Text>
             {amount ? <Text variant="data-sm">{amount}</Text> : null}
           </Animated.View>
         )}
-        <Animated.View style={thumbStyle} className="absolute left-1 h-14 w-14 items-center justify-center rounded-pill bg-fg">
+        <Animated.View style={thumbStyle}>
           {status === 'loading' ? (
             <ActivityIndicator color={toneColor.inverse} />
           ) : (

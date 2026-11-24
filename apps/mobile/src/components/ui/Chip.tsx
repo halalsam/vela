@@ -17,7 +17,9 @@ export type ChipProps = {
 };
 
 export function Chip({ label, selected = false, onPress, icon, disabled = false, className }: ChipProps) {
-  const { onPressIn, onPressOut, animatedStyle } = usePressScale({ scale: 0.96 });
+  const { onPressIn, onPressOut, animatedStyle } = usePressScale({
+    scale: 0.96,
+  });
   const tone = selected ? 'primary' : 'secondary';
   const body = (
     <>
@@ -28,7 +30,7 @@ export function Chip({ label, selected = false, onPress, icon, disabled = false,
     </>
   );
   const shape = cn(
-    'h-9 flex-row items-center gap-1.5 rounded-pill border px-3.5',
+    'h-9 flex-row items-center gap-1.5 rounded-button border px-3.5',
     selected ? 'border-fg bg-surface-3' : 'border-line bg-transparent',
     disabled && 'opacity-40',
   );
@@ -54,8 +56,8 @@ export function Chip({ label, selected = false, onPress, icon, disabled = false,
       accessibilityState={{ selected, disabled }}
       className={cn('self-start', className)}
     >
-      <Animated.View style={animatedStyle} className={shape}>
-        {body}
+      <Animated.View style={animatedStyle}>
+        <View className={shape}>{body}</View>
       </Animated.View>
     </Pressable>
   );

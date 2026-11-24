@@ -20,7 +20,7 @@ export function Pill({ label, tone = 'neutral', dot = false, caps = false, icon,
   return (
     <View
       className={cn(
-        'flex-row items-center self-start rounded-pill',
+        'flex-row items-center self-start rounded-chip',
         size === 'md' ? 'h-7 gap-1.5 px-2.5' : 'h-5 gap-1 px-2',
         statusTint[tone],
         className,

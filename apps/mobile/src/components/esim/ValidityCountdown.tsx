@@ -78,12 +78,13 @@ export function ValidityCountdown({ expiresAt, variant = 'inline', precision = '
       accessibilityLabel={`${time} ${t('esim.timeLeft')}`}
       className={cn(
         'flex-row items-center gap-1.5 self-start',
-        variant === 'pill' && 'h-8 rounded-pill px-3',
+        variant === 'pill' && 'h-8 rounded-chip px-3',
         variant === 'pill' && (status === 'warning' ? 'bg-warning-tint' : 'bg-surface-3'),
         className,
       )}
     >
-      <View className="flex-row rtl:flex-row-reverse">
+      {/* Numbers always read left to right. `rtl:flex-row-reverse` also fired in LTR and printed "6d 13h" as "h31 d6". */}
+      <View className="flex-row" style={{ direction: 'ltr' }}>
         {[...time].map((char, index) => (
           <CrossfadeChar key={`${time.length - index}`} char={char} tone={tone} />
         ))}

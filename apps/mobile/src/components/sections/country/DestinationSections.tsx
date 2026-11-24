@@ -5,9 +5,10 @@ import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { Flag, FlagStack, PlanCard, PriceOdometer } from '@/components/esim';
+import { CountryMap, Flag, FlagStack, PlanCard, PriceOdometer } from '@/components/esim';
 import { Button, Icon, ListGroup, ListRow, Pill, Skeleton, Text } from '@/components/ui';
 import { useStaggerIn } from '@/hooks/useStaggerIn';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type Destination = {
   id: string;
@@ -22,9 +23,16 @@ export function DestinationHero({ destination, plans }: { destination: Destinati
   const hotspot = plans.some((plan) => plan.hotspot);
   return (
     <View className="items-center gap-5 pb-2 pt-4">
+      {destination.isRegion ? null : (
+        <CountryMap code={destination.codes[0] ?? ''} width={260} height={190} opacity={0.045} className="absolute top-2" />
+      )}
       <Link.AppleZoomTarget>
         <View>
-          {destination.isRegion ? <FlagStack codes={destination.codes} size="xl" max={4} /> : <Flag code={destination.codes[0] ?? ''} size="hero" />}
+          {destination.isRegion ? (
+            <FlagStack codes={destination.codes} size="xl" max={4} />
+          ) : (
+            <Flag code={destination.codes[0] ?? ''} size="hero" />
+          )}
         </View>
       </Link.AppleZoomTarget>
       <View className="items-center gap-2">
@@ -102,16 +110,23 @@ export function DestinationFacts({ plan }: { plan: Plan | undefined }) {
 }
 
 export function PlanBar({ plan, onContinue }: { plan: Plan | undefined; onContinue: () => void }) {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   if (!plan) return null;
   const data = dataParts(plan.data_mb);
   return (
-    <View className="absolute inset-x-3 bottom-safe-offset-2 overflow-hidden rounded-sheet border border-line border-t-line-highlight">
+    <View
+      style={{ bottom: insets.bottom + 8 }}
+      className="absolute inset-x-3 overflow-hidden rounded-sheet border border-line border-t-line-highlight"
+    >
       <BlurView intensity={50} tint="dark" className="absolute inset-0" />
       <View className="flex-row items-center gap-3 bg-surface-1/70 py-2.5 pe-2.5 ps-5">
         <View className="flex-1">
           <Text variant="caption" tone="tertiary">
-            {t('country.selected', { data: `${data.value} ${data.unit}`, days: t('esim.days', { count: plan.validity_days }) })}
+            {t('country.selected', {
+              data: `${data.value} ${data.unit}`,
+              days: t('esim.days', { count: plan.validity_days }),
+            })}
           </Text>
           <PriceOdometer amount={plan.price} currency={plan.currency} variant="data-sm" />
         </View>
@@ -126,8 +141,8 @@ export function DestinationSkeleton() {
     <View className="gap-card-gap pt-6">
       <View className="items-center gap-4 pb-6">
         <Skeleton className="h-28 w-28 rounded-pill" />
-        <Skeleton className="h-9 w-1/2 rounded-pill" />
-        <Skeleton className="h-4 w-3/4 rounded-pill" />
+        <Skeleton className="h-9 w-1/2 rounded-chip" />
+        <Skeleton className="h-4 w-3/4 rounded-chip" />
       </View>
       <Skeleton className="h-[84px] w-full rounded-card" />
       <Skeleton className="h-[84px] w-full rounded-card" />

@@ -7,10 +7,11 @@ import { cn } from '@/lib/cn';
 
 export type PriceOdometerVariant = 'data-sm' | 'data-md' | 'data-lg';
 
-const rows: Record<PriceOdometerVariant, { height: number; frame: string; cell: string }> = {
-  'data-sm': { height: 24, frame: 'h-6', cell: 'h-6' },
-  'data-md': { height: 32, frame: 'h-8', cell: 'h-8' },
-  'data-lg': { height: 44, frame: 'h-11', cell: 'h-11' },
+// Cell height must equal the reel's scroll step exactly, so it is set in points, not classes.
+const rows: Record<PriceOdometerVariant, { height: number }> = {
+  'data-sm': { height: 24 },
+  'data-md': { height: 32 },
+  'data-lg': { height: 44 },
 };
 
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -19,12 +20,14 @@ function DigitColumn({ digit, variant, tone }: { digit: number; variant: PriceOd
   const row = rows[variant];
   const style = useOdometer(digit, row.height);
   return (
-    <View className={cn('overflow-hidden', row.frame)}>
+    <View style={{ height: row.height, overflow: 'hidden' }}>
       <Animated.View style={style}>
         {DIGITS.map((value) => (
-          <Text key={value} variant={variant} tone={tone} className={row.cell}>
-            {value}
-          </Text>
+          <View key={value} style={{ height: row.height, justifyContent: 'center' }}>
+            <Text variant={variant} tone={tone}>
+              {value}
+            </Text>
+          </View>
         ))}
       </Animated.View>
     </View>
@@ -43,15 +46,17 @@ export function PriceOdometer({ amount, currency, variant = 'data-md', tone = 'p
   const formatted = formatPrice(amount, currency);
   const chars = [...formatted];
   return (
-    <View accessible accessibilityLabel={formatted} className={cn('flex-row items-center rtl:flex-row-reverse', className)}>
+    <View accessible accessibilityLabel={formatted} style={{ direction: 'ltr' }} className={cn('flex-row items-center', className)}>
       {chars.map((char, index) => {
         const key = `${chars.length - index}`;
         return /\d/.test(char) ? (
           <DigitColumn key={key} digit={Number(char)} variant={variant} tone={tone} />
         ) : (
-          <Text key={key} variant={variant} tone={tone} className={rows[variant].cell}>
-            {char}
-          </Text>
+          <View key={key} style={{ height: rows[variant].height, justifyContent: 'center' }}>
+            <Text variant={variant} tone={tone}>
+              {char}
+            </Text>
+          </View>
         );
       })}
     </View>

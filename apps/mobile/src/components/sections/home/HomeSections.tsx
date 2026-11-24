@@ -4,8 +4,8 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { ActiveEsimCard, Flag, OfferStrip, RegionRow } from '@/components/esim';
-import { Banner, Card, Icon, ListGroup, ListRow, Skeleton, Text } from '@/components/ui';
+import { ActiveEsimCard, CountryMap, Flag, OfferStrip, RegionRow } from '@/components/esim';
+import { Banner, Button, Card, Icon, ListGroup, Skeleton, Text } from '@/components/ui';
 import { useCountryName } from '@/hooks/useCountryName';
 import { useStaggerIn } from '@/hooks/useStaggerIn';
 import { useLocalized } from '@/i18n/useLocalized';
@@ -21,7 +21,7 @@ export function SearchPill() {
       accessibilityRole="search"
       accessibilityLabel={t('home.search')}
       onPress={() => router.push('/search')}
-      className="h-12 flex-row items-center gap-3 rounded-pill border border-line bg-surface-1 px-4 active:border-line-strong"
+      className="h-12 flex-row items-center gap-3 rounded-button border border-line bg-surface-1 px-4 active:border-line-strong"
     >
       <Icon name="search" size={16} tone="tertiary" />
       <Text tone="tertiary">{t('home.search')}</Text>
@@ -38,9 +38,16 @@ export function HomeAlerts() {
     return (
       <Banner
         tone="warning"
-        title={t('home.lowTitle', { country: countryName(low.country_codes[0]) })}
-        body={t('home.lowBody', { left: formatData(low.data_total_mb - low.data_used_mb) })}
-        action={{ label: t('esims.topUp'), onPress: () => router.push({ pathname: '/top-up', params: { iccid: low.iccid } }) }}
+        title={t('home.lowTitle', {
+          country: countryName(low.country_codes[0]),
+        })}
+        body={t('home.lowBody', {
+          left: formatData(low.data_total_mb - low.data_used_mb),
+        })}
+        action={{
+          label: t('esims.topUp'),
+          onPress: () => router.push({ pathname: '/top-up', params: { iccid: low.iccid } }),
+        }}
       />
     );
   }
@@ -78,26 +85,87 @@ function TravelCard({ esim, index }: { esim: Esim; index: number }) {
     <Animated.View entering={entering}>
       <ActiveEsimCard
         esim={esim}
-        onPress={() => router.push({ pathname: '/usage/[iccid]', params: { iccid: esim.iccid } })}
+        onPress={() =>
+          router.push({
+            pathname: '/usage/[iccid]',
+            params: { iccid: esim.iccid },
+          })
+        }
         onTopUp={() => router.push({ pathname: '/top-up', params: { iccid: esim.iccid } })}
+        onSetup={() => router.push({ pathname: '/install', params: { iccid: esim.iccid } })}
       />
     </Animated.View>
   );
 }
 
-export function MyTravelSection() {
+function EndedRow({ esim }: { esim: Esim }) {
   const { t } = useTranslation();
   const countryName = useCountryName();
+  const code = esim.country_codes[0] ?? '';
+  const buyAgain = () => router.push({ pathname: '/country/[code]', params: { code } });
+  return (
+    <Pressable
+      onPress={buyAgain}
+      accessibilityRole="button"
+      accessibilityLabel={`${t('home.endedTitle', { country: countryName(code) })}, ${t('home.buyAgain')}`}
+      className="flex-row items-center gap-3 rounded-card border border-dashed border-line-strong px-3.5 py-2.5 active:bg-surface-1"
+    >
+      <Flag code={code} size="md" className="opacity-60" />
+      <View className="flex-1 gap-0.5">
+        <Text variant="callout" weight="semibold" numberOfLines={1}>
+          {t('home.endedTitle', { country: countryName(code) })}
+        </Text>
+        <Text variant="caption" tone="tertiary" numberOfLines={1}>
+          {t('home.expiredBody')}
+        </Text>
+      </View>
+      <Button label={t('home.buyAgain')} variant="secondary" size="sm" icon="refresh" onPress={buyAgain} />
+    </Pressable>
+  );
+}
+
+export function MyTravelSection() {
+  const { t } = useTranslation();
   const { data, isPending, isError, refetch } = useEsims();
-  const live = (data ?? []).filter((esim) => esim.status === 'active' || esim.status === 'not_started');
+  const active = (data ?? []).filter((esim) => esim.status === 'active');
+  const ready = (data ?? []).filter((esim) => esim.status === 'not_started');
+  const live = [...active, ...ready];
   const ended = (data ?? []).filter((esim) => esim.status === 'expired' || esim.status === 'depleted').slice(0, 2);
+  const summary = [
+    active.length > 0 ? t('home.activeCount', { count: active.length }) : null,
+    ready.length > 0 ? t('home.readyCount', { count: ready.length }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <View className="gap-card-gap">
-      <SectionHeader
-        title={t('home.myTravel')}
-        action={live.length > 0 ? { label: t('common.seeAll'), onPress: () => router.push('/esims') } : undefined}
-      />
+    <View className="gap-4">
+      <View className="flex-row items-end justify-between">
+        <View className="flex-1 gap-1">
+          <Text variant="display-md" className="normal-case" accessibilityRole="header">
+            {t('home.myTravel')}
+          </Text>
+          {summary ? (
+            <Text variant="callout" tone="secondary">
+              {summary}
+            </Text>
+          ) : null}
+        </View>
+        {live.length > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.seeAll')}
+            hitSlop={12}
+            onPress={() => router.push('/esims')}
+            className="flex-row items-center gap-1 pb-1 active:opacity-60"
+          >
+            <Text variant="callout" tone="secondary" weight="medium">
+              {t('common.seeAll')}
+            </Text>
+            <Icon name="chevronForward" size={12} tone="tertiary" />
+          </Pressable>
+        ) : null}
+      </View>
       {isPending ? (
         <CardSkeleton />
       ) : isError ? (
@@ -115,24 +183,9 @@ export function MyTravelSection() {
           {live.map((esim, index) => (
             <TravelCard key={esim.iccid} esim={esim} index={index} />
           ))}
-          {ended.length > 0 ? (
-            <ListGroup>
-              {ended.map((esim) => {
-                const code = esim.country_codes[0] ?? '';
-                return (
-                  <ListRow
-                    key={esim.iccid}
-                    leading={<Flag code={code} />}
-                    title={t('home.expiredTitle', { country: countryName(code) })}
-                    subtitle={t('home.expiredBody')}
-                    trailing={<Text variant="callout" weight="semibold">{t('home.buyAgain')}</Text>}
-                    chevron={false}
-                    onPress={() => router.push({ pathname: '/country/[code]', params: { code } })}
-                  />
-                );
-              })}
-            </ListGroup>
-          ) : null}
+          {ended.map((esim) => (
+            <EndedRow key={esim.iccid} esim={esim} />
+          ))}
         </>
       )}
     </View>
@@ -148,7 +201,13 @@ export function ExploreGridSection() {
 
   return (
     <View className="gap-card-gap">
-      <SectionHeader title={t('home.explore')} action={{ label: t('common.seeAll'), onPress: () => router.push('/explore') }} />
+      <SectionHeader
+        title={t('home.explore')}
+        action={{
+          label: t('common.seeAll'),
+          onPress: () => router.push('/explore'),
+        }}
+      />
       {countries.isPending ? (
         <View className="flex-row flex-wrap gap-card-gap">
           {Array.from({ length: 4 }, (_, index) => (
@@ -161,14 +220,22 @@ export function ExploreGridSection() {
         <View className="flex-row flex-wrap justify-between gap-y-card-gap">
           {popular.map((country) => (
             <DestinationLink key={country.code} code={country.code}>
-              <Card padding="md" containerClassName="w-[48%]" className="gap-4" accessibilityLabel={localized(country.name)}>
-                <Flag code={country.code} size="xl" />
+              <Card
+                padding="sm"
+                containerClassName="w-[48%]"
+                className="min-h-[104px] justify-between gap-3 overflow-hidden"
+                accessibilityLabel={localized(country.name)}
+              >
+                <CountryMap code={country.code} width={84} height={76} opacity={0.08} className="absolute -end-3 -top-2" />
+                <Flag code={country.code} size="md" />
                 <View className="gap-0.5">
-                  <Text weight="semibold" numberOfLines={1}>
+                  <Text variant="callout" weight="semibold" numberOfLines={1}>
                     {localized(country.name)}
                   </Text>
                   <Text variant="caption" tone="tertiary">
-                    {t('esim.from', { price: formatPrice(country.from_price, country.currency) })}
+                    {t('esim.from', {
+                      price: formatPrice(country.from_price, country.currency),
+                    })}
                   </Text>
                 </View>
               </Card>
@@ -179,7 +246,16 @@ export function ExploreGridSection() {
       {regions.data && regions.data.length > 0 ? (
         <ListGroup header={t('home.regions')}>
           {regions.data.slice(0, 3).map((region) => (
-            <RegionRow key={region.id} region={region} onPress={() => router.push({ pathname: '/explore', params: { mode: 'regions' } })} />
+            <RegionRow
+              key={region.id}
+              region={region}
+              onPress={() =>
+                router.push({
+                  pathname: '/explore',
+                  params: { mode: 'regions' },
+                })
+              }
+            />
           ))}
         </ListGroup>
       ) : null}

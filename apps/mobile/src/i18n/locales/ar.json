@@ -68,7 +68,7 @@
       "install": "خطوات التثبيت"
     },
     "notes": {
-      "typography": "العناوين بخط IBM Plex Sans Arabic الخفيف. الأرقام بخط Manrope.",
+      "typography": "العناوين بخط IBM Plex Sans Arabic الخفيف. الأرقام بخط Satoshi.",
       "otp": "اكتب 000000 لرؤية حالة الخطأ.",
       "toast": "تظهر الرسائل من الأعلى وتختفي بعد 1.2 ثانية.",
       "swipe": "إذا أفلتّ قبل النهاية يعود الزر إلى مكانه.",
@@ -234,7 +234,15 @@
     "stepDone": "تم",
     "offerEnds": "ينتهي خلال {{time}}",
     "useCode": "استخدم الرمز {{code}}",
-    "processing": "جارٍ تجهيز شريحتك"
+    "processing": "جارٍ تجهيز شريحتك",
+    "unitLeft": "{{unit}} متبقية",
+    "unitReady": "{{unit}} جاهزة",
+    "expires": "تنتهي {{date}}",
+    "countdown": "متبقي {{time}}",
+    "startsOnLanding": "تبدأ تلقائياً عند وصولك",
+    "ready": "جاهزة",
+    "setupGuide": "دليل الإعداد",
+    "topUpNow": "اشحن الآن"
   },
   "states": {
     "errorTitle": "حدث خطأ ما",
@@ -294,7 +302,8 @@
     "codeLabel": "رمز من 6 أرقام",
     "changeNumber": "غيّر الرقم",
     "error": "تعذّر تسجيل دخولك. حاول مرة أخرى.",
-    "demoHint": "تجريبي: أي رمز يعمل ما عدا 000000."
+    "demoHint": "تجريبي: أي رمز يعمل ما عدا 000000.",
+    "apple": "المتابعة باستخدام Apple"
   },
   "home": {
     "greetingMorning": "صباح الخير.",
@@ -312,7 +321,10 @@
     "lowBody": "متبقٍ {{left}} · أعد الشحن لتبقى متصلًا",
     "expiredTitle": "انتهت باقتك في {{country}}",
     "expiredBody": "اشترِها مجددًا بنقرتين.",
-    "buyAgain": "اشترِ مجددًا"
+    "buyAgain": "اشترِ مجددًا",
+    "activeCount": "{{count}} نشطة",
+    "readyCount": "{{count}} جاهزة للاستخدام",
+    "endedTitle": "انتهت باقة {{country}}"
   },
   "explore": {
     "countries": "الدول",

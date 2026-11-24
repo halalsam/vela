@@ -1,18 +1,11 @@
 import { Canvas, Path } from '@shopify/react-native-skia';
 import { VelaSymbol } from '@vela/brand/native';
-import { durations } from '@vela/tokens';
+import { colors, durations, radii } from '@vela/tokens';
 import QRCode from 'qrcode';
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { Button, Text } from '@/components/ui';
 import { timing } from '@/lib/motion';
 
@@ -45,6 +38,26 @@ export type QrCardProps = {
   onReveal?: () => void;
 };
 
+// Static layout goes in `style` here: NativeWind classes on an Animated.View that also has an animated style get dropped.
+const face = {
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: radii.cardLg,
+} as const;
+
+const backFace = {
+  gap: 20,
+  borderWidth: 1,
+  borderColor: colors.line.DEFAULT,
+  borderTopColor: colors.line.highlight,
+  backgroundColor: colors.surface[2],
+} as const;
+
 export function QrCard({ value, revealed = true, flipOnMount = false, onReveal }: QrCardProps) {
   const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
@@ -53,21 +66,28 @@ export function QrCard({ value, revealed = true, flipOnMount = false, onReveal }
 
   useEffect(() => {
     const target = revealed ? 1 : 0;
-    flip.set(reduceMotion ? withTiming(target, timing(durations.base)) : withSpring(target, { duration: durations.flip, dampingRatio: 0.85 }));
+    flip.set(
+      reduceMotion ? withTiming(target, timing(durations.base)) : withSpring(target, { duration: durations.flip, dampingRatio: 0.85 }),
+    );
   }, [revealed, reduceMotion, flip]);
 
+  // Static values live inside the worklet: static styles passed next to an animated style were dropped on device.
   const backStyle = useAnimatedStyle(() =>
     reduceMotion
-      ? { opacity: 1 - flip.get() }
+      ? { ...face, ...backFace, opacity: 1 - flip.get() }
       : {
+          ...face,
+          ...backFace,
           backfaceVisibility: 'hidden',
           transform: [{ perspective: 900 }, { rotateY: `${interpolate(flip.get(), [0, 1], [0, 180])}deg` }],
         },
   );
   const frontStyle = useAnimatedStyle(() =>
     reduceMotion
-      ? { opacity: flip.get() }
+      ? { ...face, backgroundColor: '#FFFFFF', opacity: flip.get() }
       : {
+          ...face,
+          backgroundColor: '#FFFFFF',
           backfaceVisibility: 'hidden',
           transform: [{ perspective: 900 }, { rotateY: `${interpolate(flip.get(), [0, 1], [180, 360])}deg` }],
         },
@@ -75,21 +95,16 @@ export function QrCard({ value, revealed = true, flipOnMount = false, onReveal }
 
   return (
     <View className="h-[232px] w-[232px] self-center">
-      <Animated.View
-        style={backStyle}
-        pointerEvents={revealed ? 'none' : 'auto'}
-        className="absolute inset-0 items-center justify-center gap-5 rounded-card-lg border border-line border-t-line-highlight bg-surface-2"
-      >
+      <Animated.View style={backStyle} pointerEvents={revealed ? 'none' : 'auto'}>
         <VelaSymbol size={48} className="text-accent" />
         {onReveal ? <Button label={t('esim.revealQr')} size="sm" pill variant="secondary" icon="qr" onPress={onReveal} /> : null}
       </Animated.View>
       <Animated.View
-        style={frontStyle}
         accessible={revealed}
         accessibilityRole="image"
         accessibilityLabel={t('esim.qrLabel')}
         accessibilityHint={t('esim.qrHint')}
-        className="absolute inset-0 items-center justify-center rounded-card-lg bg-white"
+        style={frontStyle}
       >
         <Canvas className="h-[168px] w-[168px]">
           <Path path={path} color={INK} />

@@ -2,17 +2,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BlurView } from 'expo-blur';
 import { Platform, RefreshControl, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { colors } from '@vela/tokens';
 import { PullMark } from '@/components/esim';
-import {
-  ExploreGridSection,
-  HomeAlerts,
-  MyTravelSection,
-  OffersSection,
-  SearchPill,
-} from '@/components/sections/home/HomeSections';
+import { ExploreGridSection, HomeAlerts, MyTravelSection, OffersSection, SearchPill } from '@/components/sections/home/HomeSections';
 import { OfflineBanner } from '@/components/sections/states/StateViews';
 import { Text } from '@/components/ui';
 import { useScrollY } from '@/hooks/useParallax';
@@ -35,6 +31,7 @@ export default function HomeScreen() {
   const client = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const { scrollY, onScroll } = useScrollY();
+  const insets = useSafeAreaInsets();
 
   async function refresh() {
     setRefreshing(true);
@@ -51,7 +48,8 @@ export default function HomeScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
         className="flex-1"
-        contentContainerClassName="gap-8 px-gutter pb-16 pt-safe-offset-4"
+        contentContainerClassName="gap-8 px-gutter pb-36"
+        contentContainerStyle={{ paddingTop: insets.top + 16 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -81,6 +79,13 @@ export default function HomeScreen() {
         </Rise>
       </Animated.ScrollView>
       <PullMark scrollY={scrollY} refreshing={refreshing} />
+      {/* Home has no navigation header, so give the status bar its own backdrop. Otherwise cards scroll under the notch. */}
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top }}>
+        <BlurView intensity={40} tint="dark" style={{ flex: 1 }} />
+        <View
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.canvas.DEFAULT, opacity: 0.72 }}
+        />
+      </View>
     </View>
   );
 }

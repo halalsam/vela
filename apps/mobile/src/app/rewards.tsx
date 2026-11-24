@@ -9,7 +9,7 @@ export default function RewardsScreen() {
   const { t } = useTranslation();
   const { data, isPending, isError, refetch } = useRewards();
   return (
-    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-16 pt-2">
+    <ScrollView className="flex-1 bg-canvas" contentInsetAdjustmentBehavior="automatic" contentContainerClassName="gap-section px-gutter pb-24 pt-2">
       <Stack.Screen options={{ title: t('rewards.title') }} />
       <OfflineBanner />
       {isPending ? (

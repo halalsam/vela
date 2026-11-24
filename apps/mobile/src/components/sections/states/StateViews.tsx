@@ -80,10 +80,10 @@ export function RowsSkeleton({ rows = 4 }: { rows?: number }) {
         <View key={index} className={cn('flex-row items-center gap-3 px-gutter py-4', index > 0 && 'border-t border-line')}>
           <Skeleton className="h-7 w-7 rounded-pill" />
           <View className="flex-1 gap-2">
-            <Skeleton className="h-3.5 w-1/2 rounded-pill" />
-            <Skeleton className="h-3 w-1/3 rounded-pill" />
+            <Skeleton className="h-3.5 w-1/2 rounded-chip" />
+            <Skeleton className="h-3 w-1/3 rounded-chip" />
           </View>
-          <Skeleton className="h-3.5 w-14 rounded-pill" />
+          <Skeleton className="h-3.5 w-14 rounded-chip" />
         </View>
       ))}
     </Card>
@@ -96,16 +96,16 @@ export function CardSkeleton({ className }: { className?: string }) {
       <View className="flex-row items-center gap-3">
         <Skeleton className="h-10 w-10 rounded-pill" />
         <View className="flex-1 gap-2">
-          <Skeleton className="h-4 w-1/2 rounded-pill" />
-          <Skeleton className="h-3 w-1/3 rounded-pill" />
+          <Skeleton className="h-4 w-1/2 rounded-chip" />
+          <Skeleton className="h-3 w-1/3 rounded-chip" />
         </View>
       </View>
       <View className="flex-row items-center gap-5">
         <Skeleton className="h-28 w-28 rounded-pill" />
         <View className="flex-1 gap-3">
-          <Skeleton className="h-3.5 w-3/4 rounded-pill" />
-          <Skeleton className="h-8 w-1/2 rounded-pill" />
-          <Skeleton className="h-10 w-28 rounded-pill" />
+          <Skeleton className="h-3.5 w-3/4 rounded-chip" />
+          <Skeleton className="h-8 w-1/2 rounded-chip" />
+          <Skeleton className="h-10 w-28 rounded-chip" />
         </View>
       </View>
     </Card>

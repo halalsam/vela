@@ -66,7 +66,7 @@ export default function ExploreScreen() {
           keyboardDismissMode="on-drag"
           stickySectionHeadersEnabled={false}
           className="flex-1"
-          contentContainerClassName="px-gutter pb-16 pe-8"
+          contentContainerClassName="px-gutter pb-36 pe-8"
           ListHeaderComponent={header}
           ListEmptyComponent={
             status ?? <EmptyState icon="search" title={t('explore.noResultsTitle')} body={t('explore.noResultsBody')} />
@@ -95,7 +95,7 @@ export default function ExploreScreen() {
       className="flex-1 bg-canvas"
       contentInsetAdjustmentBehavior="automatic"
       keyboardDismissMode="on-drag"
-      contentContainerClassName="px-gutter pb-16"
+      contentContainerClassName="px-gutter pb-36"
     >
       {header}
       {regions.isPending ? (

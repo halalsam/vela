@@ -1,13 +1,7 @@
 import { durations } from '@vela/tokens';
 import { useEffect, useRef, useState } from 'react';
 import { TextInput, View, type TextInputInstance } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { cn } from '@/lib/cn';
 import { haptics } from '@/lib/haptics';
 import { Text } from './Text';
@@ -56,7 +50,11 @@ export function OtpInput({
     );
   }, [error, reduceMotion, offset]);
 
-  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: offset.get() }] }));
+  // Static values live inside the worklet: static styles passed next to an animated style were dropped on device.
+  const shakeStyle = useAnimatedStyle(() => ({
+    opacity: disabled ? 0.4 : 1,
+    transform: [{ translateX: offset.get() }],
+  }));
 
   function handleChange(text: string) {
     const digits = text.replace(/\D/g, '').slice(0, length);
@@ -84,9 +82,10 @@ export function OtpInput({
   });
 
   return (
-    <Animated.View style={shakeStyle} className={cn(disabled && 'opacity-40')}>
+    <Animated.View style={shakeStyle}>
       <View
-        className="flex-row gap-2 rtl:flex-row-reverse"
+        className="flex-row gap-2"
+        style={{ direction: 'ltr' }}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >

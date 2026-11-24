@@ -11,18 +11,18 @@ export const spacing = {
 } as const;
 
 export const radii = {
-  chip: 10,
-  button: 14,
-  card: 20,
-  cardLg: 24,
-  sheet: 28,
+  chip: 3,
+  button: 6,
+  card: 6,
+  cardLg: 8,
+  sheet: 12,
   pill: 9999,
 } as const;
 
 export const sizes = {
   tapTarget: 44,
   buttonHeight: 50,
-  buttonHeightCompact: 40,
+  buttonHeightCompact: 36,
   iconButton: 44,
 } as const;
 

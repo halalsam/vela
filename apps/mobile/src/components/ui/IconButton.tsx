@@ -1,5 +1,5 @@
 import { BlurView } from 'expo-blur';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { usePressScale } from '@/hooks/usePressScale';
 import { cn } from '@/lib/cn';
@@ -46,7 +46,9 @@ export function IconButton({
   haptic = 'tap',
   className,
 }: IconButtonProps) {
-  const { onPressIn, onPressOut, animatedStyle } = usePressScale({ scale: 0.94, brightenBorder: variant !== 'ghost' && variant !== 'primary' });
+  const { onPressIn, onPressOut, animatedStyle } = usePressScale({
+    scale: 0.94,
+  });
 
   function handlePress() {
     triggerHaptic(haptic);
@@ -65,17 +67,18 @@ export function IconButton({
       accessibilityState={{ disabled }}
       className={cn('self-start', className)}
     >
-      <Animated.View
-        style={animatedStyle}
-        className={cn(
-          'items-center justify-center overflow-hidden rounded-pill',
-          size === 'md' ? 'h-11 w-11' : 'h-8 w-8',
-          variantClass[variant],
-          disabled && 'opacity-40',
-        )}
-      >
-        {variant === 'glass' ? <BlurView intensity={40} tint="dark" className="absolute inset-0" /> : null}
-        <Icon name={icon} size={size === 'md' ? 18 : 14} tone={iconTone[variant]} weight="semibold" />
+      <Animated.View style={animatedStyle}>
+        <View
+          className={cn(
+            'items-center justify-center overflow-hidden rounded-pill',
+            size === 'md' ? 'h-11 w-11' : 'h-8 w-8',
+            variantClass[variant],
+            disabled && 'opacity-40',
+          )}
+        >
+          {variant === 'glass' ? <BlurView intensity={40} tint="dark" className="absolute inset-0" /> : null}
+          <Icon name={icon} size={size === 'md' ? 18 : 14} tone={iconTone[variant]} weight="semibold" />
+        </View>
       </Animated.View>
     </Pressable>
   );

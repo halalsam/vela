@@ -1,11 +1,16 @@
 import { VelaLockup } from '@vela/brand/native';
+import { colors, radii } from '@vela/tokens';
 import { pad2 } from '@vela/utils';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, View } from 'react-native';
-import { Banner, Button, Chip, IconButton, Input, OtpInput, Text } from '@/components/ui';
+import { Image } from 'expo-image';
+import { ActivityIndicator, Platform, Pressable, useWindowDimensions, View } from 'react-native';
+import { FlagMarquee } from '@/components/esim';
+import { Banner, Button, Chip, GoogleLogo, Icon, IconButton, Input, OtpInput, Text } from '@/components/ui';
+import { cn } from '@/lib/cn';
+import { haptics } from '@/lib/haptics';
 import { useNow } from '@/hooks/useNow';
+import { continentAsset } from '@/lib/geoAssets';
 
 export type DialCode = '+91' | '+971' | '+966';
 export const dialCodes: readonly DialCode[] = ['+91', '+971', '+966'];
@@ -18,35 +23,109 @@ type ChooseViewProps = {
   onPhone: () => void;
 };
 
+const FLAG_ROWS = [
+  ['AE', 'JP', 'TH', 'GB', 'TR', 'SG', 'FR', 'ID', 'IT', 'SA'],
+  ['US', 'ES', 'MY', 'CH', 'QA', 'VN', 'DE', 'GR', 'KR', 'AU'],
+] as const;
+
+type AuthButtonProps = {
+  label: string;
+  mark: ReactNode;
+  tone: 'light' | 'dark' | 'ghost';
+  busy?: boolean;
+  onPress: () => void;
+};
+
+/**
+ * Sign-in buttons share one layout: the mark sits in the same 20pt box at the same
+ * inset on every row and the label stays centred, so the three logos line up
+ * whatever the label length. The native Apple button drew its own logo at its own
+ * size, which never matched; Apple's guidelines allow a custom button with the
+ * Apple logo, and the sign-in itself still uses the native Apple flow.
+ */
+function AuthButton({ label, mark, tone, busy = false, onPress }: AuthButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ busy, disabled: busy }}
+      disabled={busy}
+      onPress={() => {
+        haptics.tap();
+        onPress();
+      }}
+      style={{ height: 50, borderRadius: radii.button }}
+      className={cn(
+        'w-full flex-row items-center justify-center active:opacity-80',
+        tone === 'light' ? 'bg-fg' : tone === 'dark' ? 'border border-line bg-surface-2' : 'border border-line-strong',
+      )}
+    >
+      <View className="absolute items-center justify-center" style={{ start: 18, width: 20, height: 20 }}>
+        {mark}
+      </View>
+      {busy ? (
+        <ActivityIndicator color={tone === 'light' ? colors.fg.inverse : colors.fg.DEFAULT} />
+      ) : (
+        <Text weight="semibold" tone={tone === 'light' ? 'inverse' : 'primary'} numberOfLines={1}>
+          {label}
+        </Text>
+      )}
+    </Pressable>
+  );
+}
+
 export function ChooseView({ busy, error, onApple, onGoogle, onPhone }: ChooseViewProps) {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
   return (
     <View className="flex-1 justify-between">
-      <View className="flex-1 justify-center gap-6">
-        <VelaLockup size={40} clearSpace={false} className="text-fg" />
-        <View className="gap-3">
-          <Text variant="display-xl" accessibilityRole="header">
-            {t('signIn.title')}
-          </Text>
-          <Text tone="secondary">{t('signIn.body')}</Text>
-        </View>
+      {/* Continent silhouette bleeds off the trailing edge behind the flag rows. */}
+      <Image
+        source={continentAsset('asia')}
+        contentFit="contain"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{
+          position: 'absolute',
+          top: 24,
+          end: -width * 0.35,
+          width: width * 1.25,
+          height: width * 0.9,
+          opacity: 0.05,
+        }}
+      />
+      <View className="-mx-section flex-1 justify-center gap-3">
+        <FlagMarquee codes={FLAG_ROWS[0]} size="xl" />
+        <FlagMarquee codes={FLAG_ROWS[1]} size="xl" reverse speed={14} />
       </View>
-      <View className="gap-3">
-        {error ? <Banner tone="danger" title={error} /> : null}
-        {Platform.OS === 'ios' ? (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-            cornerRadius={14}
-            onPress={onApple}
-            className="h-button w-full"
-          />
-        ) : null}
-        <Button label={t('signIn.google')} variant="secondary" fullWidth loading={busy} onPress={onGoogle} />
-        <Button label={t('signIn.phone')} variant="ghost" fullWidth icon="chat" onPress={onPhone} />
-        <Text variant="caption" tone="tertiary" align="center" className="mt-2">
-          {t('signIn.terms')}
-        </Text>
+      <View className="gap-8">
+        <View className="gap-4">
+          <VelaLockup size={28} clearSpace={false} className="text-fg" />
+          <View className="gap-2">
+            <Text variant="display-xl" accessibilityRole="header">
+              {t('signIn.title')}
+            </Text>
+            <Text tone="secondary" className="max-w-[320px]">
+              {t('signIn.body')}
+            </Text>
+          </View>
+        </View>
+        <View className="gap-3">
+          {error ? <Banner tone="danger" title={error} /> : null}
+          {Platform.OS === 'ios' ? (
+            <AuthButton
+              label={t('signIn.apple')}
+              tone="light"
+              mark={<Icon name="apple" size={19} tone="inverse" weight="semibold" />}
+              onPress={onApple}
+            />
+          ) : null}
+          <AuthButton label={t('signIn.google')} tone="dark" mark={<GoogleLogo size={18} />} busy={busy} onPress={onGoogle} />
+          <AuthButton label={t('signIn.phone')} tone="ghost" mark={<Icon name="chat" size={18} />} onPress={onPhone} />
+          <Text variant="caption" tone="tertiary" align="center" className="mt-1">
+            {t('signIn.terms')}
+          </Text>
+        </View>
       </View>
     </View>
   );

@@ -28,11 +28,13 @@ function Dot({ active }: { active: boolean }) {
   }, [active, progress, reduceMotion]);
 
   const style = useAnimatedStyle(() => ({
+    height: 6,
+    borderRadius: 999,
     width: interpolate(progress.get(), [0, 1], [DOT, DOT_ACTIVE]),
     backgroundColor: interpolateColor(progress.get(), [0, 1], [colors.fg.quaternary, colors.fg.DEFAULT]),
   }));
 
-  return <Animated.View style={style} className="h-1.5 rounded-pill" />;
+  return <Animated.View style={style} />;
 }
 
 export type PageDotsProps = {

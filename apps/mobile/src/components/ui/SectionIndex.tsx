@@ -51,7 +51,7 @@ export function SectionIndex({ letters, onSelect, className }: SectionIndexProps
           accessibilityRole="button"
           accessibilityLabel={t('explore.indexLabel', { letter })}
           onAccessibilityTap={() => onSelect(index)}
-          className={cn('h-4 w-5 items-center justify-center rounded-pill', active === index && 'bg-fg')}
+          className={cn('h-4 w-5 items-center justify-center rounded-chip', active === index && 'bg-fg')}
         >
           <Text variant="label-sm" tone={active === index ? 'inverse' : 'accent'} className="tracking-normal">
             {letter}

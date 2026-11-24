@@ -13,8 +13,10 @@ import { api, usingLiveCatalog } from '@/lib/api';
 import { haptics } from '@/lib/haptics';
 import { registerPush } from '@/lib/push';
 import { useEsim, useOrder } from '@/queries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SuccessScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -41,10 +43,14 @@ export default function SuccessScreen() {
 
   return (
     <View className="flex-1 bg-canvas">
-      <View className="flex-row justify-end px-gutter pt-safe">
+      <View className="flex-row justify-end px-gutter" style={{ paddingTop: insets.top }}>
         <Button label={t('common.done')} variant="ghost" onPress={() => router.dismissTo('/')} />
       </View>
-      <ScrollView className="flex-1" contentContainerClassName="gap-section px-section pb-safe-offset-6">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-section px-section"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+      >
         {esim.isPending ? (
           <Skeleton className="h-[232px] w-[232px] self-center rounded-card-lg" />
         ) : esim.isError || !esim.data ? (

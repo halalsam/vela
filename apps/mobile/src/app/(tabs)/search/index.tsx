@@ -27,7 +27,7 @@ export default function SearchScreen() {
       contentInsetAdjustmentBehavior="automatic"
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
-      contentContainerClassName="gap-4 px-gutter pb-16 pt-2"
+      contentContainerClassName="gap-4 px-gutter pb-36 pt-2"
     >
       <Stack.Screen
         options={{

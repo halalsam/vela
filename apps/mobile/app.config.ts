@@ -22,6 +22,7 @@ const fontFiles = [
 const config: ExpoConfig = {
   name: 'vela',
   slug: 'vela',
+  owner: 'sammk21',
   scheme: 'vela',
   version: '0.1.0',
   orientation: 'portrait',
@@ -75,6 +76,9 @@ const config: ExpoConfig = {
     'expo-notifications',
     '@bacons/apple-targets',
   ],
+  extra: {
+    eas: { projectId: 'cab987fb-afe2-4d68-ab10-3a90f7d3e2fd' },
+  },
   experiments: {
     typedRoutes: true,
   },

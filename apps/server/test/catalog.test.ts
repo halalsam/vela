@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { plan, planPrice } from '../src/db/schema';
 import { convertMinor, parseEcb, ratesPerUsd } from '../src/modules/catalog/fx';
+import { regionNames } from '../src/modules/catalog/regionNames';
 import { charmPrice, planSlug, retailPrices, uniqueId } from '../src/modules/catalog/pricing';
 import { seedReferenceData } from '../src/modules/catalog/seed';
 import { syncCatalog } from '../src/modules/catalog/sync';
@@ -120,6 +121,13 @@ describe('catalog API through the shared client', () => {
     expect(aed).toMatchObject({ currency: 'AED', price: expected });
     expect(Math.round(expected * 100) % 100).toBe(99);
     expect((await httpApi('AED').getCountries()).length).toBeGreaterThan(0);
+  });
+
+  it('names new regions in English and Arabic, without supplier counts', () => {
+    expect(regionNames('North America')).toEqual({ nameEn: 'North America', nameAr: 'أمريكا الشمالية' });
+    expect(regionNames('Caribbean-10')).toEqual({ nameEn: 'Caribbean', nameAr: 'الكاريبي' });
+    expect(regionNames('Middle East and North Africa 12')).toEqual({ nameEn: 'Middle East and North Africa', nameAr: 'الشرق الأوسط وشمال أفريقيا' });
+    expect(regionNames('Pacific Islands')).toEqual({ nameEn: 'Pacific Islands', nameAr: 'Pacific Islands' });
   });
 
   it('converts and rounds money between currencies', () => {

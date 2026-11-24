@@ -6,6 +6,7 @@ import type { EsimProvider, ProviderPlan } from '../esims/provider';
 import { loadRates } from './fx';
 import { countryInfo } from './geo';
 import { planSlug, retailPrices, uniqueId } from './pricing';
+import { regionNames } from './regionNames';
 
 export type SyncSummary = { created: number; updated: number; deactivated: number; total: number };
 
@@ -78,10 +79,10 @@ export async function syncCatalog(
 
     for (const item of remote) {
       if (item.type === 'country' || !item.regionRef || regions.has(item.regionRef)) continue;
-      const name = item.regionName ?? item.regionRef;
+      const names = regionNames(item.regionName ?? item.regionRef);
       await tx
         .insert(region)
-        .values({ id: item.regionRef, type: item.type === 'global' ? 'global' : 'regional', nameEn: name, nameAr: name })
+        .values({ id: item.regionRef, type: item.type === 'global' ? 'global' : 'regional', ...names })
         .onConflictDoNothing();
       for (const code of item.countryCodes.filter((value) => knownCountries.has(value))) {
         await tx.insert(regionCountry).values({ regionId: item.regionRef, countryCode: code }).onConflictDoNothing();

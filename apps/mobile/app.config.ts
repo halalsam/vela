@@ -1,7 +1,7 @@
 import type { ExpoConfig } from 'expo/config';
 
 const MATTE_BLACK = '#0A0A0A';
-const APP_GROUP = 'group.com.vela.app';
+const APP_GROUP = 'group.com.sammk21.vela';
 
 const fontsDir = '../../packages/brand/fonts';
 const fontFiles = [
@@ -30,7 +30,7 @@ const config: ExpoConfig = {
   backgroundColor: MATTE_BLACK,
   icon: './assets/brand/icon.png',
   ios: {
-    bundleIdentifier: 'com.vela.app',
+    bundleIdentifier: 'com.sammk21.vela',
     supportsTablet: false,
     usesAppleSignIn: true,
     entitlements: {
@@ -46,7 +46,7 @@ const config: ExpoConfig = {
     },
   },
   android: {
-    package: 'com.vela.app',
+    package: 'com.sammk21.vela',
     ...(process.env.GOOGLE_SERVICES_JSON ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON } : {}),
     adaptiveIcon: {
       backgroundColor: MATTE_BLACK,

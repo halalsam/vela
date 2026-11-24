@@ -7,7 +7,7 @@ import { queryKeys } from '@/queries';
 import { liveActivity, type TripState } from './liveActivity';
 import { queryClient } from './queryClient';
 
-const APP_GROUP = 'group.com.vela.app';
+const APP_GROUP = 'group.com.sammk21.vela';
 const WIDGET_KEY = 'vela.widget';
 
 const storage = Platform.OS === 'ios' ? new ExtensionStorage(APP_GROUP) : null;

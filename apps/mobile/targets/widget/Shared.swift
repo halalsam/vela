@@ -2,7 +2,7 @@ import ActivityKit
 import SwiftUI
 import WidgetKit
 
-let velaAppGroup = "group.com.vela.app"
+let velaAppGroup = "group.com.sammk21.vela"
 let velaWidgetKey = "vela.widget"
 
 struct VelaTripAttributes: ActivityAttributes {

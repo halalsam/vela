@@ -87,6 +87,8 @@ export default async function DestinationPage({ params }: PageProps<'/[lang]/des
       <div className="flex flex-col gap-8">
         <PlanSelector
           plans={views}
+          source={destination.country ? { kind: 'country', code: destination.country.code } : { kind: 'region', id: destination.region.id }}
+          perGbTemplate={dict.destination.perGb}
           checkoutBase={`/${locale}/checkout`}
           labels={{
             plans: dict.destination.plans,

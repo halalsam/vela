@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Pill, focusRing, press } from '@/components/ui';
 import type { PlanView } from '@/lib/destinations';
+import { format } from '@/lib/i18n';
+import { useLocalPlans, type PlanSource } from '@/lib/localPrices';
 import { cn, type } from '@/lib/type';
 
 type Labels = {
@@ -14,7 +16,16 @@ type Labels = {
   continue: string;
 };
 
-export function PlanSelector({ plans, labels, checkoutBase }: { plans: PlanView[]; labels: Labels; checkoutBase: string }) {
+type Props = { plans: PlanView[]; labels: Labels; checkoutBase: string; source: PlanSource; perGbTemplate: string };
+
+export function PlanSelector({ plans: serverPlans, labels, checkoutBase, source, perGbTemplate }: Props) {
+  const local = useLocalPlans(source);
+  const plans = local
+    ? serverPlans.map((plan) => {
+        const swap = local.get(plan.id);
+        return swap ? { ...plan, price: swap.price, perGb: format(perGbTemplate, { price: swap.perGbAmount }) } : plan;
+      })
+    : serverPlans;
   const [selected, setSelected] = useState(plans[1]?.id ?? plans[0]?.id);
   const current = plans.find((plan) => plan.id === selected);
   return (

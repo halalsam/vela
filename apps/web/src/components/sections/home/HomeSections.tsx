@@ -3,9 +3,10 @@ import Link from 'next/link';
 import { Flag, FlagStack, UsageRing } from '@/components/esim';
 import { Button, Card, Container, Pill, SectionTitle, cardLink } from '@/components/ui';
 import type { DestinationSummary } from '@/lib/destinations';
-import { format, localized, plural, type Dictionary, type Locale } from '@/lib/i18n';
+import { localized, plural, type Dictionary, type Locale } from '@/lib/i18n';
 import { cn, type } from '@/lib/type';
 import { MarkLockup } from '../Mark';
+import { LocalFrom } from '../LocalFrom';
 import { DestinationSearch } from './DestinationSearch';
 
 export function Hero({ locale, dict, destinations }: { locale: Locale; dict: Dictionary; destinations: DestinationSummary[] }) {
@@ -72,7 +73,7 @@ export function PopularGrid({ locale, dict, destinations }: { locale: Locale; di
               <Flag code={item.codes[0] ?? ''} size="xl" />
               <span className="flex flex-col gap-0.5">
                 <span className={type.bodyStrong}>{item.name}</span>
-                <span className={cn(type.caption, 'text-fg-tertiary')}>{format(dict.destination.from, { price: item.from })}</span>
+                <span className={cn(type.caption, 'text-fg-tertiary')}><LocalFrom slug={item.slug} isRegion={item.isRegion} fallback={item.from} template={dict.destination.from} /></span>
               </span>
             </Link>
           </li>
@@ -95,7 +96,7 @@ export function RegionsRow({ locale, dict, regions }: { locale: Locale; dict: Di
                 <span className={type.displayMd}>{item.name}</span>
                 <span className={cn(type.caption, 'text-fg-tertiary')}>
                   {plural(dict.destination as unknown as Record<string, string>, 'countries', item.codes.length, locale)} ·{' '}
-                  {format(dict.destination.from, { price: item.from })}
+                  <LocalFrom slug={item.slug} isRegion={item.isRegion} fallback={item.from} template={dict.destination.from} />
                 </span>
               </span>
             </Link>

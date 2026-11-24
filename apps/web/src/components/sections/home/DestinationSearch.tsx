@@ -6,6 +6,7 @@ import { Flag, FlagStack } from '@/components/esim';
 import { focusRing } from '@/components/ui';
 import type { DestinationSummary } from '@/lib/destinations';
 import { cn, type } from '@/lib/type';
+import { LocalFrom } from '../LocalFrom';
 
 type Props = {
   locale: string;
@@ -66,7 +67,9 @@ export function DestinationSearch({ locale, destinations, label, placeholder, no
                 >
                   {item.isRegion ? <FlagStack codes={item.codes} /> : <Flag code={item.codes[0] ?? ''} />}
                   <span className={cn(type.bodyStrong, 'flex-1')}>{item.name}</span>
-                  <span className={cn(type.caption, 'text-fg-tertiary')}>{item.from}</span>
+                  <span className={cn(type.caption, 'text-fg-tertiary')}>
+                    <LocalFrom slug={item.slug} isRegion={item.isRegion} fallback={item.from} />
+                  </span>
                 </Link>
               </li>
             ))

@@ -189,7 +189,7 @@
   },
   "footer": {
     "tagline": "land connected.",
-    "prices": "Prices in INR and include GST.",
+    "prices": "Rupee prices include GST. Checkout also takes AED, SAR, EUR and USD.",
     "rights": "© {{year}} vela",
     "privacy": "Privacy",
     "terms": "Terms"

@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import { CouponField, OrderSummary, Totals } from '@/components/sections/checkout/CheckoutSections';
 import { ErrorState, OfflineBanner } from '@/components/sections/states/StateViews';
 import { Banner, Button, Sheet, Skeleton, SwipeToPay, toast, type SwipeToPayStatus } from '@/components/ui';
+import { usingLiveCatalog } from '@/lib/api';
 import { haptics } from '@/lib/haptics';
 import { PaymentCancelled } from '@/lib/payments';
 import { useOnline } from '@/lib/useOnline';
@@ -82,7 +83,7 @@ export default function CheckoutScreen() {
               label={t('checkout.otherMethods')}
               variant="ghost"
               fullWidth
-              onPress={() => toast.show({ message: t('checkout.otherSoon') })}
+              onPress={() => (usingLiveCatalog ? pay() : toast.show({ message: t('checkout.otherSoon') }))}
             />
           </>
         ) : null

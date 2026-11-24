@@ -17,6 +17,7 @@ export const queryKeys = {
   dailyUsage: (iccid: string) => ['dailyUsage', iccid] as const,
   profile: ['profile'] as const,
   rewards: ['rewards'] as const,
+  orders: ['orders'] as const,
   support: ['support'] as const,
 };
 
@@ -38,6 +39,7 @@ export const useDailyUsage = (iccid: string | undefined) =>
   useQuery({ queryKey: queryKeys.dailyUsage(iccid ?? ''), queryFn: () => api.getDailyUsage(iccid ?? ''), enabled: Boolean(iccid) });
 export const useProfile = () => useQuery({ queryKey: queryKeys.profile, queryFn: api.getProfile });
 export const useRewards = () => useQuery({ queryKey: queryKeys.rewards, queryFn: api.getRewards });
+export const useOrders = () => useQuery({ queryKey: queryKeys.orders, queryFn: api.getOrders });
 export const useSupportThread = () =>
   useQuery({ queryKey: queryKeys.support, queryFn: api.getSupportThread, refetchInterval: usingLiveCatalog ? 5000 : false });
 

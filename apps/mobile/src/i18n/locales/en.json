@@ -514,5 +514,53 @@
   },
   "notifications": {
     "channel": "Trip updates"
+  },
+  "invoices": {
+    "title": "orders & invoices",
+    "emptyTitle": "no orders yet.",
+    "emptyBody": "Your eSIMs and top-ups will appear here with their GST invoices.",
+    "topUp": "Top-up",
+    "esim": "eSIM",
+    "invoice": "GST invoice {{number}}",
+    "noInvoice": "No GST invoice for {{currency}} orders",
+    "notReady": "Invoice not issued yet",
+    "refunded": "Refunded",
+    "failed": "Couldn't open the invoice. Try again in a minute.",
+    "demo": "Invoices download with the live service."
+  },
+  "help": {
+    "title": "help centre",
+    "intro": "Quick answers. If you're stuck, Support chat is one tap away.",
+    "q1": "How do I install my eSIM?",
+    "a1": "Open your eSIM in the app and tap Install on this phone. On another phone, scan the QR code under Settings › Mobile › Add eSIM. Install it before you fly while you have Wi-Fi.",
+    "q2": "When does my plan start?",
+    "a2": "Most plans start when your phone first connects to a network at your destination. The plan page says if a plan starts when you install it instead.",
+    "q3": "How do I turn it on when I land?",
+    "a3": "Turn on the vela line in Settings › Mobile and switch on data roaming for it. Keep your home SIM for calls and texts if you like.",
+    "q4": "How much data do I have left?",
+    "a4": "Open the eSIM in the app to see what's left and your daily use. Figures can lag by a couple of hours behind the network.",
+    "q5": "Can I add more data?",
+    "a5": "Yes. Tap Top up on the eSIM. The data, and any extra days, are added to the same eSIM, so there's nothing to reinstall.",
+    "q6": "Can I get a refund?",
+    "a6": "If you haven't installed the eSIM, contact us within 30 days of purchase for a full refund. After installation we refund only if it doesn't work because of a fault on our side. If we can't issue your eSIM, you're refunded automatically.",
+    "q7": "Can I move my eSIM to a new phone?",
+    "a7": "Usually not. An installed eSIM stays on the phone it was installed on, so install it on the phone you'll travel with.",
+    "q8": "Do I get a phone number?",
+    "a8": "No. vela plans are data only. Use WhatsApp, FaceTime or similar apps for calls, and keep your home number active on your other line.",
+    "contact": "Still need help? Open Support chat."
+  },
+  "compatibility": {
+    "title": "device compatibility",
+    "intro": "vela works on phones that support eSIM and aren't locked to a carrier.",
+    "checkTitle": "Check in ten seconds",
+    "checkBody": "Dial *#06#. If you see an EID number, your phone supports eSIM.",
+    "iphoneTitle": "iPhone",
+    "iphoneBody": "iPhone XS, XS Max, XR and every newer model, including iPhone SE (2nd generation and later). iPhones bought in mainland China, Hong Kong or Macau may not support eSIM.",
+    "androidTitle": "Android",
+    "androidBody": "Google Pixel 3 and later (not Pixel 3a bought in Japan), Samsung Galaxy S20 and later, Z Flip and Z Fold, and recent models from Motorola, OnePlus, Xiaomi, OPPO and others. Check your model's settings for Add eSIM.",
+    "unlockedTitle": "Carrier unlocked",
+    "unlockedBody": "If your phone came from a carrier on contract, ask them to unlock it before you travel. A locked phone can't use another provider's eSIM.",
+    "settingsTitle": "Where to look",
+    "settingsBody": "iPhone: Settings › Mobile (or Cellular) › Add eSIM. Android: Settings › Network & internet › SIMs › Add eSIM."
   }
 }

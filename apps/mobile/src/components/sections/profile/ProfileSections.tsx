@@ -108,11 +108,10 @@ export function PreferencesGroup() {
 
 export function AccountGroup() {
   const { t } = useTranslation();
-  const soon = () => toast.show({ message: t('common.comingSoon') });
   return (
     <ListGroup header={t('profile.account')}>
       <ListRow leadingIcon="gift" title={t('profile.rewards')} onPress={() => router.push('/rewards')} />
-      <ListRow leadingIcon="qr" title={t('profile.invoices')} onPress={soon} />
+      <ListRow leadingIcon="qr" title={t('profile.invoices')} onPress={() => router.push('/invoices')} />
     </ListGroup>
   );
 }
@@ -131,8 +130,8 @@ export function HelpGroup() {
   return (
     <ListGroup header={t('profile.help')}>
       <ListRow leadingIcon="chat" title={t('profile.support')} onPress={() => router.push('/support')} />
-      <ListRow leadingIcon="help" title={t('profile.helpCentre')} onPress={soon} />
-      <ListRow leadingIcon="sim" title={t('profile.compatibility')} onPress={soon} />
+      <ListRow leadingIcon="help" title={t('profile.helpCentre')} onPress={() => router.push('/help')} />
+      <ListRow leadingIcon="sim" title={t('profile.compatibility')} onPress={() => router.push('/compatibility')} />
       <ListRow leadingIcon="lock" title={t('profile.privacy')} onPress={() => openLegal('privacy', soon)} />
       <ListRow leadingIcon="info" title={t('profile.terms')} onPress={() => openLegal('terms', soon)} />
     </ListGroup>

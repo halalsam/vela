@@ -58,6 +58,9 @@ export default function RootLayout() {
               <Stack.Screen name="top-up" options={{ ...sheetOptions, sheetAllowedDetents: [0.8, 1] }} />
               <Stack.Screen name="rewards" options={largeTitleStackOptions} />
               <Stack.Screen name="support" />
+              <Stack.Screen name="invoices" options={largeTitleStackOptions} />
+              <Stack.Screen name="help" options={largeTitleStackOptions} />
+              <Stack.Screen name="compatibility" options={largeTitleStackOptions} />
               <Stack.Screen name="dev/components" options={largeTitleStackOptions} />
               <Stack.Screen name="dev/sheet" options={sheetOptions} />
             </Stack.Protected>

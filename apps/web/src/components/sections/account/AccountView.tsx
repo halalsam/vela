@@ -14,6 +14,7 @@ import { readAllOrders } from '@/lib/orders';
 import { notifyStorage, useStorageValue } from '@/lib/useStorage';
 import { cn, type } from '@/lib/type';
 import { LiveSignIn } from './LiveSignIn';
+import { TopUpPanel } from './TopUpPanel';
 
 const SESSION_KEY = 'vela:session';
 
@@ -43,6 +44,7 @@ function LiveAccount({ locale, labels, names }: { locale: Locale; labels: Dictio
       labels={labels}
       names={names}
       identity={identity}
+      live
       onSignOut={() => void client.signOut()}
     />
   );
@@ -101,10 +103,11 @@ type SignedInProps = {
   labels: Dictionary['account'];
   names: Names;
   identity: string;
+  live?: boolean;
   onSignOut: () => void;
 };
 
-function SignedInAccount({ locale, labels, names, identity, onSignOut }: SignedInProps) {
+function SignedInAccount({ locale, labels, names, identity, live = false, onSignOut }: SignedInProps) {
   const [state, setState] = useState<State>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
 
@@ -164,7 +167,15 @@ function SignedInAccount({ locale, labels, names, identity, onSignOut }: SignedI
       ) : (
         <ul className="grid gap-card-gap md:grid-cols-2">
           {state.esims.map((esim) => (
-            <EsimCard key={esim.iccid} esim={esim} locale={locale} labels={labels} names={names} />
+            <EsimCard
+              key={esim.iccid}
+              esim={esim}
+              locale={locale}
+              labels={labels}
+              names={names}
+              live={live}
+              onChanged={() => setAttempt((value) => value + 1)}
+            />
           ))}
         </ul>
       )}
@@ -172,7 +183,9 @@ function SignedInAccount({ locale, labels, names, identity, onSignOut }: SignedI
   );
 }
 
-function EsimCard({ esim, locale, labels, names }: { esim: Esim; locale: Locale; labels: Dictionary['account']; names: Names }) {
+type EsimCardProps = { esim: Esim; locale: Locale; labels: Dictionary['account']; names: Names; live: boolean; onChanged: () => void };
+
+function EsimCard({ esim, locale, labels, names, live, onChanged }: EsimCardProps) {
   const code = esim.country_codes[0] ?? '';
   const regionId = esim.plan_id.split('-')[0] ?? '';
   const name = (esim.country_codes.length > 1 ? names[regionId] : names[code]) ?? code;
@@ -211,9 +224,10 @@ function EsimCard({ esim, locale, labels, names }: { esim: Esim; locale: Locale;
             {esim.expires_at ? (
               <p className={cn(type.caption, 'text-fg-tertiary')}>{format(labels.validUntil, { date: formatShortDate(esim.expires_at, locale) })}</p>
             ) : null}
-            {!ended ? <p className={cn(type.caption, 'text-accent')}>{labels.topUpInApp}</p> : null}
+            {!ended && !live ? <p className={cn(type.caption, 'text-accent')}>{labels.topUpInApp}</p> : null}
           </div>
         </div>
+        {live && esim.status !== 'expired' ? <TopUpPanel iccid={esim.iccid} labels={labels} onToppedUp={onChanged} /> : null}
       </Card>
     </li>
   );

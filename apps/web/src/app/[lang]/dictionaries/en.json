@@ -185,7 +185,19 @@
     "or": "or",
     "wrongCode": "That code isn't right. Try again.",
     "failed": "Couldn't sign you in. Try again.",
-    "sent": "We texted a code to {{phone}}."
+    "sent": "We texted a code to {{phone}}.",
+    "topUp": "Top up",
+    "topUpChoose": "Add data to this eSIM",
+    "topUpDays": "+{{count}} days",
+    "topUpPay": "Pay and top up",
+    "topUpPaying": "Topping up…",
+    "topUpCancel": "Cancel",
+    "topUpDone": "Topped up. {{data}} added.",
+    "topUpPending": "Payment received. Your data will appear in a minute.",
+    "topUpRefunded": "We couldn't add the data, so we're refunding you in full.",
+    "topUpFailed": "Couldn't top up. Try again.",
+    "topUpNone": "No top-ups are available for this eSIM.",
+    "topUpDescription": "{{data}} top-up"
   },
   "footer": {
     "tagline": "land connected.",

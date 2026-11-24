@@ -51,7 +51,7 @@ export const viewport: Viewport = {
 };
 
 const preloadFonts = {
-  en: ['Manrope-Regular', 'Manrope-SemiBold', 'InstrumentSerif-Regular'],
+  en: ['Satoshi-Regular', 'Satoshi-Bold', 'CabinetGrotesk-Bold'],
   ar: ['IBMPlexSansArabic-Regular', 'IBMPlexSansArabic-SemiBold', 'IBMPlexSansArabic-Light'],
 };
 

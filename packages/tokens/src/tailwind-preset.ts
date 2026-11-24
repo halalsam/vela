@@ -7,7 +7,6 @@ import { durations, easingCss } from './motion';
 const px = (value: number) => `${value}px`;
 
 const webFallback = ['ui-sans-serif', 'system-ui', 'sans-serif'];
-const serifFallback = ['ui-serif', 'Georgia', 'serif'];
 
 const fontFamily = {
   'sans-light': [fontFamilies.sansLight, ...webFallback],
@@ -15,8 +14,8 @@ const fontFamily = {
   'sans-medium': [fontFamilies.sansMedium, ...webFallback],
   'sans-semibold': [fontFamilies.sansSemibold, ...webFallback],
   'sans-bold': [fontFamilies.sansBold, ...webFallback],
-  display: [fontFamilies.display, ...serifFallback],
-  'display-italic': [fontFamilies.displayItalic, ...serifFallback],
+  display: [fontFamilies.display, ...webFallback],
+  'display-medium': [fontFamilies.displayMedium, ...webFallback],
   'arabic-light': [fontFamilies.arabicLight, ...webFallback],
   arabic: [fontFamilies.arabic, ...webFallback],
   'arabic-medium': [fontFamilies.arabicMedium, ...webFallback],

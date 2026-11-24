@@ -5,13 +5,12 @@ const APP_GROUP = 'group.com.sammk21.vela';
 
 const fontsDir = '../../packages/brand/fonts';
 const fontFiles = [
-  'Manrope-Light',
-  'Manrope-Regular',
-  'Manrope-Medium',
-  'Manrope-SemiBold',
-  'Manrope-Bold',
-  'InstrumentSerif-Regular',
-  'InstrumentSerif-Italic',
+  'Satoshi-Light',
+  'Satoshi-Regular',
+  'Satoshi-Medium',
+  'Satoshi-Bold',
+  'CabinetGrotesk-Medium',
+  'CabinetGrotesk-Bold',
   'IBMPlexSansArabic-Light',
   'IBMPlexSansArabic-Regular',
   'IBMPlexSansArabic-Medium',

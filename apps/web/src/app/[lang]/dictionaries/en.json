@@ -3,7 +3,9 @@
     "title": "vela — land connected.",
     "description": "Travel eSIM data plans for India and the Gulf. Buy before you fly, land connected, top up anytime.",
     "destinationTitle": "{{name}} eSIM — data plans from {{price}}",
-    "destinationDescription": "Prepaid {{name}} eSIM data plans with instant QR delivery. Keep your number for calls."
+    "destinationDescription": "Prepaid {{name}} eSIM data plans with instant QR delivery. Keep your number for calls.",
+    "blogTitle": "Travel eSIM guides and tips",
+    "blogDescription": "How to set up a travel eSIM, what data really costs abroad, and where to go next. Practical guides from the vela travel desk."
   },
   "nav": {
     "destinations": "Destinations",
@@ -12,7 +14,8 @@
     "getApp": "Get the app",
     "language": "العربية",
     "skip": "Skip to content",
-    "home": "vela home"
+    "home": "vela home",
+    "blog": "Blog"
   },
   "hero": {
     "title": "land connected.",
@@ -261,5 +264,29 @@
     "noResultsTitle": "nothing found.",
     "noResultsBody": "Try another spelling, or clear the filters.",
     "clear": "Clear filters"
+  },
+  "blog": {
+    "title": "travel guides",
+    "intro": "How to set up an eSIM, what data really costs abroad, and where to go next. Written by the people who answer your support messages.",
+    "breadcrumb": "Breadcrumb",
+    "home": "Home",
+    "latest": "Latest",
+    "allPosts": "All posts",
+    "back": "All posts",
+    "minRead": "{{count}} min read",
+    "updated": "Updated {{date}}",
+    "onThisPage": "On this page",
+    "plansFor": "Plans for this trip",
+    "plansBody": "Instant QR delivery. Keep your number for calls and OTPs.",
+    "viewPlans": "See all destinations",
+    "more": "Keep reading",
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "Our first guides are on the way. In the meantime, the help centre has setup steps for every phone.",
+    "emptyAction": "Open the help centre",
+    "ctaTitle": "ready when you land.",
+    "ctaBody": "Pick a destination, install before you fly, and switch on data when the wheels touch down.",
+    "ctaButton": "Browse destinations",
+    "rss": "RSS feed",
+    "read": "Read the guide"
   }
 }

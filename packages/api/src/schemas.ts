@@ -193,3 +193,57 @@ export type Referral = z.infer<typeof referralSchema>;
 export type Rewards = z.infer<typeof rewardsSchema>;
 export type SupportMessage = z.infer<typeof supportMessageSchema>;
 export type Profile = z.infer<typeof profileSchema>;
+
+export const blogLocaleSchema = z.enum(['en', 'ar']);
+
+export const blogSeoSchema = z.object({
+  /** Overrides the title in search results and link previews. Null uses the post title. */
+  meta_title: z.string().nullable(),
+  /** Overrides the excerpt as the meta description. */
+  meta_description: z.string().nullable(),
+  /** Set only when the post first appeared elsewhere. Null makes the post its own canonical. */
+  canonical_url: z.string().nullable(),
+  /** Social preview image. Null uses the cover, then a generated card. */
+  og_image: z.string().nullable(),
+  keywords: z.array(z.string()),
+  noindex: z.boolean(),
+});
+
+export const blogPostSummarySchema = z.object({
+  slug: z.string(),
+  locale: blogLocaleSchema,
+  title: z.string(),
+  excerpt: z.string(),
+  cover_image: z.string().nullable(),
+  cover_alt: z.string(),
+  author: z.object({ name: z.string(), role: z.string().nullable() }),
+  tags: z.array(z.string()),
+  country_codes: z.array(countryCodeSchema),
+  reading_minutes: z.number().int().min(1),
+  published_at: z.iso.datetime({ offset: true }),
+  updated_at: z.iso.datetime({ offset: true }),
+});
+
+export const blogPostSchema = blogPostSummarySchema.extend({
+  /** Markdown. */
+  body: z.string(),
+  /** Slug of the same post in the other language, for hreflang. */
+  alternate_slug: z.string().nullable(),
+  seo: blogSeoSchema,
+});
+
+export type BlogLocale = z.infer<typeof blogLocaleSchema>;
+export type BlogSeo = z.infer<typeof blogSeoSchema>;
+export type BlogPostSummary = z.infer<typeof blogPostSummarySchema>;
+export type BlogPost = z.infer<typeof blogPostSchema>;
+
+/** Minutes to read a markdown body: ~220 words a minute in English, ~180 in Arabic, at least one. */
+export function readingMinutes(body: string, locale: BlogLocale): number {
+  const words = body
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/[#>*_`[\]()-]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.round(words / (locale === 'ar' ? 180 : 220)));
+}

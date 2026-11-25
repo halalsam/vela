@@ -5,6 +5,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { HttpError } from './lib/errors';
 import { catalogRoutes } from './routes/catalog';
 import { adminRoutes } from './routes/admin';
+import { blogRoutes } from './routes/blog';
 import { deviceRoutes } from './routes/devices';
 import { esimWebhookRoutes } from './routes/esimWebhooks';
 import { meRoutes } from './routes/me';
@@ -53,6 +54,7 @@ export function createApp(deps: AppDeps) {
 
   app.route('/', systemRoutes);
   app.route('/', catalogRoutes);
+  app.route('/', blogRoutes);
   app.route('/', meRoutes);
   app.route('/', orderRoutes);
   app.route('/', deviceRoutes);

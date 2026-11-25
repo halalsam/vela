@@ -23,3 +23,5 @@ export const devicePlatform = pgEnum('device_platform', ['ios', 'android', 'web'
 export const userRole = pgEnum('user_role', ['customer', 'support', 'admin']);
 export const webhookSource = pgEnum('webhook_source', ['razorpay', 'gulf', 'esim']);
 export const area = pgEnum('area', ['asia', 'europe', 'gulf', 'americas', 'africa', 'oceania']);
+export const contentLocale = pgEnum('content_locale', ['en', 'ar']);
+export const blogStatus = pgEnum('blog_status', ['draft', 'published']);

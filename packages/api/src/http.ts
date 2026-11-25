@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { ApiError, type VelaApi } from './client';
 import {
+  blogPostSchema,
+  blogPostSummarySchema,
   checkoutSchema,
   dailyUsageSchema,
   countrySchema,
@@ -48,6 +50,8 @@ export const httpServedMethods = [
   'getOrders',
   'getSupportThread',
   'sendSupportMessage',
+  'getBlogPosts',
+  'getBlogPost',
 ] as const;
 
 function idempotencyKey(): string {
@@ -93,6 +97,8 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     getRegionPlans: (regionId) => get(`/v1/catalog/regions/${encodeURIComponent(regionId)}/plans?${currency()}`, z.array(planSchema)),
     getPlan: (id) => get(`/v1/catalog/plans/${encodeURIComponent(id)}?${currency()}`, planSchema),
     getOffers: () => get('/v1/offers', z.array(offerSchema)),
+    getBlogPosts: (locale) => get(`/v1/blog/posts?locale=${locale}`, z.array(blogPostSummarySchema)),
+    getBlogPost: (locale, slug) => get(`/v1/blog/posts/${encodeURIComponent(slug)}?locale=${locale}`, blogPostSchema),
     redeemCoupon: (code) => send('/v1/coupons/validate', couponSchema, { method: 'POST', body: { code, currency: options.currency?.() ?? 'INR' } }),
     createOrder: (input) =>
       send('/v1/orders', checkoutSchema, {

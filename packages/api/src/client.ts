@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import * as mocks from './mocks';
 import {
+  blogPostSchema,
+  blogPostSummarySchema,
   checkoutSchema,
   couponSchema,
   orderSchema,
@@ -15,6 +17,9 @@ import {
   planSchema,
   regionSchema,
   topUpPackSchema,
+  type BlogLocale,
+  type BlogPost,
+  type BlogPostSummary,
   type Checkout,
   type Coupon,
   type InvoiceLink,
@@ -73,6 +78,10 @@ export type VelaApi = {
   getOrders(): Promise<OrderSummary[]>;
   getInvoice(orderId: string): Promise<InvoiceLink>;
   topUp(input: { iccid: string; packId: string; currency?: Currency; idempotencyKey?: string }): Promise<Checkout>;
+  /** Published posts for one language, newest first. */
+  getBlogPosts(locale: BlogLocale): Promise<BlogPostSummary[]>;
+  /** One published post. 404 for drafts, scheduled posts and unknown slugs. */
+  getBlogPost(locale: BlogLocale, slug: string): Promise<BlogPost>;
 };
 
 export type MockScenario = 'default' | 'loading' | 'empty' | 'error' | 'lowData' | 'expired';
@@ -171,6 +180,9 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
     getEsim: async (iccid) =>
       respond(esimSchema, () => currentEsims().find((esim) => esim.iccid === iccid) ?? notFound('eSIM')),
     getOffers: () => respond(z.array(offerSchema), () => mocks.offers, { list: true }),
+    getBlogPosts: (locale) => respond(z.array(blogPostSummarySchema), () => mocks.blogPostsFor(locale), { list: true }),
+    getBlogPost: async (locale, slug) =>
+      respond(blogPostSchema, () => mocks.blogPostsFor(locale).find((item) => item.slug === slug) ?? notFound('Post')),
     getTopUpPacks: (iccid) =>
       respond(z.array(topUpPackSchema), () => mocks.topUpPacks.filter((pack) => pack.iccid === iccid), { list: true }),
     getDailyUsage: (iccid) => respond(z.array(dailyUsageSchema), () => mocks.dailyUsage[iccid] ?? [], { list: true }),

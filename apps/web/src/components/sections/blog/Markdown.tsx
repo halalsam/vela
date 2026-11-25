@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { headingId } from '@/lib/blog';
+import { headingId } from '@/lib/blogFormat';
 import { cn, type } from '@/lib/type';
 
 // A small markdown renderer for blog posts. It builds React elements directly (no HTML strings), so post text can

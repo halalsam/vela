@@ -12,6 +12,7 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
       title: f.product,
       links: [
         { href: path(locale, '/destinations'), label: dict.nav.destinations },
+        { href: path(locale, '/blog'), label: dict.nav.blog },
         { href: path(locale, '/account'), label: dict.nav.account },
       ],
     },

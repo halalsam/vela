@@ -17,6 +17,9 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
           <Link href={path(locale, '/destinations')} className={link}>
             {dict.nav.destinations}
           </Link>
+          <Link href={path(locale, '/blog')} className={link}>
+            {dict.nav.blog}
+          </Link>
           <Link href={`${path(locale)}#how`} className={link}>
             {dict.nav.how}
           </Link>

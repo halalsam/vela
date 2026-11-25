@@ -17,6 +17,7 @@ type Access = { state: 'loading' } | { state: 'denied'; message: string } | { st
 const links = [
   { href: '/admin', label: 'Orders' },
   { href: '/admin/coupons', label: 'Coupons' },
+  { href: '/admin/blog', label: 'Blog' },
 ];
 
 function Notice({ title, body, action }: { title: string; body: string; action?: ReactNode }) {

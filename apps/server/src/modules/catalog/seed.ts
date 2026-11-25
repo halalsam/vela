@@ -1,7 +1,7 @@
-import { countries, coupons, offers, regions } from '@vela/api/mocks';
+import { blogPosts, countries, coupons, offers, regions } from '@vela/api/mocks';
 import { sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { country, coupon, fxRate, offer, region, regionCountry } from '../../db/schema';
+import { blogPost, country, coupon, fxRate, offer, region, regionCountry } from '../../db/schema';
 import { SAMPLE_RATES } from './fx';
 
 export async function seedReferenceData(db: Database, options: { sampleContent: boolean }) {
@@ -25,6 +25,36 @@ export async function seedReferenceData(db: Database, options: { sampleContent: 
     for (const item of regions) {
       for (const code of item.country_codes.filter((value) => known.has(value))) {
         await tx.insert(regionCountry).values({ regionId: item.id, countryCode: code }).onConflictDoNothing();
+      }
+    }
+    // Placeholder blog posts so the site has a blog to show. They go in only while the table is empty (every
+    // environment, production included), so deleting them in the admin after the first real post is enough.
+    const [anyPost] = await tx.select({ id: blogPost.id }).from(blogPost).limit(1);
+    if (!anyPost) {
+      for (const item of blogPosts) {
+        await tx
+          .insert(blogPost)
+          .values({
+            locale: item.locale,
+            slug: item.slug,
+            title: item.title,
+            excerpt: item.excerpt,
+            body: item.body,
+            coverImage: item.cover_image,
+            coverAlt: item.cover_alt,
+            authorName: item.author.name,
+            authorRole: item.author.role,
+            tags: item.tags,
+            countryCodes: item.country_codes,
+            status: 'published',
+            publishedAt: new Date(item.published_at),
+            alternateSlug: item.alternate_slug,
+            metaTitle: item.seo.meta_title,
+            metaDescription: item.seo.meta_description,
+            keywords: item.seo.keywords,
+            createdBy: 'seed',
+          })
+          .onConflictDoNothing();
       }
     }
     if (!options.sampleContent) return;

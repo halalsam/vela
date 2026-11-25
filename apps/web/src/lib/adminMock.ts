@@ -1,6 +1,7 @@
 'use client';
 
-import type { AdminCoupon, AdminOrder, AdminOrderRow } from './adminApi';
+import { blogPosts as sampleBlogPosts } from '@vela/api/mocks';
+import type { AdminBlogPost, AdminCoupon, AdminOrder, AdminOrderRow } from './adminApi';
 
 const HOUR = 3_600_000;
 const STATUSES = ['fulfilled', 'fulfilled', 'fulfilled', 'fulfilled', 'awaiting_payment', 'refunded', 'provisioning_failed', 'expired', 'paid'] as const;
@@ -156,6 +157,75 @@ class DemoError extends Error {
   }
 }
 
+const blog: AdminBlogPost[] = [
+  ...sampleBlogPosts.map((post, index) => ({
+    ...post,
+    id: `00000000-0000-4000-9000-${pad(index + 1, 12)}`,
+    status: 'published' as const,
+    created_at: post.published_at,
+  })),
+  {
+    ...sampleBlogPosts[1]!,
+    id: '00000000-0000-4000-9000-000000000099',
+    slug: 'packing-list-for-japan',
+    title: 'The connected packing list for Japan',
+    excerpt: 'Adapters, power banks, offline maps and the one setting to change before you board.',
+    body: '## Before you go\n\nDraft in progress.',
+    tags: ['Planning'],
+    country_codes: ['JP'],
+    alternate_slug: null,
+    status: 'draft' as const,
+    published_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+function blogPost(id: string): AdminBlogPost {
+  const post = blog.find((item) => item.id === id);
+  if (!post) throw new DemoError(404, 'Post not found');
+  return post;
+}
+
+// Mirrors the server: empty strings mean unset, publishing without a date means now, slugs are unique per language.
+function applyBlog(target: Partial<AdminBlogPost>, body: Record<string, unknown>) {
+  const value = (key: string) => (body[key] === '' && key !== 'cover_alt' ? null : body[key]);
+  const assign = <K extends keyof AdminBlogPost>(key: K, map: (raw: unknown) => AdminBlogPost[K]) => {
+    if (key in body) target[key] = map(value(key));
+  };
+  assign('locale', (raw) => (raw === 'ar' ? 'ar' : 'en'));
+  assign('slug', (raw) => String(raw ?? ''));
+  assign('title', (raw) => String(raw ?? ''));
+  assign('excerpt', (raw) => String(raw ?? ''));
+  assign('body', (raw) => String(raw ?? ''));
+  assign('cover_image', (raw) => (raw as string | null) ?? null);
+  assign('cover_alt', (raw) => String(raw ?? ''));
+  assign('tags', (raw) => (raw as string[] | undefined) ?? []);
+  assign('country_codes', (raw) => ((raw as string[] | undefined) ?? []).map((code) => code.toUpperCase()));
+  assign('status', (raw) => (raw === 'published' ? 'published' : 'draft'));
+  assign('published_at', (raw) => (raw as string | null) ?? null);
+  assign('alternate_slug', (raw) => (raw as string | null) ?? null);
+  if ('author_name' in body || 'author_role' in body)
+    target.author = {
+      name: 'author_name' in body ? String(body.author_name ?? '') : (target.author?.name ?? ''),
+      role: 'author_role' in body ? ((value('author_role') as string | null) ?? null) : (target.author?.role ?? null),
+    };
+  const seo = { ...(target.seo ?? { meta_title: null, meta_description: null, canonical_url: null, og_image: null, keywords: [], noindex: false }) };
+  for (const key of ['meta_title', 'meta_description', 'canonical_url', 'og_image'] as const) if (key in body) seo[key] = (value(key) as string | null) ?? null;
+  if ('keywords' in body) seo.keywords = ((body.keywords as string[] | undefined) ?? []).map((word) => word.toLowerCase());
+  if ('noindex' in body) seo.noindex = Boolean(body.noindex);
+  target.seo = seo;
+  if (target.status === 'published' && !target.published_at) target.published_at = new Date().toISOString();
+  target.reading_minutes = Math.max(1, Math.round((target.body ?? '').split(/\s+/).filter(Boolean).length / 220));
+  target.updated_at = new Date().toISOString();
+}
+
+function slugClash(locale: string | undefined, slug: string | undefined, id?: string) {
+  if (blog.some((item) => item.locale === locale && item.slug === slug && item.id !== id)) {
+    throw new DemoError(409, 'Another post in this language already uses that slug');
+  }
+}
+
 function find(id: string): AdminOrder {
   const order = orders.find((item) => item.order_id === id);
   if (!order) throw new DemoError(404, 'Order not found');
@@ -224,6 +294,29 @@ export async function demoAdmin(path: string, init: { method?: string; body?: un
     if (!coupon) throw new DemoError(404, 'Coupon not found');
     if ('ends_at' in body) coupon.ends_at = (body.ends_at as string | null) ?? null;
     return coupon;
+  }
+  if (url.pathname === '/v1/admin/blog' && method === 'GET') return [...blog].sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  if (url.pathname === '/v1/admin/blog' && method === 'POST') {
+    const created: Partial<AdminBlogPost> = { id: crypto.randomUUID(), created_at: new Date().toISOString(), status: 'draft', published_at: null };
+    applyBlog(created, body);
+    slugClash(created.locale, created.slug);
+    blog.unshift(created as AdminBlogPost);
+    return created;
+  }
+  if (parts[2] === 'blog' && parts[3]) {
+    const post = blogPost(parts[3]);
+    if (method === 'GET') return post;
+    if (method === 'PATCH') {
+      const next = { ...post };
+      applyBlog(next, body);
+      slugClash(next.locale, next.slug, post.id);
+      Object.assign(post, next);
+      return post;
+    }
+    if (method === 'DELETE') {
+      blog.splice(blog.indexOf(post), 1);
+      return undefined;
+    }
   }
   throw new DemoError(404, 'Not available in the demo');
 }

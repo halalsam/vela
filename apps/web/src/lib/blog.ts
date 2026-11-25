@@ -1,10 +1,12 @@
 import type { BlogPost, BlogPostSummary } from '@vela/api';
 import { brandName } from '@vela/brand';
 import { serverApi } from './api';
-import { path, type Locale } from './i18n';
+import { blogPath } from './blogFormat';
+import type { Locale } from './i18n';
 import { siteUrl } from './site';
 
 export type { BlogPost, BlogPostSummary };
+export { blogPath, formatDate, headingId, outline } from './blogFormat';
 
 /** Published posts, newest first. An unreachable API gives an empty list, so the page still renders. */
 export async function loadPosts(locale: Locale): Promise<BlogPostSummary[]> {
@@ -23,7 +25,6 @@ export async function loadPost(locale: Locale, slug: string): Promise<BlogPost |
   }
 }
 
-export const blogPath = (locale: Locale, slug?: string) => path(locale, slug ? `/blog/${slug}` : '/blog');
 export const absolute = (href: string) => (/^https?:\/\//.test(href) ? href : `${siteUrl}${href.startsWith('/') ? '' : '/'}${href}`);
 
 /** Social image: the SEO override, then the cover, then the generated card (English only; satori can't shape Arabic). */
@@ -31,32 +32,6 @@ export function socialImage(post: BlogPost): string {
   if (post.seo.og_image) return post.seo.og_image;
   if (post.cover_image) return post.cover_image;
   return post.locale === 'en' ? `${blogPath(post.locale, post.slug)}/card` : '/og.png';
-}
-
-export function formatDate(iso: string, locale: Locale): string {
-  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-AE' : 'en-IN', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
-}
-
-/** Same rule as the markdown renderer, so table-of-contents links match heading ids. */
-export function headingId(text: string): string {
-  const id = text
-    .toLowerCase()
-    .replace(/[*_`]/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '');
-  return id || 'section';
-}
-
-export function outline(body: string): { id: string; text: string }[] {
-  // h1 and h2 both render as h2. Repeated headings get -2, -3, like the renderer. Code blocks are skipped.
-  const seen = new Map<string, number>();
-  return [...body.replace(/```[\s\S]*?```/g, '').matchAll(/^#{1,4}\s+(.+?)\s*#*$/gm)].flatMap((match) => {
-    const text = (match[1] ?? '').replace(/[*_`]/g, '').trim();
-    const base = headingId(text);
-    const n = seen.get(base) ?? 0;
-    seen.set(base, n + 1);
-    return /^#{1,2}\s/.test(match[0]) ? [{ id: n === 0 ? base : `${base}-${n + 1}`, text }] : [];
-  });
 }
 
 type JsonLd = Record<string, unknown>;

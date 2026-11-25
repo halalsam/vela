@@ -1,5 +1,6 @@
 'use client';
 
+import type { BlogPost } from '@vela/api';
 import { demoAdmin, DemoError } from './adminMock';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
@@ -59,6 +60,21 @@ export type AdminCoupon = {
   ends_at: string | null;
   redemptions: number;
 };
+
+export type AdminBlogPost = Omit<BlogPost, 'published_at'> & {
+  id: string;
+  status: 'draft' | 'published';
+  /** Null until first published. A future date means scheduled. */
+  published_at: string | null;
+  created_at: string;
+};
+
+export type BlogState = 'draft' | 'scheduled' | 'published';
+
+export function blogState(post: Pick<AdminBlogPost, 'status' | 'published_at'>): BlogState {
+  if (post.status === 'draft') return 'draft';
+  return post.published_at && Date.parse(post.published_at) > Date.now() ? 'scheduled' : 'published';
+}
 
 export class AdminError extends Error {
   constructor(

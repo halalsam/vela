@@ -18,6 +18,7 @@ import {
   type AdminDeps,
   type StaffRole,
 } from '../modules/admin/admin';
+import { createPost, deletePost, getPost, listPosts, SLUG_PATTERN, updatePost } from '../modules/blog/blog';
 import type { AppEnv } from '../types';
 
 type AdminEnv = AppEnv & { Variables: AppEnv['Variables'] & { role: StaffRole } };
@@ -54,6 +55,69 @@ const couponBody = z.object({
   starts_at: isoDate.default(null),
   ends_at: isoDate.default(null),
 });
+
+const optionalUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((value) => value.startsWith('/') || /^https:\/\//.test(value), 'Use an https:// URL or a path starting with /')
+  .nullable();
+const textList = (max: number, each: number) => z.array(z.string().trim().min(1).max(each)).max(max);
+const slug = z.string().trim().min(3).max(100).regex(SLUG_PATTERN, 'Use lowercase letters, numbers and single hyphens');
+
+const blogFields = {
+  locale: z.enum(['en', 'ar']),
+  slug,
+  title: z.string().trim().min(3).max(140),
+  excerpt: z.string().trim().min(10).max(320),
+  body: z.string().min(1).max(100_000),
+  cover_image: optionalUrl,
+  cover_alt: z.string().trim().max(200),
+  author_name: z.string().trim().min(1).max(80),
+  author_role: z.string().trim().max(80).nullable(),
+  tags: textList(8, 32),
+  country_codes: z.array(z.string().regex(/^[A-Za-z]{2}$/)).max(30),
+  status: z.enum(['draft', 'published']),
+  published_at: isoDate,
+  alternate_slug: slug.nullable(),
+  meta_title: z.string().trim().max(70).nullable(),
+  meta_description: z.string().trim().max(200).nullable(),
+  canonical_url: z
+    .string()
+    .trim()
+    .max(500)
+    .regex(/^https:\/\//, 'Use a full https:// URL')
+    .nullable(),
+  og_image: optionalUrl,
+  keywords: textList(10, 60),
+  noindex: z.boolean(),
+};
+
+// PATCH sends only what changed, so it has no defaults (zod would fill them in and overwrite saved values).
+const blogPatch = z.object(blogFields).partial();
+const blogCreate = z.object({
+  ...blogFields,
+  cover_image: blogFields.cover_image.default(null),
+  cover_alt: blogFields.cover_alt.default(''),
+  author_role: blogFields.author_role.default(null),
+  tags: blogFields.tags.default([]),
+  country_codes: blogFields.country_codes.default([]),
+  status: blogFields.status.default('draft'),
+  published_at: blogFields.published_at.default(null),
+  alternate_slug: blogFields.alternate_slug.default(null),
+  meta_title: blogFields.meta_title.default(null),
+  meta_description: blogFields.meta_description.default(null),
+  canonical_url: blogFields.canonical_url.default(null),
+  og_image: blogFields.og_image.default(null),
+  keywords: blogFields.keywords.default([]),
+  noindex: blogFields.noindex.default(false),
+});
+
+// Empty strings from the editor mean "not set".
+const blank = (value: unknown) =>
+  value && typeof value === 'object'
+    ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, item === '' && key !== 'cover_alt' ? null : item]))
+    : value;
 
 const deps = (c: { var: AdminEnv['Variables'] }): AdminDeps => ({
   db: c.var.deps.db,
@@ -107,6 +171,20 @@ export const adminRoutes = new Hono<AdminEnv>()
       await c.req.json().catch(() => null),
     );
     await grantCredit(c.var.deps.db, c.var.user.id, c.req.param('id'), body);
+    return c.body(null, 204);
+  })
+  .get('/v1/admin/blog', async (c) => c.json(await listPosts(c.var.deps.db)))
+  .post('/v1/admin/blog', async (c) => {
+    const body = parse(blogCreate, blank(await c.req.json().catch(() => null)));
+    return c.json(await createPost(c.var.deps.db, c.var.user.id, c.var.role, body), 201);
+  })
+  .get('/v1/admin/blog/:id', async (c) => c.json(await getPost(c.var.deps.db, c.req.param('id'))))
+  .patch('/v1/admin/blog/:id', async (c) => {
+    const body = parse(blogPatch, blank(await c.req.json().catch(() => null)));
+    return c.json(await updatePost(c.var.deps.db, c.var.user.id, c.var.role, c.req.param('id'), body));
+  })
+  .delete('/v1/admin/blog/:id', adminOnly, async (c) => {
+    await deletePost(c.var.deps.db, c.var.user.id, c.req.param('id'));
     return c.body(null, 204);
   })
   .get('/v1/admin/audit', async (c) => c.json(await recentAudit(c.var.deps.db, c.req.query('target'))));

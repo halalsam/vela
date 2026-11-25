@@ -18,6 +18,7 @@ const links = [
   { href: '/admin', label: 'Orders' },
   { href: '/admin/coupons', label: 'Coupons' },
   { href: '/admin/blog', label: 'Blog' },
+  { href: '/admin/seo', label: 'SEO' },
 ];
 
 function Notice({ title, body, action }: { title: string; body: string; action?: ReactNode }) {

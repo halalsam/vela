@@ -247,3 +247,95 @@ export function readingMinutes(body: string, locale: BlogLocale): number {
     .filter(Boolean).length;
   return Math.max(1, Math.round(words / (locale === 'ar' ? 180 : 220)));
 }
+
+// Site-wide and per-page SEO, edited in the admin. Every field is optional: null (or empty) means "use the site's
+// built-in default", so an empty table still gives every page a full set of tags.
+
+export const seoChangeFrequencySchema = z.enum(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']);
+
+export const seoPageSchema = z.object({
+  /** Page key: "home", "destinations", "destination" (template for every destination), "destination:jp" (one destination), "faq", … */
+  key: z.string(),
+  locale: blogLocaleSchema,
+  /** Search title. Destination keys accept {{name}}, {{price}} and {{countries}}. */
+  meta_title: z.string().nullable(),
+  meta_description: z.string().nullable(),
+  keywords: z.array(z.string()),
+  /** Link-preview overrides. Null uses the meta title and description. */
+  og_title: z.string().nullable(),
+  og_description: z.string().nullable(),
+  og_image: z.string().nullable(),
+  og_image_alt: z.string().nullable(),
+  /** Only to point search engines at a different URL. Null makes the page its own canonical. */
+  canonical_url: z.string().nullable(),
+  noindex: z.boolean(),
+  nofollow: z.boolean(),
+  /** 0 to 1. Null uses the default for the page type. */
+  sitemap_priority: z.number().min(0).max(1).nullable(),
+  change_frequency: seoChangeFrequencySchema.nullable(),
+  /** Extra JSON-LD (an object or an array of objects), added next to the structured data the page already emits. */
+  structured_data: z.string().nullable(),
+  updated_at: z.iso.datetime({ offset: true }),
+});
+
+const seoLocaleSiteSchema = z.object({
+  site_name: z.string().nullable(),
+  default_title: z.string().nullable(),
+  default_description: z.string().nullable(),
+  keywords: z.array(z.string()),
+});
+
+export const seoSiteSchema = z.object({
+  /** "%s" is the page title, e.g. "%s · vela". Null uses that. */
+  title_template: z.string().nullable(),
+  default_og_image: z.string().nullable(),
+  /** X handle with the @, for twitter:site. */
+  twitter_site: z.string().nullable(),
+  organization: z.object({
+    name: z.string().nullable(),
+    legal_name: z.string().nullable(),
+    logo: z.string().nullable(),
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
+    /** Social profile URLs for Organization.sameAs. */
+    same_as: z.array(z.string()),
+  }),
+  verification: z.object({
+    google: z.string().nullable(),
+    bing: z.string().nullable(),
+    yandex: z.string().nullable(),
+    pinterest: z.string().nullable(),
+  }),
+  /** False hides the whole site from search engines (staging). */
+  indexing: z.boolean(),
+  /** Extra paths for robots.txt Disallow. */
+  robots_disallow: z.array(z.string()),
+  locales: z.object({ en: seoLocaleSiteSchema, ar: seoLocaleSiteSchema }),
+  updated_at: z.iso.datetime({ offset: true }).nullable(),
+});
+
+/** What the website reads for one language: site settings plus every saved page override, by key. */
+export const seoBundleSchema = z.object({
+  site: seoSiteSchema,
+  pages: z.record(z.string(), seoPageSchema),
+});
+
+export type SeoChangeFrequency = z.infer<typeof seoChangeFrequencySchema>;
+export type SeoPage = z.infer<typeof seoPageSchema>;
+export type SeoSite = z.infer<typeof seoSiteSchema>;
+export type SeoBundle = z.infer<typeof seoBundleSchema>;
+
+export const emptySeoSite = (): SeoSite => ({
+  title_template: null,
+  default_og_image: null,
+  twitter_site: null,
+  organization: { name: null, legal_name: null, logo: null, email: null, phone: null, same_as: [] },
+  verification: { google: null, bing: null, yandex: null, pinterest: null },
+  indexing: true,
+  robots_disallow: [],
+  locales: {
+    en: { site_name: null, default_title: null, default_description: null, keywords: [] },
+    ar: { site_name: null, default_title: null, default_description: null, keywords: [] },
+  },
+  updated_at: null,
+});

@@ -1,6 +1,6 @@
 'use client';
 
-import type { BlogPost } from '@vela/api';
+import type { BlogPost, SeoPage, SeoSite } from '@vela/api';
 import { demoAdmin, DemoError } from './adminMock';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
@@ -68,6 +68,8 @@ export type AdminBlogPost = Omit<BlogPost, 'published_at'> & {
   published_at: string | null;
   created_at: string;
 };
+
+export type AdminSeo = { site: SeoSite; pages: SeoPage[] };
 
 export type BlogState = 'draft' | 'scheduled' | 'published';
 

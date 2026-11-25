@@ -3,6 +3,8 @@ import * as mocks from './mocks';
 import {
   blogPostSchema,
   blogPostSummarySchema,
+  emptySeoSite,
+  seoBundleSchema,
   checkoutSchema,
   couponSchema,
   orderSchema,
@@ -20,6 +22,7 @@ import {
   type BlogLocale,
   type BlogPost,
   type BlogPostSummary,
+  type SeoBundle,
   type Checkout,
   type Coupon,
   type InvoiceLink,
@@ -82,6 +85,8 @@ export type VelaApi = {
   getBlogPosts(locale: BlogLocale): Promise<BlogPostSummary[]>;
   /** One published post. 404 for drafts, scheduled posts and unknown slugs. */
   getBlogPost(locale: BlogLocale, slug: string): Promise<BlogPost>;
+  /** Site SEO settings and page overrides for one language. The mock has none, so every page uses its defaults. */
+  getSeo(locale: BlogLocale): Promise<SeoBundle>;
 };
 
 export type MockScenario = 'default' | 'loading' | 'empty' | 'error' | 'lowData' | 'expired';
@@ -183,6 +188,7 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
     getBlogPosts: (locale) => respond(z.array(blogPostSummarySchema), () => mocks.blogPostsFor(locale), { list: true }),
     getBlogPost: async (locale, slug) =>
       respond(blogPostSchema, () => mocks.blogPostsFor(locale).find((item) => item.slug === slug) ?? notFound('Post')),
+    getSeo: async () => respond(seoBundleSchema, () => ({ site: emptySeoSite(), pages: {} })),
     getTopUpPacks: (iccid) =>
       respond(z.array(topUpPackSchema), () => mocks.topUpPacks.filter((pack) => pack.iccid === iccid), { list: true }),
     getDailyUsage: (iccid) => respond(z.array(dailyUsageSchema), () => mocks.dailyUsage[iccid] ?? [], { list: true }),

@@ -14,6 +14,7 @@ import { blogPath, breadcrumbLd, formatDate, ldJson, loadPost, loadPosts, outlin
 import { loadCatalog, summarizeCountry } from '@/lib/destinations';
 import { format, isLocale, locales, path, type Locale } from '@/lib/i18n';
 import { cn, type } from '@/lib/type';
+import { loadSite } from '@/lib/seo';
 import { getDictionary } from '../../dictionaries';
 
 export const revalidate = 300;
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: PageProps<'/[lang]/blog/[slug
   if (!resolved) return {};
   const { post, locale } = resolved;
   const url = blogPath(locale, post.slug);
-  const alternate = await alternateOf(locale, post.alternate_slug);
+  const [alternate, site] = await Promise.all([alternateOf(locale, post.alternate_slug), loadSite()]);
   const title = post.seo.meta_title ?? post.title;
   const description = post.seo.meta_description ?? post.excerpt;
   const image = socialImage(post);
@@ -61,7 +62,7 @@ export async function generateMetadata({ params }: PageProps<'/[lang]/blog/[slug
         : undefined,
       types: { 'application/rss+xml': [{ url: `${blogPath(locale)}/rss.xml`, title: brandName }] },
     },
-    robots: post.seo.noindex
+    robots: post.seo.noindex || !site.indexing
       ? { index: false, follow: true, googleBot: { index: false, follow: true } }
       : { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
     openGraph: {

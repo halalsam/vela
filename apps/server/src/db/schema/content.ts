@@ -1,4 +1,4 @@
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, jsonb, pgTable, primaryKey, real, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { blogStatus, contentLocale } from './enums';
 
 // Blog posts for the website. One row per language: an English post and its Arabic version are two rows, linked by
@@ -41,3 +41,44 @@ export const blogPost = pgTable(
     index('blog_post_feed_idx').on(table.locale, table.status, table.publishedAt),
   ],
 );
+
+// SEO overrides for website pages, one row per page key and language. A missing row (or a null column) means the
+// website uses its built-in default for that field. Keys: "home", "destinations", "destination" (template for every
+// destination page), "destination:<slug>" (one destination), "blog", "help", "faq", "contact", "terms", …
+export const seoPage = pgTable(
+  'seo_page',
+  {
+    key: text().notNull(),
+    locale: contentLocale().notNull(),
+    metaTitle: text(),
+    metaDescription: text(),
+    keywords: text().array().notNull().default([]),
+    ogTitle: text(),
+    ogDescription: text(),
+    ogImage: text(),
+    ogImageAlt: text(),
+    canonicalUrl: text(),
+    noindex: boolean().notNull().default(false),
+    nofollow: boolean().notNull().default(false),
+    sitemapPriority: real(),
+    changeFrequency: text(),
+    structuredData: text(),
+    updatedBy: text().notNull(),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [primaryKey({ columns: [table.key, table.locale] })],
+);
+
+// Site-wide SEO settings: one row, id "site". The value is validated by the admin route before it is written.
+export const seoSetting = pgTable('seo_setting', {
+  id: text().primaryKey(),
+  value: jsonb().notNull(),
+  updatedBy: text().notNull(),
+  updatedAt: timestamp({ withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

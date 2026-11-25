@@ -1,6 +1,7 @@
 'use client';
 
 import { blogPosts as sampleBlogPosts } from '@vela/api/mocks';
+import { emptySeoSite, type SeoPage, type SeoSite } from '@vela/api';
 import type { AdminBlogPost, AdminCoupon, AdminOrder, AdminOrderRow } from './adminApi';
 
 const HOUR = 3_600_000;
@@ -156,6 +157,9 @@ class DemoError extends Error {
     super(message);
   }
 }
+
+let seoSite: SeoSite = emptySeoSite();
+const seoPages: SeoPage[] = [];
 
 const blog: AdminBlogPost[] = [
   ...sampleBlogPosts.map((post, index) => ({
@@ -316,6 +320,26 @@ export async function demoAdmin(path: string, init: { method?: string; body?: un
     if (method === 'DELETE') {
       blog.splice(blog.indexOf(post), 1);
       return undefined;
+    }
+  }
+  if (url.pathname === '/v1/admin/seo' && method === 'GET') return { site: seoSite, pages: seoPages };
+  if (url.pathname === '/v1/admin/seo/site' && method === 'PUT') {
+    seoSite = { ...(body as unknown as SeoSite), updated_at: new Date().toISOString() };
+    return seoSite;
+  }
+  if (parts[2] === 'seo' && parts[3] === 'pages' && parts[4] && parts[5]) {
+    const key = decodeURIComponent(parts[4]);
+    const locale = parts[5] as 'en' | 'ar';
+    const index = seoPages.findIndex((page) => page.key === key && page.locale === locale);
+    if (method === 'DELETE') {
+      if (index >= 0) seoPages.splice(index, 1);
+      return undefined;
+    }
+    if (method === 'PUT') {
+      const saved = { ...(body as unknown as SeoPage), key, locale, updated_at: new Date().toISOString() };
+      if (index >= 0) seoPages[index] = saved;
+      else seoPages.push(saved);
+      return saved;
     }
   }
   throw new DemoError(404, 'Not available in the demo');

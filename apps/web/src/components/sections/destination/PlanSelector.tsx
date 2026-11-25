@@ -31,38 +31,54 @@ export function PlanSelector({ plans: serverPlans, labels, checkoutBase, source,
   return (
     <div className="flex flex-col gap-5">
       <fieldset className="flex flex-col gap-card-gap">
-        <legend className={cn(type.label, 'mb-4 text-fg-tertiary')}>{labels.plans}</legend>
+        <legend className={cn(type.title, 'mb-3 text-fg')}>{labels.plans}</legend>
         {plans.map((plan) => {
           const checked = plan.id === selected;
+          const features = [plan.is5g ? labels.fiveG : null, plan.hotspot ? labels.hotspot : null].filter(Boolean).join(' · ');
+          // Same card as the app: radio, size and validity, price. Other plans are not dimmed.
           return (
             <label
               key={plan.id}
               className={cn(
-                'flex cursor-pointer items-center gap-4 rounded-card border px-section py-4 transition duration-base ease-vela has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent',
-                checked ? 'border-fg bg-surface-2 shadow-[0_0_32px_rgba(255,255,255,0.08)]' : 'border-line bg-surface-1 hover:border-line-strong',
-                selected && !checked && 'opacity-60 hover:opacity-100',
+                'flex cursor-pointer items-center gap-4 rounded-card p-4 transition-colors duration-base ease-vela has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent',
+                checked
+                  ? 'border-2 border-fg bg-surface-2 p-[15px]'
+                  : 'border border-line border-t-line-highlight bg-surface-1 hover:border-line-strong',
                 press,
               )}
             >
               <input type="radio" name="plan" value={plan.id} checked={checked} onChange={() => setSelected(plan.id)} className="sr-only" />
-              <span className="flex flex-1 flex-col gap-1.5">
-                <span className="flex items-baseline gap-2">
-                  <span dir="ltr" className={type.dataMd}>
+              <span
+                aria-hidden
+                className={cn(
+                  'flex h-6 w-6 shrink-0 items-center justify-center rounded-pill',
+                  checked ? 'bg-fg text-fg-inverse' : 'border-2 border-line-strong',
+                )}
+              >
+                {checked ? (
+                  <svg
+                    viewBox="0 0 12 12"
+                    className="h-3 w-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M2.5 6.5 5 9l4.5-6" />
+                  </svg>
+                ) : null}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span dir="ltr" className={type.dataSm}>
                     {plan.data}
                   </span>
-                  <span className={cn(type.callout, 'text-fg-tertiary')}>{plan.days}</span>
+                  {plan.best ? <Pill tone="accent">{labels.bestValue}</Pill> : null}
                 </span>
-                <span className="flex flex-wrap gap-1.5">
-                  {plan.best ? (
-                    <Pill tone="accent" caps>
-                      {labels.bestValue}
-                    </Pill>
-                  ) : null}
-                  {plan.is5g ? <Pill>{labels.fiveG}</Pill> : null}
-                  {plan.hotspot ? <Pill>{labels.hotspot}</Pill> : null}
-                </span>
+                <span className={cn(type.caption, 'truncate text-fg-tertiary')}>{features ? `${plan.days} · ${features}` : plan.days}</span>
               </span>
-              <span className="flex flex-col items-end gap-0.5">
+              <span className="flex flex-col items-end gap-1">
                 <span dir="ltr" className={type.dataSm}>
                   {plan.price}
                 </span>
@@ -84,7 +100,12 @@ export function PlanSelector({ plans: serverPlans, labels, checkoutBase, source,
           </span>
           <Link
             href={`${checkoutBase}?plan=${current.id}`}
-            className={cn('inline-flex h-button items-center rounded-button bg-fg px-6 text-fg-inverse hover:bg-ivory', type.bodyStrong, focusRing, press)}
+            className={cn(
+              'inline-flex h-button items-center rounded-button bg-fg px-6 text-fg-inverse hover:bg-ivory',
+              type.bodyStrong,
+              focusRing,
+              press,
+            )}
           >
             {labels.continue}
           </Link>

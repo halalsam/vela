@@ -10,11 +10,12 @@ export function Container({ children, className }: { children: ReactNode; classN
   return <div className={cn('mx-auto w-full max-w-6xl px-gutter md:px-8', className)}>{children}</div>;
 }
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'accent';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'accent';
 
 const buttonVariant: Record<ButtonVariant, string> = {
   primary: 'bg-fg text-fg-inverse hover:bg-ivory',
   secondary: 'border border-line bg-surface-2 text-fg hover:border-line-strong',
+  outline: 'border border-line-strong text-fg hover:bg-surface-2',
   ghost: 'text-fg hover:bg-surface-2',
   accent: 'bg-accent text-fg-inverse hover:brightness-110',
 };
@@ -23,7 +24,7 @@ function buttonClass(variant: ButtonVariant, size: 'md' | 'sm', fullWidth?: bool
   return cn(
     'inline-flex items-center justify-center gap-2 whitespace-nowrap disabled:pointer-events-none disabled:opacity-40',
     type.calloutStrong,
-    size === 'md' ? 'h-button rounded-button px-6 text-body rtl:text-body-ar' : 'h-button-compact rounded-pill px-4',
+    size === 'md' ? 'h-button rounded-button px-6 text-body rtl:text-body-ar' : 'h-button-compact rounded-button px-4',
     buttonVariant[variant],
     fullWidth && 'w-full',
     focusRing,
@@ -62,7 +63,7 @@ const pillTone: Record<PillTone, string> = {
 
 export function Pill({ children, tone = 'neutral', caps, className }: { children: ReactNode; tone?: PillTone; caps?: boolean; className?: string }) {
   return (
-    <span className={cn('inline-flex h-7 items-center gap-1.5 rounded-pill px-2.5', caps ? type.labelSm : type.caption, 'font-sans-semibold rtl:font-arabic-semibold', pillTone[tone], className)}>
+    <span className={cn('inline-flex h-6 items-center gap-1.5 rounded-chip px-2', caps ? type.labelSm : type.caption, 'font-sans-semibold rtl:font-arabic-semibold', pillTone[tone], className)}>
       {children}
     </span>
   );
@@ -70,7 +71,7 @@ export function Pill({ children, tone = 'neutral', caps, className }: { children
 
 export function SectionTitle({ children, id, className }: { children: ReactNode; id?: string; className?: string }) {
   return (
-    <h2 id={id} className={cn(type.label, 'text-fg-tertiary', className)}>
+    <h2 id={id} className={cn(type.title, 'text-fg', className)}>
       {children}
     </h2>
   );

@@ -68,7 +68,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
         <NavigationProgress />
         <a
           href="#main"
-          className="sr-only rounded-pill bg-fg px-4 py-2 text-fg-inverse focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50"
+          className="sr-only rounded-button bg-fg px-4 py-2 text-fg-inverse focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50"
         >
           {dict.nav.skip}
         </a>

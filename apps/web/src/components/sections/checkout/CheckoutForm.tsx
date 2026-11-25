@@ -227,7 +227,7 @@ function CheckoutFields({ plan, labels, successBase, live, initialEmail = '' }: 
           <label className="flex items-center justify-between gap-3">
             <span className={cn(type.callout, 'text-fg-secondary')}>{labels.currency}</span>
             <select
-              className={cn(type.callout, 'h-9 rounded-pill border border-line bg-surface-2 px-3 text-fg')}
+              className={cn(type.callout, 'h-9 rounded-button border border-line bg-surface-2 px-3 text-fg')}
               value={currency}
               onChange={(event) => changeCurrency(event.target.value as SellingCurrency)}
             >

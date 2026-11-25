@@ -15,7 +15,7 @@ export function LanguageSwitch({ locale, label }: { locale: Locale; label: strin
       href={href}
       hrefLang={target}
       lang={target}
-      className={cn('rounded-pill px-3 py-2 text-fg-secondary hover:text-fg', type.callout, target === 'ar' ? 'font-arabic' : 'font-sans', focusRing)}
+      className={cn('rounded-button px-3 py-2 text-fg-secondary hover:text-fg', type.callout, target === 'ar' ? 'font-arabic' : 'font-sans', focusRing)}
     >
       {label}
     </Link>

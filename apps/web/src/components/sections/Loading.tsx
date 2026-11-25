@@ -25,7 +25,7 @@ export function PanelSkeleton({ className }: { className?: string }) {
   return (
     <Status className={cn('flex flex-col gap-4', className)}>
       <Block className="h-10 w-2/3 rounded-button" />
-      <Block className="h-5 w-1/2 rounded-pill" />
+      <Block className="h-5 w-1/2 rounded-chip" />
       <Block className="h-48 w-full" />
     </Status>
   );
@@ -36,7 +36,7 @@ export function PageSkeleton() {
     <Container className="py-10 md:py-16">
       <Status className="flex flex-col gap-8">
         <Block className="h-14 w-3/4 max-w-xl rounded-button" />
-        <Block className="h-5 w-1/2 max-w-md rounded-pill" />
+        <Block className="h-5 w-1/2 max-w-md rounded-chip" />
         <div className="grid gap-card-gap sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2, 3, 4, 5].map((key) => (
             <Block key={key} className="h-28" />
@@ -52,13 +52,13 @@ export function DestinationSkeleton() {
     <Container className="pt-8 md:pt-14">
       <Status className="grid gap-12 md:grid-cols-[0.9fr_1.1fr]">
         <div className="flex flex-col gap-6">
-          <Block className="h-5 w-24 rounded-pill" />
+          <Block className="h-5 w-24 rounded-chip" />
           <Block className="h-20 w-28" />
           <Block className="h-16 w-3/4 rounded-button" />
-          <Block className="h-5 w-2/3 rounded-pill" />
+          <Block className="h-5 w-2/3 rounded-chip" />
           <div className="flex gap-2">
             {[0, 1, 2].map((key) => (
-              <Block key={key} className="h-7 w-20 rounded-pill" />
+              <Block key={key} className="h-7 w-20 rounded-chip" />
             ))}
           </div>
         </div>
@@ -98,7 +98,7 @@ export function SuccessSkeleton() {
         <Block className="mx-auto h-64 w-64 md:mx-0" />
         <div className="flex flex-col gap-6">
           <Block className="h-14 w-3/4 rounded-button" />
-          <Block className="h-5 w-1/2 rounded-pill" />
+          <Block className="h-5 w-1/2 rounded-chip" />
           <Block className="h-button w-48 rounded-button" />
           <Block className="h-32" />
         </div>

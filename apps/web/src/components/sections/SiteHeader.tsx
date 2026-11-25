@@ -6,7 +6,7 @@ import { cn, type } from '@/lib/type';
 import { LanguageSwitch } from './LanguageSwitch';
 
 export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const link = cn('hidden rounded-pill px-3 py-2 text-fg-secondary transition-colors hover:text-fg md:inline-flex', type.callout, focusRing);
+  const link = cn('hidden rounded-button px-3 py-2 text-fg-secondary transition-colors hover:text-fg md:inline-flex', type.callout, focusRing);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur-xl">
       <Container className="flex h-16 items-center gap-2">
@@ -14,7 +14,7 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
           <VelaLockup size={22} clearSpace={false} className="text-fg" title="vela" />
         </Link>
         <nav aria-label="Main" className="flex items-center gap-1">
-          <Link href={`${path(locale)}#destinations`} className={link}>
+          <Link href={path(locale, '/destinations')} className={link}>
             {dict.nav.destinations}
           </Link>
           <Link href={`${path(locale)}#how`} className={link}>

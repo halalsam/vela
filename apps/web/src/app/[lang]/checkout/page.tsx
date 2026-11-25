@@ -24,7 +24,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps<'
       <Container className="flex flex-col items-start gap-6 py-20">
         <h1 className={type.displayXl}>{dict.checkout.title}</h1>
         <p className={cn(type.body, 'text-fg-secondary')}>{dict.checkout.notFound}</p>
-        <ButtonLink href={`/${lang}#destinations`}>{dict.nav.destinations}</ButtonLink>
+        <ButtonLink href={`/${lang}/destinations`}>{dict.nav.destinations}</ButtonLink>
       </Container>
     );
   }

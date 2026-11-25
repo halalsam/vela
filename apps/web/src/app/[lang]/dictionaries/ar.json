@@ -49,7 +49,12 @@
     "appBody": "تابع بياناتك وأعد الشحن بنقرة واحصل على تنبيه قبل النفاد.",
     "ios": "حمّله على iPhone",
     "android": "حمّله على Android",
-    "appSoon": "روابط التطبيق تُفعَّل عند الإطلاق."
+    "appSoon": "روابط التطبيق تُفعَّل عند الإطلاق.",
+    "seeAll": "كل الوجهات",
+    "faqMore": "كل الأسئلة",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "copyAria": "انسخ الرمز {{code}}"
   },
   "destination": {
     "back": "كل الوجهات",
@@ -205,18 +210,64 @@
     "topUpRefunded": "تعذّرت إضافة البيانات، لذا نُعيد إليك المبلغ كاملًا.",
     "topUpFailed": "تعذّرت إعادة الشحن. حاول مرة أخرى.",
     "topUpNone": "لا تتوفر باقات شحن لهذه الشريحة.",
-    "topUpDescription": "شحن {{data}}"
+    "topUpDescription": "شحن {{data}}",
+    "unitLeft": "{{unit}} متبقية",
+    "unitReady": "{{unit}} جاهزة",
+    "ofTotal": "من {{total}}",
+    "expires": "تنتهي {{date}}",
+    "countdown": "متبقي {{time}}",
+    "ready": "جاهزة",
+    "startsOnLanding": "تبدأ تلقائياً عند وصولك",
+    "dayUnit": "ي",
+    "hourUnit": "س",
+    "details": "التفاصيل"
   },
   "footer": {
     "tagline": "تصل وأنت متصل.",
     "prices": "تشمل الأسعار بالروبية ضريبة السلع والخدمات. يمكنك الدفع أيضًا بالدرهم والريال واليورو والدولار.",
     "rights": "© {{year}} vela",
     "privacy": "الخصوصية",
-    "terms": "الشروط"
+    "terms": "الشروط",
+    "help": "مركز المساعدة",
+    "faq": "الأسئلة الشائعة",
+    "refunds": "الاسترداد",
+    "delivery": "تسليم eSIM",
+    "cookies": "ملفات تعريف الارتباط",
+    "contact": "تواصل معنا",
+    "product": "vela",
+    "support": "الدعم",
+    "legal": "قانوني",
+    "onThisPage": "في هذه الصفحة",
+    "policies": "السياسات",
+    "emailUs": "راسلنا",
+    "contactPage": "صفحة التواصل",
+    "readRefunds": "سياسة الاسترداد"
   },
   "notFound": {
     "title": "الصفحة غير موجودة.",
     "body": "هذه الصفحة غير موجودة.",
     "home": "العودة إلى الرئيسية"
+  },
+  "destinations": {
+    "title": "كل الوجهات.",
+    "metaTitle": "كل الوجهات",
+    "metaDescription": "باقات بيانات eSIM للسفر لكل دولة ومنطقة تغطيها vela، مع الأسعار لكل وجهة.",
+    "intro": "{{countries}} دولة و{{regions}} باقات إقليمية. بيانات فقط، جاهزة قبل سفرك.",
+    "search": "ابحث عن دولة أو منطقة",
+    "filterLabel": "التصفية حسب المنطقة",
+    "all": "الكل",
+    "asia": "آسيا",
+    "europe": "أوروبا",
+    "gulf": "الخليج",
+    "americas": "الأمريكتان",
+    "africa": "أفريقيا",
+    "oceania": "أوقيانوسيا",
+    "regions": "الباقات الإقليمية",
+    "countries": "الدول",
+    "jumpLabel": "انتقل إلى الحرف",
+    "results": "{{count}} وجهة",
+    "noResultsTitle": "لا نتائج.",
+    "noResultsBody": "جرّب تهجئة أخرى أو امسح عوامل التصفية.",
+    "clear": "مسح التصفية"
   }
 }

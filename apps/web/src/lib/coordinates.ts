@@ -1,0 +1,26 @@
+// Rough geographic centre [latitude, longitude] of each country we sell, for pinning it on the globe.
+// Island and archipelago countries use their main population centre. Add a row when a country joins the catalog.
+export const countryCoordinates: Record<string, readonly [number, number]> = {
+  AE: [24.4, 54.4],
+  BH: [26.07, 50.55],
+  CH: [46.8, 8.2],
+  DE: [51.2, 10.4],
+  EG: [26.8, 30.8],
+  ES: [40.4, -3.7],
+  FR: [46.6, 2.4],
+  GB: [54.0, -2.0],
+  ID: [-2.5, 118.0],
+  IT: [42.8, 12.5],
+  JP: [36.2, 138.25],
+  LK: [7.87, 80.77],
+  MV: [3.2, 73.22],
+  MY: [4.2, 101.97],
+  OM: [21.0, 57.0],
+  QA: [25.3, 51.2],
+  SA: [24.0, 45.0],
+  SG: [1.35, 103.82],
+  TH: [13.75, 100.5],
+  TR: [39.0, 35.0],
+  US: [39.8, -98.6],
+  VN: [16.0, 107.8],
+};

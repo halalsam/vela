@@ -14,9 +14,11 @@ type Props = {
   label: string;
   placeholder: string;
   noResults: string;
+  /** `lg` is the taller field used in the home hero. */
+  size?: 'md' | 'lg';
 };
 
-export function DestinationSearch({ locale, destinations, label, placeholder, noResults }: Props) {
+export function DestinationSearch({ locale, destinations, label, placeholder, noResults, size = 'md' }: Props) {
   const [query, setQuery] = useState('');
   const listId = useId();
   const needle = query.trim().toLocaleLowerCase();
@@ -35,7 +37,12 @@ export function DestinationSearch({ locale, destinations, label, placeholder, no
       <label htmlFor={`${listId}-input`} className="sr-only">
         {label}
       </label>
-      <div className="flex h-14 items-center gap-3 rounded-pill border border-line bg-surface-1 px-5 transition-colors focus-within:border-fg-tertiary">
+      <div
+        className={cn(
+          'flex items-center gap-3 rounded-button border border-line bg-surface-1 px-5 transition-colors focus-within:border-fg-tertiary',
+          size === 'lg' ? 'h-16 border-t-line-highlight shadow-[0_20px_50px_-24px_rgba(0,0,0,0.9)] focus-within:border-accent/60' : 'h-14',
+        )}
+      >
         <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-fg-tertiary stroke-2">
           <circle cx="11" cy="11" r="7" />
           <path d="M20 20l-4-4" strokeLinecap="round" />
@@ -55,7 +62,15 @@ export function DestinationSearch({ locale, destinations, label, placeholder, no
         />
       </div>
       {needle ? (
-        <ul id={listId} role="listbox" className="absolute inset-x-0 top-16 z-30 overflow-hidden rounded-card border border-line bg-surface-2 shadow-2xl motion-safe:animate-fade">
+        <ul
+          id={listId}
+          role="listbox"
+          className={cn(
+            'absolute inset-x-0 z-30',
+            size === 'lg' ? 'top-[4.5rem]' : 'top-16',
+            'overflow-hidden rounded-card border border-line bg-surface-2 shadow-2xl motion-safe:animate-fade',
+          )}
+        >
           {results.length === 0 ? (
             <li className={cn('px-5 py-4 text-fg-secondary', type.callout)}>{noResults}</li>
           ) : (

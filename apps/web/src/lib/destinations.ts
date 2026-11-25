@@ -10,6 +10,8 @@ export type DestinationSummary = {
   codes: string[];
   from: string;
   isRegion: boolean;
+  /** Catalog region for countries (asia, europe, gulf, americas, africa, oceania); null for regional plans. */
+  continent: Country['region'] | null;
 };
 
 export async function loadCatalog() {
@@ -25,6 +27,7 @@ export function summarizeCountry(country: Country, locale: Locale): DestinationS
     codes: [country.code],
     from: formatPrice(country.from_price, country.currency),
     isRegion: false,
+    continent: country.region,
   };
 }
 
@@ -36,6 +39,7 @@ export function summarizeRegion(region: Region, locale: Locale): DestinationSumm
     codes: region.country_codes,
     from: formatPrice(region.from_price, region.currency),
     isRegion: true,
+    continent: null,
   };
 }
 

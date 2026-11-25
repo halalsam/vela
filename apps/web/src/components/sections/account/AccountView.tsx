@@ -2,11 +2,10 @@
 
 import { PanelSkeleton } from '@/components/sections/Loading';
 import type { Esim } from '@vela/api';
-import { formatData, formatShortDate, isLowData, remainingFraction } from '@vela/utils';
+import { countdownParts, dataParts, formatData, formatShortDate, isEndingSoon, isLowData, remainingFraction } from '@vela/utils';
 import { useEffect, useState, type FormEvent } from 'react';
-import { Flag } from '@/components/esim';
-import { UsageRing } from '@/components/esim';
-import { Button, ButtonLink, Card, Field, Pill } from '@/components/ui';
+import { TravelCard, type TravelKind } from '@/components/esim';
+import { Button, ButtonLink, Card, Field } from '@/components/ui';
 import { browserApi } from '@/lib/browserApi';
 import { format, type Dictionary, type Locale } from '@/lib/i18n';
 import { authClient } from '@/lib/authClient';
@@ -38,16 +37,7 @@ function LiveAccount({ locale, labels, names }: { locale: Locale; labels: Dictio
   if (!session.data) return <LiveSignIn labels={labels} />;
   const user = session.data.user as { email: string; phoneNumber?: string | null };
   const identity = user.email.endsWith('@phone.vela.invalid') ? (user.phoneNumber ?? '') : user.email;
-  return (
-    <SignedInAccount
-      locale={locale}
-      labels={labels}
-      names={names}
-      identity={identity}
-      live
-      onSignOut={() => void client.signOut()}
-    />
-  );
+  return <SignedInAccount locale={locale} labels={labels} names={names} identity={identity} live onSignOut={() => void client.signOut()} />;
 }
 
 function DemoAccount({ locale, labels, names }: { locale: Locale; labels: Dictionary['account']; names: Names }) {
@@ -72,7 +62,14 @@ function DemoAccount({ locale, labels, names }: { locale: Locale; labels: Dictio
       <form onSubmit={signIn} className="flex max-w-md flex-col gap-6">
         <h1 className={type.hero}>{labels.signInTitle}</h1>
         <p className={cn(type.body, 'text-fg-secondary')}>{labels.signInBody}</p>
-        <Field label={labels.email} name="email" type="email" autoComplete="email" value={draft} onChange={(event) => setDraft(event.target.value)} />
+        <Field
+          label={labels.email}
+          name="email"
+          type="email"
+          autoComplete="email"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+        />
         <Button type="submit" disabled={!draft.includes('@')}>
           {labels.send}
         </Button>
@@ -162,7 +159,7 @@ function SignedInAccount({ locale, labels, names, identity, live = false, onSign
         <Card className="flex flex-col items-start gap-4 p-8">
           <h3 className={type.displayMd}>{labels.emptyTitle}</h3>
           <p className={cn(type.callout, 'text-fg-secondary')}>{labels.emptyBody}</p>
-          <ButtonLink href={`/${locale}#destinations`}>{labels.browse}</ButtonLink>
+          <ButtonLink href={`/${locale}/destinations`}>{labels.browse}</ButtonLink>
         </Card>
       ) : (
         <ul className="grid gap-card-gap md:grid-cols-2">
@@ -191,44 +188,40 @@ function EsimCard({ esim, locale, labels, names, live, onChanged }: EsimCardProp
   const name = (esim.country_codes.length > 1 ? names[regionId] : names[code]) ?? code;
   const ended = esim.status === 'expired' || esim.status === 'depleted';
   const low = esim.status === 'active' && isLowData(esim.data_used_mb, esim.data_total_mb);
-  const status = ended
-    ? { label: labels.expired, tone: 'danger' as const }
-    : esim.status === 'not_started'
-      ? { label: labels.notStarted, tone: 'neutral' as const }
-      : low
-        ? { label: labels.low, tone: 'warning' as const }
-        : { label: labels.active, tone: 'success' as const };
-  const left = formatData(Math.max(0, esim.data_total_mb - esim.data_used_mb));
+  const kind: TravelKind = ended ? 'ended' : esim.status === 'not_started' ? 'ready' : low ? 'low' : 'active';
+  const status = { ended: labels.expired, ready: labels.ready, low: labels.low, active: labels.active }[kind];
+  const remaining = Math.max(0, esim.data_total_mb - esim.data_used_mb);
+  const amount = dataParts(kind === 'ready' ? esim.data_total_mb : remaining);
   const total = formatData(esim.data_total_mb);
+  const parts = esim.expires_at ? countdownParts(esim.expires_at) : null;
+  const countdown =
+    parts && !parts.expired
+      ? format(labels.countdown, { time: `${parts.days > 0 ? `${parts.days}${labels.dayUnit} ` : ''}${parts.hours}${labels.hourUnit}` })
+      : null;
   return (
-    <li>
-      <Card className={cn('flex h-full flex-col gap-5 p-section motion-safe:animate-rise', ended && 'opacity-70')}>
-        <div className="flex items-center gap-3">
-          <Flag code={code} size="lg" />
-          <div className="flex-1">
-            <p className={type.title}>
-              {name} · {total}
-            </p>
-            <p className={cn(type.caption, 'text-fg-tertiary')}>{esim.network}</p>
-          </div>
-          <Pill tone={status.tone}>{status.label}</Pill>
-        </div>
-        <div className="flex items-center gap-4">
-          <UsageRing
-            fraction={ended ? 0 : esim.status === 'not_started' ? 1 : remainingFraction(esim.data_used_mb, esim.data_total_mb)}
-            tone={ended ? 'danger' : esim.status === 'not_started' ? 'muted' : low ? 'warning' : 'accent'}
-            label={format(labels.left, { left, total })}
-          />
-          <div className="flex flex-col gap-1">
-            <p className={type.bodyStrong}>{format(labels.left, { left, total })}</p>
-            {esim.expires_at ? (
-              <p className={cn(type.caption, 'text-fg-tertiary')}>{format(labels.validUntil, { date: formatShortDate(esim.expires_at, locale) })}</p>
-            ) : null}
-            {!ended && !live ? <p className={cn(type.caption, 'text-accent')}>{labels.topUpInApp}</p> : null}
-          </div>
-        </div>
-        {live && esim.status !== 'expired' ? <TopUpPanel iccid={esim.iccid} labels={labels} onToppedUp={onChanged} /> : null}
-      </Card>
+    <li className="motion-safe:animate-rise">
+      <TravelCard
+        className="h-full"
+        code={esim.country_codes.length > 1 ? '' : code}
+        name={name}
+        subtitle={[total, esim.network].filter(Boolean).join(' · ')}
+        kind={kind}
+        status={status}
+        amount={amount}
+        amountLabel={format(kind === 'ready' ? labels.unitReady : labels.unitLeft, { unit: amount.unit })}
+        totalLabel={kind === 'ready' ? labels.notStarted : format(labels.ofTotal, { total })}
+        fraction={remainingFraction(esim.data_used_mb, esim.data_total_mb)}
+        expires={esim.expires_at ? format(labels.expires, { date: formatShortDate(esim.expires_at, locale) }) : null}
+        countdown={countdown}
+        urgent={parts ? isEndingSoon(parts) : false}
+        readyNote={labels.startsOnLanding}
+      >
+        {live && esim.status !== 'expired' ? (
+          <TopUpPanel iccid={esim.iccid} labels={labels} onToppedUp={onChanged} />
+        ) : !ended && !live ? (
+          <p className={cn(type.caption, 'text-accent')}>{labels.topUpInApp}</p>
+        ) : null}
+      </TravelCard>
     </li>
   );
 }

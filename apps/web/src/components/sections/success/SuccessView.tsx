@@ -122,7 +122,7 @@ export function SuccessView({ orderId, locale, labels }: { orderId: string; loca
                 aria-selected={platform === key}
                 onClick={() => setPlatform(key)}
                 className={cn(
-                  'h-9 rounded-pill border px-4',
+                  'h-9 rounded-button border px-4',
                   type.callout,
                   platform === key ? 'border-fg bg-surface-3 text-fg' : 'border-line text-fg-secondary',
                   focusRing,

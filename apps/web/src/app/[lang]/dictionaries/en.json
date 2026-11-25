@@ -16,7 +16,7 @@
   },
   "hero": {
     "title": "land connected.",
-    "body": "Travel data plans you buy before you fly. Your eSIM switches on the moment you land. No SIM swap, no roaming bill.",
+    "body": "Travel data you buy before you fly. Your eSIM switches on when you land. No SIM swap, no roaming bill.",
     "searchLabel": "Where are you going?",
     "searchPlaceholder": "Country or region",
     "noResults": "Nothing found. Try a country or a region.",
@@ -49,7 +49,12 @@
     "appBody": "Watch your data, top up in one tap and get a nudge before you run low.",
     "ios": "Download for iPhone",
     "android": "Get it for Android",
-    "appSoon": "App links go live at launch."
+    "appSoon": "App links go live at launch.",
+    "seeAll": "See all destinations",
+    "faqMore": "All questions",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyAria": "Copy code {{code}}"
   },
   "destination": {
     "back": "All destinations",
@@ -197,18 +202,64 @@
     "topUpRefunded": "We couldn't add the data, so we're refunding you in full.",
     "topUpFailed": "Couldn't top up. Try again.",
     "topUpNone": "No top-ups are available for this eSIM.",
-    "topUpDescription": "{{data}} top-up"
+    "topUpDescription": "{{data}} top-up",
+    "unitLeft": "{{unit}} left",
+    "unitReady": "{{unit}} ready",
+    "ofTotal": "of {{total}}",
+    "expires": "Expires {{date}}",
+    "countdown": "{{time}} left",
+    "ready": "Ready",
+    "startsOnLanding": "Starts automatically when you land",
+    "dayUnit": "d",
+    "hourUnit": "h",
+    "details": "Details"
   },
   "footer": {
     "tagline": "land connected.",
     "prices": "Rupee prices include GST. Checkout also takes AED, SAR, EUR and USD.",
     "rights": "© {{year}} vela",
     "privacy": "Privacy",
-    "terms": "Terms"
+    "terms": "Terms",
+    "help": "Help centre",
+    "faq": "FAQ",
+    "refunds": "Refunds",
+    "delivery": "eSIM delivery",
+    "cookies": "Cookies",
+    "contact": "Contact",
+    "product": "vela",
+    "support": "Support",
+    "legal": "Legal",
+    "onThisPage": "On this page",
+    "policies": "Policies",
+    "emailUs": "Email us",
+    "contactPage": "Contact page",
+    "readRefunds": "Refund policy"
   },
   "notFound": {
     "title": "lost at sea.",
     "body": "This page doesn't exist.",
     "home": "Back to home"
+  },
+  "destinations": {
+    "title": "every destination.",
+    "metaTitle": "All destinations",
+    "metaDescription": "Travel eSIM data plans for every country and region vela covers, with prices from each destination.",
+    "intro": "{{countries}} countries and {{regions}} regional plans. Data only, ready before you fly.",
+    "search": "Search countries and regions",
+    "filterLabel": "Filter by region",
+    "all": "All",
+    "asia": "Asia",
+    "europe": "Europe",
+    "gulf": "Gulf",
+    "americas": "Americas",
+    "africa": "Africa",
+    "oceania": "Oceania",
+    "regions": "Regional plans",
+    "countries": "Countries",
+    "jumpLabel": "Jump to letter",
+    "results": "{{count}} destinations",
+    "noResultsTitle": "nothing found.",
+    "noResultsBody": "Try another spelling, or clear the filters.",
+    "clear": "Clear filters"
   }
 }

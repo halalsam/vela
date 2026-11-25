@@ -140,3 +140,14 @@
     }
   }
 }
+
+/* Sections rise in as they enter the viewport. Scroll-driven, so no JS; browsers without view timelines show them static. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: vela-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}

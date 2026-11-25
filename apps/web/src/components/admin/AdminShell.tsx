@@ -54,7 +54,7 @@ function Frame({ role, demo = false, children }: { role: StaffRole; demo?: boole
                   key={link.href}
                   href={link.href}
                   aria-current={active ? 'page' : undefined}
-                  className={cn(type.calloutStrong, 'rounded-pill px-4 py-2', active ? 'bg-surface-2 text-fg' : 'text-fg-secondary hover:text-fg')}
+                  className={cn(type.calloutStrong, 'rounded-button px-4 py-2', active ? 'bg-surface-2 text-fg' : 'text-fg-secondary hover:text-fg')}
                 >
                   {link.label}
                 </Link>

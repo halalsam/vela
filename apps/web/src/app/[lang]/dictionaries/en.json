@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "vela — land connected.",
+    "title": "vela · land connected.",
     "description": "Travel eSIM data plans for India and the Gulf. Buy before you fly, land connected, top up anytime.",
-    "destinationTitle": "{{name}} eSIM — data plans from {{price}}",
+    "destinationTitle": "{{name}} eSIM data plans from {{price}}",
     "destinationDescription": "Prepaid {{name}} eSIM data plans with instant QR delivery. Keep your number for calls.",
     "blogTitle": "Travel eSIM guides and tips",
     "blogDescription": "How to set up a travel eSIM, what data really costs abroad, and where to go next. Practical guides from the vela travel desk."

@@ -926,7 +926,7 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
               <p className={cn(type.caption, 'text-fg-tertiary')}>Used by any page whose own text is missing, and by the site name in search results and link cards.</p>
               <div className="grid gap-4 md:grid-cols-2" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
                 <TextField label="Site name" value={text(form.locales[locale].site_name)} onChange={setLocal(locale, 'site_name')} placeholder="vela" />
-                <TextField label="Default title" value={text(form.locales[locale].default_title)} onChange={setLocal(locale, 'default_title')} placeholder={locale === 'en' ? 'vela — land connected.' : ''} />
+                <TextField label="Default title" value={text(form.locales[locale].default_title)} onChange={setLocal(locale, 'default_title')} placeholder={locale === 'en' ? 'vela · land connected.' : ''} />
                 <label className="flex flex-col gap-2 md:col-span-2">
                   <Label count={[text(form.locales[locale].default_description).length, DESCRIPTION_RANGE[1]]}>Default description</Label>
                   <textarea value={text(form.locales[locale].default_description)} onChange={setLocal(locale, 'default_description')} rows={3} className={cn(input, 'h-auto min-h-[96px] py-3')} />
@@ -1063,15 +1063,15 @@ function Inspector({ initialPath }: { initialPath?: string }) {
             <Panel title="What search engines read">
               <dl className={cn(type.callout, 'grid gap-x-6 gap-y-3 md:grid-cols-[160px_minmax(0,1fr)]')}>
                 <Row term="URL" value={result.url} />
-                <Row term="Title" value={result.title || '—'} />
-                <Row term="Description" value={result.description ?? '—'} />
-                <Row term="Canonical" value={result.canonical ?? '—'} />
+                <Row term="Title" value={result.title || 'Not set'} />
+                <Row term="Description" value={result.description ?? 'Not set'} />
+                <Row term="Canonical" value={result.canonical ?? 'Not set'} />
                 <Row term="Robots" value={result.robots ?? 'index, follow'} />
-                <Row term="Languages" value={result.hreflang.map((item) => `${item.lang} → ${item.href}`).join('\n') || '—'} />
-                <Row term="Social title" value={result.og.title ?? '—'} />
-                <Row term="Social image" value={result.og.image ?? '—'} />
-                <Row term="Social type" value={[result.og.type, result.twitter.card, result.twitter.site].filter(Boolean).join(' · ') || '—'} />
-                <Row term="Structured data" value={result.jsonLd.map((item) => (item.valid ? item.types.join(', ') : 'invalid JSON')).join('\n') || '—'} />
+                <Row term="Languages" value={result.hreflang.map((item) => `${item.lang} → ${item.href}`).join('\n') || 'Not set'} />
+                <Row term="Social title" value={result.og.title ?? 'Not set'} />
+                <Row term="Social image" value={result.og.image ?? 'Not set'} />
+                <Row term="Social type" value={[result.og.type, result.twitter.card, result.twitter.site].filter(Boolean).join(' · ') || 'Not set'} />
+                <Row term="Structured data" value={result.jsonLd.map((item) => (item.valid ? item.types.join(', ') : 'invalid JSON')).join('\n') || 'Not set'} />
               </dl>
             </Panel>
             <Panel title="Headings">

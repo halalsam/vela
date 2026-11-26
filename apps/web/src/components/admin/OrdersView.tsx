@@ -97,10 +97,10 @@ export function OrdersView() {
                       {row.number}
                     </Link>
                   </td>
-                  <td className={cn(type.callout, 'px-4 py-3 text-fg-secondary')}>{row.customer.name ?? row.customer.phone ?? row.customer.email ?? '—'}</td>
+                  <td className={cn(type.callout, 'px-4 py-3 text-fg-secondary')}>{row.customer.name ?? row.customer.phone ?? row.customer.email ?? 'Unknown'}</td>
                   <td className={cn(type.callout, 'px-4 py-3 text-fg-secondary')}>
                     {row.kind === 'top_up' ? 'Top-up · ' : ''}
-                    {row.plan_id ?? '—'}
+                    {row.plan_id ?? 'None'}
                   </td>
                   <td className={cn(type.callout, 'px-4 py-3 tabular-nums')}>{money(row.total, row.currency)}</td>
                   <td className="px-4 py-3">

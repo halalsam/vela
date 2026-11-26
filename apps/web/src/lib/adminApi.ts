@@ -118,7 +118,7 @@ export function money(amount: number, currency: string): string {
 }
 
 export function when(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  return iso ? new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Not yet';
 }
 
 export const statusTone: Record<string, 'neutral' | 'accent' | 'success' | 'warning' | 'danger'> = {

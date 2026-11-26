@@ -107,9 +107,9 @@ export function OrderView({ id }: { id: string }) {
         </Section>
         <Section title="Customer">
           <dl>
-            <Row label="Name">{order.customer.name ?? '—'}</Row>
-            <Row label="Phone">{order.customer.phone ?? '—'}</Row>
-            <Row label="Email">{order.customer.email ?? '—'}</Row>
+            <Row label="Name">{order.customer.name ?? 'Not given'}</Row>
+            <Row label="Phone">{order.customer.phone ?? 'Not given'}</Row>
+            <Row label="Email">{order.customer.email ?? 'Not given'}</Row>
             <Row label="User ID">
               <span className={type.caption}>{order.customer.user_id}</span>
             </Row>

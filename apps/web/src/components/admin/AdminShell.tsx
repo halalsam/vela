@@ -46,7 +46,7 @@ function Frame({ role, demo = false, children }: { role: StaffRole; demo?: boole
   return (
     <RoleContext.Provider value={role}>
       <header className="border-b border-line">
-        <Container className="flex h-16 items-center gap-6">
+        <Container className="flex h-16 max-w-[1600px] items-center gap-6">
           <span className={type.title}>vela admin</span>
           <nav className="flex gap-1" aria-label="Admin">
             {links.map((link) => {
@@ -68,10 +68,10 @@ function Frame({ role, demo = false, children }: { role: StaffRole; demo?: boole
       </header>
       {demo ? (
         <div className="border-b border-line bg-accent-tint">
-          <Container className={cn(type.caption, 'py-2 text-accent')}>Demo data. Nothing here is real, and changes reset when you reload.</Container>
+          <Container className={cn(type.caption, 'max-w-[1600px] py-2 text-accent')}>Demo data. Nothing here is real, and changes reset when you reload.</Container>
         </div>
       ) : null}
-      <Container className="flex flex-col gap-8 py-10">{children}</Container>
+      <Container className="flex max-w-[1600px] flex-col gap-8 py-10">{children}</Container>
     </RoleContext.Provider>
   );
 }

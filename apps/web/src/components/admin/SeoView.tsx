@@ -540,8 +540,8 @@ function PageEditor({
         {notice ? <p className={cn(type.callout, 'rounded-button bg-success-tint px-4 py-3 text-success')}>{notice}</p> : null}
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="flex min-w-0 flex-col gap-6 2xl:order-first">
           <Panel title="Previews">
             <SearchPreview resolved={resolved} path={livePath} rtl={rtl} device={device} setDevice={setDevice} siteName={resolved.siteName} />
             <SocialPreviews resolved={resolved} rtl={rtl} />
@@ -563,7 +563,7 @@ function PageEditor({
               <Label count={[resolved.description.length, DESCRIPTION_RANGE[1]]} hint="What the visitor gets from this page, in one or two sentences.">
                 Meta description
               </Label>
-              <textarea value={form.meta_description} onChange={set('meta_description')} rows={3} maxLength={320} dir={rtl ? 'rtl' : 'ltr'} placeholder={rawPlaceholder(c, 'meta_description', fallback.description)} className={cn(input, 'h-auto py-3')} />
+              <textarea value={form.meta_description} onChange={set('meta_description')} rows={3} maxLength={320} dir={rtl ? 'rtl' : 'ltr'} placeholder={rawPlaceholder(c, 'meta_description', fallback.description)} className={cn(input, 'h-auto min-h-[96px] py-3')} />
             </label>
             <TextField label="Keywords" value={form.keywords} onChange={set('keywords')} placeholder={fallback.keywords.join(', ') || 'japan esim, travel esim japan'} hint="Comma separated. The first is the focus keyword for the checks." />
           </Panel>
@@ -574,9 +574,11 @@ function PageEditor({
               <TextField label="Social image URL" value={form.og_image} onChange={set('og_image')} placeholder={fallback.image} hint="1200×630 JPG or PNG." />
               <label className="flex flex-col gap-2 md:col-span-2">
                 <Label hint="Empty uses the meta description.">Social description</Label>
-                <textarea value={form.og_description} onChange={set('og_description')} rows={2} maxLength={320} dir={rtl ? 'rtl' : 'ltr'} placeholder={fallback.ogDescription} className={cn(input, 'h-auto py-3')} />
+                <textarea value={form.og_description} onChange={set('og_description')} rows={3} maxLength={320} dir={rtl ? 'rtl' : 'ltr'} placeholder={fallback.ogDescription} className={cn(input, 'h-auto min-h-[96px] py-3')} />
               </label>
-              <TextField label="Social image alt text" value={form.og_image_alt} onChange={set('og_image_alt')} placeholder={fallback.imageAlt} />
+              <div className="md:col-span-2">
+                <TextField label="Social image alt text" value={form.og_image_alt} onChange={set('og_image_alt')} placeholder={fallback.imageAlt} />
+              </div>
             </div>
           </Panel>
 
@@ -584,8 +586,10 @@ function PageEditor({
             <div className="grid gap-4 md:grid-cols-2">
               <Toggle checked={form.noindex} onChange={set('noindex')} title="Hide from search" body="Adds noindex and leaves the page out of the sitemap." />
               <Toggle checked={form.nofollow} onChange={set('nofollow')} title="Don’t follow links" body="Adds nofollow. Rarely needed." />
-              <TextField label="Canonical URL" value={form.canonical_url} onChange={set('canonical_url')} placeholder={`${siteUrl}${livePath}`} hint="Only to send search engines to a different URL." />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="md:col-span-2">
+                <TextField label="Canonical URL" value={form.canonical_url} onChange={set('canonical_url')} placeholder={`${siteUrl}${livePath}`} hint="Only to send search engines to a different URL." />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 md:col-span-2">
                 <label className="flex flex-col gap-2">
                   <Label hint={`Default ${c.def?.priority ?? 0.5}`}>Sitemap priority</Label>
                   <select value={form.sitemap_priority} onChange={set('sitemap_priority')} className={input}>
@@ -621,14 +625,14 @@ function PageEditor({
                 rows={6}
                 spellCheck={false}
                 placeholder={'{\n  "@type": "Service",\n  "name": "Travel eSIM"\n}'}
-                className={cn(input, 'h-auto py-3 font-mono text-[13px] leading-5')}
+                className={cn(input, 'h-auto min-h-[160px] py-3 font-mono text-[13px] leading-5')}
                 dir="ltr"
               />
             </label>
           </Panel>
         </div>
 
-        <aside className="flex flex-col gap-6 xl:sticky xl:top-6">
+        <aside className="grid items-start gap-6 md:grid-cols-2 2xl:order-last 2xl:sticky 2xl:top-6 2xl:grid-cols-1">
           <Panel title="SEO checks" aside={<ScoreBadge score={score} />}>
             <ScoreBar score={score} />
             <CheckList checks={checks} />
@@ -873,8 +877,8 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
         ) : null}
         {notice ? <p className={cn(type.callout, 'rounded-button bg-success-tint px-4 py-3 text-success')}>{notice}</p> : null}
       </div>
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="flex min-w-0 flex-col gap-6 2xl:order-first">
           <Panel title="Search engines">
             <label className={cn('flex items-start gap-3 rounded-button border px-4 py-3', form.indexing ? 'border-line bg-surface-1' : 'border-danger/50 bg-danger-tint')}>
               <input type="checkbox" checked={form.indexing} onChange={(event) => setForm({ ...form, indexing: event.target.checked })} className="mt-1 h-4 w-4 accent-[#C8B285]" />
@@ -889,7 +893,7 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
               <TextField label="X handle" value={text(form.twitter_site)} onChange={setTop('twitter_site')} placeholder="@vela" />
               <label className="flex flex-col gap-2">
                 <Label hint="One path per line, e.g. /en/internal. Checkout, account, success and admin are always blocked.">Extra robots.txt blocks</Label>
-                <textarea value={disallow} onChange={(event) => setDisallow(event.target.value)} rows={3} className={cn(input, 'h-auto py-3 font-mono text-[13px]')} dir="ltr" />
+                <textarea value={disallow} onChange={(event) => setDisallow(event.target.value)} rows={3} className={cn(input, 'h-auto min-h-[96px] py-3 font-mono text-[13px]')} dir="ltr" />
               </label>
             </div>
           </Panel>
@@ -912,7 +916,7 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
               <TextField label="Support phone" value={text(form.organization.phone)} onChange={setOrg('phone')} placeholder="+91…" />
               <label className="flex flex-col gap-2">
                 <Label hint="One https:// URL per line: Instagram, X, LinkedIn, App Store, Play Store.">Social profiles</Label>
-                <textarea value={sameAs} onChange={(event) => setSameAs(event.target.value)} rows={4} className={cn(input, 'h-auto py-3 text-[14px]')} dir="ltr" />
+                <textarea value={sameAs} onChange={(event) => setSameAs(event.target.value)} rows={4} className={cn(input, 'h-auto min-h-[120px] py-3 text-[14px]')} dir="ltr" />
               </label>
             </div>
           </Panel>
@@ -925,7 +929,7 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
                 <TextField label="Default title" value={text(form.locales[locale].default_title)} onChange={setLocal(locale, 'default_title')} placeholder={locale === 'en' ? 'vela — land connected.' : ''} />
                 <label className="flex flex-col gap-2 md:col-span-2">
                   <Label count={[text(form.locales[locale].default_description).length, DESCRIPTION_RANGE[1]]}>Default description</Label>
-                  <textarea value={text(form.locales[locale].default_description)} onChange={setLocal(locale, 'default_description')} rows={2} className={cn(input, 'h-auto py-3')} />
+                  <textarea value={text(form.locales[locale].default_description)} onChange={setLocal(locale, 'default_description')} rows={3} className={cn(input, 'h-auto min-h-[96px] py-3')} />
                 </label>
                 <TextField
                   label="Default keywords"
@@ -938,7 +942,7 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
             </Panel>
           ))}
         </div>
-        <aside className="flex flex-col gap-6 xl:sticky xl:top-6">
+        <aside className="grid items-start gap-6 md:grid-cols-2 2xl:order-last 2xl:sticky 2xl:top-6 2xl:grid-cols-1">
           <Panel title="Setup checks" aside={<ScoreBadge score={score} />}>
             <ScoreBar score={score} />
             <CheckList checks={checks} />
@@ -1054,8 +1058,8 @@ function Inspector({ initialPath }: { initialPath?: string }) {
         </p>
       ) : null}
       {result ? (
-        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="flex min-w-0 flex-col gap-6">
+        <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="flex min-w-0 flex-col gap-6 2xl:order-first">
             <Panel title="What search engines read">
               <dl className={cn(type.callout, 'grid gap-x-6 gap-y-3 md:grid-cols-[160px_minmax(0,1fr)]')}>
                 <Row term="URL" value={result.url} />
@@ -1088,7 +1092,7 @@ function Inspector({ initialPath }: { initialPath?: string }) {
               </div>
             </Panel>
           </div>
-          <aside className="xl:sticky xl:top-6">
+          <aside className="2xl:order-last 2xl:sticky 2xl:top-6">
             <Panel title="Page checks" aside={<ScoreBadge score={score} />}>
               <ScoreBar score={score} />
               <CheckList checks={result.checks} />

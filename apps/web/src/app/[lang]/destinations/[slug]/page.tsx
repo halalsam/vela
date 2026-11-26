@@ -8,6 +8,8 @@ import { Card, Container, Pill, focusRing } from '@/components/ui';
 import { allDestinationSlugs, loadCatalog, loadDestination, type PlanView } from '@/lib/destinations';
 import { format, isLocale, locales, localized, plural, type Locale } from '@/lib/i18n';
 import { cn, type } from '@/lib/type';
+import { JsonLd } from '@/components/sections/JsonLd';
+import { absolute, breadcrumbLd, extraLd, faqLd, pageMetadata, resolvePageSeo } from '@/lib/seo';
 import { getDictionary } from '../../dictionaries';
 
 export async function generateStaticParams() {
@@ -25,20 +27,25 @@ async function resolve(lang: string, slug: string) {
   return { destination, name, locale: lang as Locale };
 }
 
+// Placeholders for the destination SEO template: {{name}}, {{price}} (lowest plan) and {{countries}} (count).
+function seoOptions(resolved: NonNullable<Awaited<ReturnType<typeof resolve>>>, slug: string) {
+  const { destination, name, locale } = resolved;
+  const prices = destination.plans.map((plan) => plan.price);
+  const codes = destination.country ? [destination.country.code] : destination.region.country_codes;
+  return {
+    key: 'destination',
+    itemKey: `destination:${slug}`,
+    locale,
+    path: `/destinations/${slug}`,
+    vars: { name, price: prices.length > 0 ? formatPrice(Math.min(...prices), 'INR') : '', countries: String(codes.length) },
+  };
+}
+
 export async function generateMetadata({ params }: PageProps<'/[lang]/destinations/[slug]'>): Promise<Metadata> {
   const { lang, slug } = await params;
   const resolved = await resolve(lang, slug);
   if (!resolved) return {};
-  const dict = await getDictionary(resolved.locale);
-  const from = formatPrice(Math.min(...resolved.destination.plans.map((plan) => plan.price)), 'INR');
-  return {
-    title: format(dict.meta.destinationTitle, { name: resolved.name, price: from }),
-    description: format(dict.meta.destinationDescription, { name: resolved.name }),
-    alternates: {
-      canonical: `/${lang}/destinations/${slug}`,
-      languages: { en: `/en/destinations/${slug}`, ar: `/ar/destinations/${slug}` },
-    },
-  };
+  return pageMetadata(seoOptions(resolved, slug));
 }
 
 export default async function DestinationPage({ params }: PageProps<'/[lang]/destinations/[slug]'>) {
@@ -65,9 +72,46 @@ export default async function DestinationPage({ params }: PageProps<'/[lang]/des
     };
   });
   const networks = [...new Set(plans.flatMap((plan) => plan.networks))];
+  const seo = await resolvePageSeo(seoOptions(resolved, slug));
+  const url = absolute(`/${locale}/destinations/${slug}`);
+  const prices = plans.map((plan) => plan.price);
+  const structured = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      '@id': `${url}#product`,
+      name: seo.title,
+      description: seo.description,
+      url,
+      image: [absolute(seo.image)],
+      category: 'Travel eSIM data plan',
+      brand: { '@type': 'Brand', name: seo.siteName },
+      ...(prices.length > 0
+        ? {
+            offers: {
+              '@type': 'AggregateOffer',
+              priceCurrency: plans[0]?.currency ?? 'INR',
+              lowPrice: Math.min(...prices),
+              highPrice: Math.max(...prices),
+              offerCount: plans.length,
+              availability: 'https://schema.org/InStock',
+              url,
+            },
+          }
+        : {}),
+    },
+    breadcrumbLd([
+      { name: dict.blog.home, href: `/${locale}` },
+      { name: dict.nav.destinations, href: `/${locale}/destinations` },
+      { name, href: `/${locale}/destinations/${slug}` },
+    ]),
+    faqLd(dict.destination.faq),
+    ...extraLd(seo),
+  ];
 
   return (
     <Container className="grid gap-12 pt-8 md:grid-cols-[0.9fr_1.1fr] md:pt-14">
+      <JsonLd data={structured} />
       <div className="flex flex-col gap-6 md:sticky md:top-24 md:self-start">
         <Link
           href={`/${locale}/destinations`}

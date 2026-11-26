@@ -476,9 +476,9 @@ export function BlogEditor({ id }: { id?: string }) {
   );
 }
 
-const input = cn(type.body, 'h-button w-full rounded-button border border-line bg-surface-1 px-4 text-fg outline-none transition-colors placeholder:text-fg-quaternary focus:border-accent/60');
+export const input = cn(type.body, 'h-button w-full rounded-button border border-line bg-surface-1 px-4 text-fg outline-none transition-colors placeholder:text-fg-quaternary focus:border-accent/60');
 
-function Panel({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
+export function Panel({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
     <Card as="section" className="flex flex-col gap-5 p-5 md:p-6">
       <div className="flex items-center justify-between gap-3">
@@ -490,7 +490,7 @@ function Panel({ title, aside, children }: { title: string; aside?: ReactNode; c
   );
 }
 
-function Label({ children, hint, count }: { children: ReactNode; hint?: string; count?: [number, number] }) {
+export function Label({ children, hint, count }: { children: ReactNode; hint?: string; count?: [number, number] }) {
   return (
     <span className="flex flex-col gap-0.5">
       <span className="flex items-baseline justify-between gap-3">
@@ -502,7 +502,7 @@ function Label({ children, hint, count }: { children: ReactNode; hint?: string; 
   );
 }
 
-function TextField({
+export function TextField({
   label,
   hint,
   ...rest
@@ -515,7 +515,7 @@ function TextField({
   );
 }
 
-function Check({ check }: { check: SeoCheck }) {
+export function Check({ check }: { check: SeoCheck }) {
   const mark = { good: '✓', warn: '!', bad: '×' }[check.state];
   const colour = { good: 'bg-success-tint text-success', warn: 'bg-warning-tint text-warning', bad: 'bg-danger-tint text-danger' }[check.state];
   return (

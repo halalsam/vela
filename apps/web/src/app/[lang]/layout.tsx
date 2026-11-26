@@ -7,6 +7,8 @@ import { SiteFooter } from '@/components/sections/SiteFooter';
 import { NavigationProgress } from '@/components/sections/NavigationProgress';
 import { SiteHeader } from '@/components/sections/SiteHeader';
 import { dirFor, isLocale, locales } from '@/lib/i18n';
+import { loadSeo, ogLocale } from '@/lib/seo';
+import { DEFAULT_OG_IMAGE, DEFAULT_TITLE_TEMPLATE } from '@/lib/seoCore';
 import { siteUrl } from '@/lib/site';
 import { getDictionary } from './dictionaries';
 import '../globals.css';
@@ -18,14 +20,32 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: LayoutProps<'/[lang]'>): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
-  const dict = await getDictionary(lang);
+  const [dict, { site }] = await Promise.all([getDictionary(lang), loadSeo(lang)]);
+  // Site-wide defaults from the admin, falling back to the dictionary. Pages override these.
+  const local = site.locales[lang];
+  const siteName = local.site_name ?? brandName;
+  const title = local.default_title ?? dict.meta.title;
+  const description = local.default_description ?? dict.meta.description;
+  const image = site.default_og_image ?? DEFAULT_OG_IMAGE;
+  const verify = site.verification;
+  const other: Record<string, string> = {};
+  if (verify.bing) other['msvalidate.01'] = verify.bing;
+  if (verify.pinterest) other['p:domain_verify'] = verify.pinterest;
   return {
     metadataBase: new URL(siteUrl),
-    title: { default: dict.meta.title, template: `%s · ${brandName}` },
-    description: dict.meta.description,
-    applicationName: brandName,
+    title: { default: title, template: site.title_template ?? DEFAULT_TITLE_TEMPLATE },
+    description,
+    keywords: local.keywords.length > 0 ? local.keywords : undefined,
+    applicationName: siteName,
     manifest: '/site.webmanifest',
-    alternates: { canonical: `/${lang}`, languages: { en: '/en', ar: '/ar' } },
+    alternates: { canonical: `/${lang}`, languages: { en: '/en', ar: '/ar', 'x-default': '/en' } },
+    robots: site.indexing ? undefined : { index: false, follow: false, googleBot: { index: false, follow: false } },
+    verification: {
+      google: verify.google ?? undefined,
+      yandex: verify.yandex ?? undefined,
+      other: Object.keys(other).length > 0 ? other : undefined,
+    },
+    formatDetection: { telephone: false, email: false, address: false },
     icons: {
       icon: [
         { url: '/favicon.ico', sizes: '48x48' },
@@ -35,13 +55,13 @@ export async function generateMetadata({ params }: LayoutProps<'/[lang]'>): Prom
     },
     openGraph: {
       type: 'website',
-      siteName: brandName,
-      locale: lang === 'ar' ? 'ar_AE' : 'en_IN',
-      title: dict.meta.title,
-      description: dict.meta.description,
-      images: [{ url: '/og.png', width: 1200, height: 630, alt: brandName }],
+      siteName,
+      locale: ogLocale(lang),
+      title,
+      description,
+      images: [{ url: image, ...(site.default_og_image ? {} : { width: 1200, height: 630 }), alt: siteName }],
     },
-    twitter: { card: 'summary_large_image', images: ['/og.png'] },
+    twitter: { card: 'summary_large_image', site: site.twitter_site ?? undefined, images: [image] },
   };
 }
 

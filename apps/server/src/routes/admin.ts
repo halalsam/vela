@@ -19,6 +19,7 @@ import {
   type StaffRole,
 } from '../modules/admin/admin';
 import { createPost, deletePost, getPost, listPosts, SLUG_PATTERN, updatePost } from '../modules/blog/blog';
+import { listSeoPages, resetSeoPage, saveSeoPage, saveSiteSettings, SEO_KEY_PATTERN, siteSettings } from '../modules/seo/seo';
 import type { AppEnv } from '../types';
 
 type AdminEnv = AppEnv & { Variables: AppEnv['Variables'] & { role: StaffRole } };
@@ -119,6 +120,108 @@ const blank = (value: unknown) =>
     ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, item === '' && key !== 'cover_alt' ? null : item]))
     : value;
 
+const nullableText = (max: number) => z.string().trim().max(max).nullable().default(null);
+const seoImage = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((value) => value.startsWith('/') || /^https:\/\//.test(value), 'Use an https:// URL or a path starting with /')
+  .nullable()
+  .default(null);
+const jsonLd = z
+  .string()
+  .max(20_000)
+  .refine((value) => {
+    try {
+      const parsed: unknown = JSON.parse(value);
+      return typeof parsed === 'object' && parsed !== null;
+    } catch {
+      return false;
+    }
+  }, 'Structured data must be a JSON object or array')
+  .nullable()
+  .default(null);
+
+const seoPageBody = z.object({
+  meta_title: nullableText(90),
+  meta_description: nullableText(320),
+  keywords: textList(15, 60).default([]),
+  og_title: nullableText(120),
+  og_description: nullableText(320),
+  og_image: seoImage,
+  og_image_alt: nullableText(200),
+  canonical_url: z
+    .string()
+    .trim()
+    .max(500)
+    .regex(/^https:\/\//, 'Use a full https:// URL')
+    .nullable()
+    .default(null),
+  noindex: z.boolean().default(false),
+  nofollow: z.boolean().default(false),
+  sitemap_priority: z.number().min(0).max(1).nullable().default(null),
+  change_frequency: z.enum(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']).nullable().default(null),
+  structured_data: jsonLd,
+});
+
+const seoLocaleSite = z.object({
+  site_name: nullableText(60),
+  default_title: nullableText(90),
+  default_description: nullableText(320),
+  keywords: textList(15, 60).default([]),
+});
+
+const seoSiteBody = z.object({
+  title_template: z
+    .string()
+    .trim()
+    .max(60)
+    .refine((value) => value.includes('%s'), 'The title template needs %s where the page title goes')
+    .nullable()
+    .default(null),
+  default_og_image: seoImage,
+  twitter_site: z
+    .string()
+    .trim()
+    .regex(/^@\w{1,15}$/, 'Use an X handle like @vela')
+    .nullable()
+    .default(null),
+  organization: z.object({
+    name: nullableText(80),
+    legal_name: nullableText(120),
+    logo: seoImage,
+    email: z.email().nullable().default(null),
+    phone: nullableText(30),
+    same_as: z.array(z.url({ protocol: /^https$/ })).max(12).default([]),
+  }),
+  verification: z.object({
+    google: nullableText(120),
+    bing: nullableText(120),
+    yandex: nullableText(120),
+    pinterest: nullableText(120),
+  }),
+  indexing: z.boolean().default(true),
+  robots_disallow: z
+    .array(z.string().trim().regex(/^\/\S*$/, 'Robots paths start with /').max(200))
+    .max(30)
+    .default([]),
+  locales: z.object({ en: seoLocaleSite, ar: seoLocaleSite }),
+});
+
+// Empty strings anywhere in an SEO body mean "not set".
+const blankDeep = (value: unknown): unknown => {
+  if (value === '') return null;
+  if (Array.isArray(value)) return value.filter((item) => item !== '').map(blankDeep);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, blankDeep(item)]));
+  return value;
+};
+
+const seoTarget = (c: { req: { param: (name: string) => string } }) =>
+  parse(z.object({ key: z.string().max(80).regex(SEO_KEY_PATTERN, 'Unknown page key'), locale: z.enum(['en', 'ar']) }), {
+    key: c.req.param('key'),
+    locale: c.req.param('locale'),
+  });
+
 const deps = (c: { var: AdminEnv['Variables'] }): AdminDeps => ({
   db: c.var.deps.db,
   env: c.var.deps.env,
@@ -185,6 +288,24 @@ export const adminRoutes = new Hono<AdminEnv>()
   })
   .delete('/v1/admin/blog/:id', adminOnly, async (c) => {
     await deletePost(c.var.deps.db, c.var.user.id, c.req.param('id'));
+    return c.body(null, 204);
+  })
+  .get('/v1/admin/seo', async (c) => {
+    const [site, pages] = await Promise.all([siteSettings(c.var.deps.db), listSeoPages(c.var.deps.db)]);
+    return c.json({ site, pages });
+  })
+  .put('/v1/admin/seo/site', adminOnly, async (c) => {
+    const body = parse(seoSiteBody, blankDeep(await c.req.json().catch(() => null)));
+    return c.json(await saveSiteSettings(c.var.deps.db, c.var.user.id, body));
+  })
+  .put('/v1/admin/seo/pages/:key/:locale', adminOnly, async (c) => {
+    const target = seoTarget(c);
+    const body = parse(seoPageBody, blankDeep(await c.req.json().catch(() => null)));
+    return c.json(await saveSeoPage(c.var.deps.db, c.var.user.id, target.key, target.locale, body));
+  })
+  .delete('/v1/admin/seo/pages/:key/:locale', adminOnly, async (c) => {
+    const target = seoTarget(c);
+    await resetSeoPage(c.var.deps.db, c.var.user.id, target.key, target.locale);
     return c.body(null, 204);
   })
   .get('/v1/admin/audit', async (c) => c.json(await recentAudit(c.var.deps.db, c.req.query('target'))));

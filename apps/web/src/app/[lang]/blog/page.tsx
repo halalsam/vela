@@ -7,6 +7,7 @@ import { ButtonLink, Container } from '@/components/ui';
 import { blogLd, blogPath, breadcrumbLd, ldJson, loadPosts } from '@/lib/blog';
 import { isLocale, path } from '@/lib/i18n';
 import { cn, type } from '@/lib/type';
+import { extraLd, pageMetadata, resolvePageSeo } from '@/lib/seo';
 import { getDictionary } from '../dictionaries';
 
 export const revalidate = 300;
@@ -14,43 +15,32 @@ export const revalidate = 300;
 export async function generateMetadata({ params }: PageProps<'/[lang]/blog'>): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
-  const [dict, posts] = await Promise.all([getDictionary(lang), loadPosts(lang)]);
+  const [dict, posts, base] = await Promise.all([getDictionary(lang), loadPosts(lang), pageMetadata({ key: 'blog', locale: lang, path: '/blog' })]);
   const url = blogPath(lang);
   return {
-    title: dict.meta.blogTitle,
-    description: dict.meta.blogDescription,
+    ...base,
     alternates: {
-      canonical: url,
-      languages: { en: '/en/blog', ar: '/ar/blog', 'x-default': '/en/blog' },
+      ...base.alternates,
       types: { 'application/rss+xml': [{ url: `${url}/rss.xml`, title: `${brandName} · ${dict.blog.title}` }] },
     },
     // An empty blog is a thin page: keep it out of the index until the first post is live.
-    robots: posts.length === 0 ? { index: false, follow: true } : undefined,
-    openGraph: {
-      type: 'website',
-      siteName: brandName,
-      locale: lang === 'ar' ? 'ar_AE' : 'en_IN',
-      url,
-      title: dict.meta.blogTitle,
-      description: dict.meta.blogDescription,
-      images: [{ url: '/og.png', width: 1200, height: 630, alt: brandName }],
-    },
-    twitter: { card: 'summary_large_image', title: dict.meta.blogTitle, description: dict.meta.blogDescription, images: ['/og.png'] },
+    robots: posts.length === 0 ? { index: false, follow: true } : base.robots,
   };
 }
 
 export default async function BlogPage({ params }: PageProps<'/[lang]/blog'>) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const [dict, posts] = await Promise.all([getDictionary(lang), loadPosts(lang)]);
+  const [dict, posts, seo] = await Promise.all([getDictionary(lang), loadPosts(lang), resolvePageSeo({ key: 'blog', locale: lang, path: '/blog' })]);
   const labels = dict.blog;
   const [featured, ...rest] = posts;
   const structured = [
-    blogLd(lang, dict.meta.blogTitle, dict.meta.blogDescription, posts),
+    blogLd(lang, seo.title, seo.description, posts),
     breadcrumbLd([
       { name: labels.home, href: path(lang) },
       { name: labels.title, href: blogPath(lang) },
     ]),
+    ...extraLd(seo),
   ];
 
   return (

@@ -3,6 +3,7 @@ import { ApiError, type VelaApi } from './client';
 import {
   blogPostSchema,
   blogPostSummarySchema,
+  seoBundleSchema,
   checkoutSchema,
   dailyUsageSchema,
   countrySchema,
@@ -52,6 +53,7 @@ export const httpServedMethods = [
   'sendSupportMessage',
   'getBlogPosts',
   'getBlogPost',
+  'getSeo',
 ] as const;
 
 function idempotencyKey(): string {
@@ -99,6 +101,7 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     getOffers: () => get('/v1/offers', z.array(offerSchema)),
     getBlogPosts: (locale) => get(`/v1/blog/posts?locale=${locale}`, z.array(blogPostSummarySchema)),
     getBlogPost: (locale, slug) => get(`/v1/blog/posts/${encodeURIComponent(slug)}?locale=${locale}`, blogPostSchema),
+    getSeo: (locale) => get(`/v1/seo?locale=${locale}`, seoBundleSchema),
     redeemCoupon: (code) => send('/v1/coupons/validate', couponSchema, { method: 'POST', body: { code, currency: options.currency?.() ?? 'INR' } }),
     createOrder: (input) =>
       send('/v1/orders', checkoutSchema, {

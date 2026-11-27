@@ -1,12 +1,13 @@
+import type { RouteConfig, RouteHandler } from '@hono/zod-openapi';
 import type { Auth } from './auth/auth';
 import type { Database } from './db/client';
 import type { Env } from './env';
 import type { JobQueue } from './jobs/queue';
 import type { Logger } from './logger';
-import type { EsimProvider } from './modules/esims/provider';
-import type { PaymentProvider } from './modules/payments/provider';
-import type { SupportDesk } from './modules/support/support';
-import type { Storage } from './modules/uploads/storage';
+import type { EsimProvider } from './integrations/esims/provider';
+import type { PaymentProvider } from './integrations/payments/provider';
+import type { SupportDesk } from './services/support.service';
+import type { Storage } from './integrations/storage';
 
 export type AppDeps = {
   db: Database;
@@ -33,3 +34,6 @@ export type AppEnv = {
     user: SessionUser;
   };
 };
+
+/** A controller function for one OpenAPI route definition. */
+export type Handler<R extends RouteConfig> = RouteHandler<R, AppEnv>;

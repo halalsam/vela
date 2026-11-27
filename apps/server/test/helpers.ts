@@ -5,14 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { pino } from 'pino';
 import { createApp } from '../src/app';
 import { createAuth } from '../src/auth/auth';
-import { createMemorySms } from '../src/auth/sms';
+import { createMemorySms } from '../src/integrations/sms';
 import { schema, type Database } from '../src/db/client';
 import { loadEnv } from '../src/env';
 import { memoryQueue } from '../src/jobs/queue';
-import { createMockPayments } from '../src/modules/payments/mock';
-import type { PaymentProvider } from '../src/modules/payments/provider';
-import { createSupportDesk, type SupportDesk } from '../src/modules/support/support';
-import { createMockProvider } from '../src/modules/esims/providers/mock';
+import { createMockPayments } from '../src/integrations/payments/mock';
+import type { PaymentProvider } from '../src/integrations/payments/provider';
+import { createSupportDesk, type SupportDesk } from '../src/services/support.service';
+import { createMockProvider } from '../src/integrations/esims/mock';
 
 export const testKey = 'a'.repeat(64);
 

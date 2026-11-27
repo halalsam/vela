@@ -3,13 +3,13 @@ import { countries as mockCountries, plans as mockPlans } from '@vela/api/mocks'
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { plan, planPrice } from '../src/db/schema';
-import { convertMinor, parseEcb, ratesPerUsd } from '../src/modules/catalog/fx';
-import { regionNames } from '../src/modules/catalog/regionNames';
-import { charmPrice, planSlug, retailPrices, uniqueId } from '../src/modules/catalog/pricing';
-import { seedReferenceData } from '../src/modules/catalog/seed';
-import { syncCatalog } from '../src/modules/catalog/sync';
-import type { EsimProvider, ProviderPlan } from '../src/modules/esims/provider';
-import { createMockProvider } from '../src/modules/esims/providers/mock';
+import { convertMinor, parseEcb, ratesPerUsd } from '../src/services/fx.service';
+import { regionNames } from '../src/lib/regionNames';
+import { charmPrice, planSlug, retailPrices, uniqueId } from '../src/services/pricing.service';
+import { seedReferenceData } from '../src/db/seed';
+import { syncCatalog } from '../src/services/catalogSync.service';
+import type { EsimProvider, ProviderPlan } from '../src/integrations/esims/provider';
+import { createMockProvider } from '../src/integrations/esims/mock';
 import { createTestApp, createTestDb, silentLogger } from './helpers';
 
 let db: Awaited<ReturnType<typeof createTestDb>>['db'];

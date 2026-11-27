@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { profile, user } from '../src/db/schema';
 import { loadEnv } from '../src/env';
-import { sniffImage } from '../src/modules/uploads/image';
-import { createStorage } from '../src/modules/uploads/storage';
+import { sniffImage } from '../src/lib/image';
+import { createStorage } from '../src/integrations/storage';
 import { createTestApp, createTestDb, signInWithPhone, silentLogger, testKey } from './helpers';
 
 // 1×1 PNG and a 3×2 GIF.

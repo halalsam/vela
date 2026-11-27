@@ -3,13 +3,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { esim } from '../src/db/schema';
 import { loadEnv } from '../src/env';
 import { JOB, memoryQueue } from '../src/jobs/queue';
-import { seedReferenceData } from '../src/modules/catalog/seed';
-import { syncCatalog } from '../src/modules/catalog/sync';
-import { createMockProvider } from '../src/modules/esims/providers/mock';
-import { queueTrackedEsims } from '../src/modules/esims/usage';
-import { createMemoryPush } from '../src/modules/notifications/push';
-import { provisionOrder } from '../src/modules/orders/fulfil';
-import { createMockPayments, MOCK_SIGNATURE } from '../src/modules/payments/mock';
+import { seedReferenceData } from '../src/db/seed';
+import { syncCatalog } from '../src/services/catalogSync.service';
+import { createMockProvider } from '../src/integrations/esims/mock';
+import { queueTrackedEsims } from '../src/services/usage.service';
+import { createMemoryPush } from '../src/integrations/push';
+import { provisionOrder } from '../src/services/fulfilment.service';
+import { createMockPayments, MOCK_SIGNATURE } from '../src/integrations/payments/mock';
 import { createTestApp, createTestDb, signInWithPhone, silentLogger, testEnv, testKey } from './helpers';
 
 const base = {

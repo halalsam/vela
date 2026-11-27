@@ -2,12 +2,12 @@ import type { SupportChat, SupportChatSummary, SupportMessage } from '@vela/api'
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { broadcast, esim, plan, profile, user } from '../src/db/schema';
-import { seedReferenceData } from '../src/modules/catalog/seed';
-import { syncCatalog } from '../src/modules/catalog/sync';
-import { createMockProvider } from '../src/modules/esims/providers/mock';
+import { seedReferenceData } from '../src/db/seed';
+import { syncCatalog } from '../src/services/catalogSync.service';
+import { createMockProvider } from '../src/integrations/esims/mock';
 import { JOB } from '../src/jobs/queue';
 import { broadcastJob, supportReplyJob } from '../src/jobs/registry';
-import { createMemoryPush } from '../src/modules/notifications/push';
+import { createMemoryPush } from '../src/integrations/push';
 import { createTestApp, createTestDb, signInWithPhone, silentLogger, testEnv } from './helpers';
 
 let db: Awaited<ReturnType<typeof createTestDb>>['db'];
@@ -177,6 +177,14 @@ describe('customers', () => {
     expect(detail.devices).toHaveLength(1);
     expect(detail.history.map((item) => item.action)).toContain('customer.tags');
     expect((await call('GET', '/v1/admin/customers/nobody', agent)).status).toBe(404);
+  });
+
+  it('counts the friends a customer referred', async () => {
+    // A paid referral stores the referrer's user id on the friend's profile.
+    await db.update(profile).set({ referredBy: travellerId }).where(eq(profile.userId, await idOf('+919855500002')));
+    const detail = await json<{ referrals: number }>(call('GET', `/v1/admin/customers/${travellerId}`, agent));
+    expect(detail.referrals).toBe(1);
+    await db.update(profile).set({ referredBy: null }).where(eq(profile.userId, await idOf('+919855500002')));
   });
 });
 

@@ -3,18 +3,16 @@ import { cors } from 'hono/cors';
 import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import { HttpError } from './lib/errors';
-import { catalogRoutes } from './routes/catalog';
-import { adminRoutes } from './routes/admin';
-import { blogRoutes } from './routes/blog';
-import { seoRoutes } from './routes/seo';
-import { uploadRoutes } from './routes/uploads';
-import { createStorage } from './modules/uploads/storage';
-import { deviceRoutes } from './routes/devices';
-import { esimWebhookRoutes } from './routes/esimWebhooks';
-import { meRoutes } from './routes/me';
-import { orderRoutes, webhookRoutes } from './routes/orders';
-import { supportRoutes } from './routes/support';
-import { systemRoutes } from './routes/system';
+import { catalogRoutes } from './routes/catalog.routes';
+import { contentRoutes } from './routes/content.routes';
+import { adminRoutes } from './routes/admin.routes';
+import { createStorage } from './integrations/storage';
+import { meRoutes } from './routes/account.routes';
+import { deviceRoutes } from './routes/devices.routes';
+import { orderRoutes } from './routes/orders.routes';
+import { supportRoutes } from './routes/support.routes';
+import { webhookRoutes } from './routes/webhooks.routes';
+import { systemRoutes } from './routes/system.routes';
 import { captureError } from './sentry';
 import type { AppDeps, AppEnv } from './types';
 
@@ -64,16 +62,13 @@ export function createApp(input: AppDeps) {
 
   app.route('/', systemRoutes);
   app.route('/', catalogRoutes);
-  app.route('/', blogRoutes);
-  app.route('/', seoRoutes);
-  app.route('/', uploadRoutes);
+  app.route('/', contentRoutes);
   app.route('/', meRoutes);
   app.route('/', orderRoutes);
   app.route('/', deviceRoutes);
   app.route('/', supportRoutes);
   app.route('/', adminRoutes);
   app.route('/', webhookRoutes);
-  app.route('/', esimWebhookRoutes);
   app.on(['GET', 'POST'], '/v1/auth/*', (c) => deps.auth.handler(c.req.raw));
 
   app.openAPIRegistry.registerComponent('securitySchemes', 'bearer', { type: 'http', scheme: 'bearer' });

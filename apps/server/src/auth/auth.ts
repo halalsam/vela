@@ -7,7 +7,7 @@ import type { Database } from '../db/client';
 import { account, profile, session, user, verification } from '../db/schema';
 import type { Env } from '../env';
 import type { Logger } from '../logger';
-import type { SmsSender } from './sms';
+import type { SmsSender } from '../integrations/sms';
 
 export const PHONE_EMAIL_DOMAIN = 'phone.vela.invalid';
 const REFERRAL_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

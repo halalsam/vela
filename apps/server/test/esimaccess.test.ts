@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loadEnv } from '../src/env';
-import { createEsimAccess, parseAccessDate, toProviderPlan, toUsage, type AccessPackage } from '../src/modules/esims/providers/esimaccess';
+import { createEsimAccess, parseAccessDate, toProviderPlan, toUsage, type AccessPackage } from '../src/integrations/esims/esimaccess';
 import { testKey } from './helpers';
 
 const GB = 1024 * 1024 * 1024;

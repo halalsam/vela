@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { createDb } from './db/client';
 import { loadEnv } from './env';
-import { seedReferenceData } from './modules/catalog/seed';
+import { seedReferenceData } from './db/seed';
 import { createLogger } from './logger';
 
 const env = loadEnv();

@@ -3,15 +3,15 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { esim, order, plan } from '../src/db/schema';
 import { memoryQueue } from '../src/jobs/queue';
-import { seedReferenceData } from '../src/modules/catalog/seed';
-import { findBackup, nominalGb, syncCatalog } from '../src/modules/catalog/sync';
-import { ProviderUnavailable, type EsimProvider, type ProviderPlan } from '../src/modules/esims/provider';
-import { createEsimGo, toGoPlan, toGoUsage, type GoBundle } from '../src/modules/esims/providers/esimgo';
-import { createMockProvider, mockPurchase } from '../src/modules/esims/providers/mock';
-import { syncEsimUsage } from '../src/modules/esims/usage';
-import { createMemoryPush } from '../src/modules/notifications/push';
-import { BackupStateUnknown, provisionOrder, type FulfilDeps } from '../src/modules/orders/fulfil';
-import { createMockPayments, MOCK_SIGNATURE } from '../src/modules/payments/mock';
+import { seedReferenceData } from '../src/db/seed';
+import { findBackup, nominalGb, syncCatalog } from '../src/services/catalogSync.service';
+import { ProviderUnavailable, type EsimProvider, type ProviderPlan } from '../src/integrations/esims/provider';
+import { createEsimGo, toGoPlan, toGoUsage, type GoBundle } from '../src/integrations/esims/esimgo';
+import { createMockProvider, mockPurchase } from '../src/integrations/esims/mock';
+import { syncEsimUsage } from '../src/services/usage.service';
+import { createMemoryPush } from '../src/integrations/push';
+import { BackupStateUnknown, provisionOrder, type FulfilDeps } from '../src/services/fulfilment.service';
+import { createMockPayments, MOCK_SIGNATURE } from '../src/integrations/payments/mock';
 import { createTestApp, createTestDb, signInWithPhone, silentLogger, testEnv } from './helpers';
 
 const plan1 = (overrides: Partial<ProviderPlan>): ProviderPlan => ({

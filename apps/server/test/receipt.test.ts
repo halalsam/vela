@@ -3,14 +3,15 @@ import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { profile, user } from '../src/db/schema';
 import { memoryQueue } from '../src/jobs/queue';
-import { seedReferenceData } from '../src/modules/catalog/seed';
-import { syncCatalog } from '../src/modules/catalog/sync';
-import { createMockProvider } from '../src/modules/esims/providers/mock';
-import { createMemoryEmail, createResend } from '../src/modules/notifications/email';
-import { createMemoryPush } from '../src/modules/notifications/push';
-import { buildReceipt, sendReceipt } from '../src/modules/notifications/receipt';
-import { provisionOrder } from '../src/modules/orders/fulfil';
-import { createMockPayments, MOCK_SIGNATURE } from '../src/modules/payments/mock';
+import { seedReferenceData } from '../src/db/seed';
+import { syncCatalog } from '../src/services/catalogSync.service';
+import { createMockProvider } from '../src/integrations/esims/mock';
+import { createMemoryEmail, createResend } from '../src/integrations/email';
+import { createMemoryPush } from '../src/integrations/push';
+import { sendReceipt } from '../src/services/receipt.service';
+import { buildReceipt } from '../src/views/receipt.view';
+import { provisionOrder } from '../src/services/fulfilment.service';
+import { createMockPayments, MOCK_SIGNATURE } from '../src/integrations/payments/mock';
 import { createTestApp, createTestDb, signInWithPhone, silentLogger, testEnv } from './helpers';
 
 const sample = {

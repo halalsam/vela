@@ -13,6 +13,7 @@ import { readAllOrders } from '@/lib/orders';
 import { notifyStorage, useStorageValue } from '@/lib/useStorage';
 import { cn, type } from '@/lib/type';
 import { LiveSignIn } from './LiveSignIn';
+import { SupportChat } from './SupportChat';
 import { TopUpPanel } from './TopUpPanel';
 
 const SESSION_KEY = 'vela:session';
@@ -176,6 +177,7 @@ function SignedInAccount({ locale, labels, names, identity, live = false, onSign
           ))}
         </ul>
       )}
+      <SupportChat locale={locale} labels={labels} />
     </div>
   );
 }

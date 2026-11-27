@@ -215,7 +215,24 @@
     "startsOnLanding": "Starts automatically when you land",
     "dayUnit": "d",
     "hourUnit": "h",
-    "details": "Details"
+    "details": "Details",
+    "chatTitle": "Support chat",
+    "chatIntro": "Questions about installing or using your eSIM? Write to us here. We usually reply within minutes, and you can carry on in the app.",
+    "chatPlaceholder": "Write a message",
+    "chatSend": "Send",
+    "chatSending": "Sending…",
+    "chatError": "We couldn't load the chat. Try again.",
+    "chatSendFailed": "Your message didn't send. Try again.",
+    "chatYou": "You",
+    "chatAgent": "vela support",
+    "chatHint": "Press Enter to send, Shift + Enter for a new line.",
+    "rateTitle": "How did we do?",
+    "rateBody": "We marked this chat as solved. Rate your help so we can keep getting better.",
+    "rateStar": "{{count}} out of 5",
+    "rateComment": "Anything to add? (optional)",
+    "rateSend": "Send rating",
+    "rateLater": "Not now",
+    "rateThanks": "Thanks for the rating."
   },
   "footer": {
     "tagline": "land connected.",
@@ -236,7 +253,9 @@
     "policies": "Policies",
     "emailUs": "Email us",
     "contactPage": "Contact page",
-    "readRefunds": "Refund policy"
+    "readRefunds": "Refund policy",
+    "chat": "Chat with us",
+    "chatBody": "The fastest way to reach us is the support chat. Sign in and write to us; we usually reply within minutes."
   },
   "notFound": {
     "title": "lost at sea.",

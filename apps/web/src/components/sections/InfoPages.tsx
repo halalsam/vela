@@ -78,6 +78,21 @@ export function LegalView({
   return (
     <ReadingLayout railTitle={footer.policies} rail={rail}>
       <PageHeader title={doc.title} meta={doc.updated} intro={doc.intro} />
+      {slug === 'contact' ? (
+        <section className="flex flex-col gap-4 rounded-card border border-line border-t-line-highlight bg-surface-1 p-5 md:flex-row md:items-center md:justify-between">
+          <p className={cn(type.callout, 'max-w-xl text-fg-secondary')}>{footer.chatBody}</p>
+          <Link
+            href={`${path(locale, '/account')}#support`}
+            className={cn(
+              type.calloutStrong,
+              'inline-flex h-button-compact shrink-0 items-center rounded-button bg-fg px-4 text-fg-inverse hover:bg-ivory',
+              focusRing,
+            )}
+          >
+            {footer.chat}
+          </Link>
+        </section>
+      ) : null}
       {doc.sections.map((section) => (
         <section key={section.heading} className="flex flex-col gap-3 border-t border-line pt-6">
           <h2 className={type.title}>{section.heading}</h2>
@@ -110,11 +125,21 @@ function StillStuck({ content, locale, footer }: { content: HelpContent['stillSt
         <p className={cn(type.callout, 'text-fg-secondary')}>{content.body}</p>
       </div>
       <div className="flex shrink-0 flex-wrap gap-2">
+        <Link
+          href={`${path(locale, '/account')}#support`}
+          className={cn(
+            type.calloutStrong,
+            'inline-flex h-button-compact items-center rounded-button bg-fg px-4 text-fg-inverse hover:bg-ivory',
+            focusRing,
+          )}
+        >
+          {footer.chat}
+        </Link>
         <a
           href={`mailto:${legalDetails.email}`}
           className={cn(
             type.calloutStrong,
-            'inline-flex h-button-compact items-center rounded-button bg-fg px-4 text-fg-inverse hover:bg-ivory',
+            'inline-flex h-button-compact items-center rounded-button border border-line-strong px-4 hover:bg-surface-2',
             focusRing,
           )}
         >

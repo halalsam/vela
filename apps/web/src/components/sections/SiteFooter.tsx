@@ -19,6 +19,7 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
     {
       title: f.support,
       links: [
+        { href: `${path(locale, '/account')}#support`, label: f.chat },
         { href: path(locale, '/help'), label: f.help },
         { href: path(locale, '/faq'), label: f.faq },
         { href: path(locale, '/contact'), label: f.contact },

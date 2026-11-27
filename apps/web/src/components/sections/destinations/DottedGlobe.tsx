@@ -41,6 +41,11 @@ const wrap = (angle: number) => ((((angle + Math.PI) % (Math.PI * 2)) + Math.PI 
 const mix = (a: readonly number[], b: readonly number[], t: number) =>
   a.map((value, index) => Math.round(value + ((b[index] ?? value) - value) * t));
 
+/** Asia includes the Middle East, which the catalog sells separately as Gulf, so choosing Asia lights both. */
+function lights(selected: string | null, name: string): boolean {
+  return name === selected || (selected === 'asia' && name === 'gulf');
+}
+
 export function DottedGlobe({ continent, focus, pins, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Everything the frame loop reads lives in refs, so prop changes never restart the loop.
@@ -79,7 +84,7 @@ export function DottedGlobe({ continent, focus, pins, className }: Props) {
           group[i] = loaded.dots[i * 3 + 2] ?? 0;
         }
         data = { lat, lng, group, names: loaded.continents };
-        weights = loaded.continents.map((name) => (name === target.current.continent ? 1 : 0));
+        weights = loaded.continents.map((name) => (lights(target.current.continent, name) ? 1 : 0));
         canvas.style.opacity = '1';
       })
       .catch(() => {
@@ -135,7 +140,7 @@ export function DottedGlobe({ continent, focus, pins, className }: Props) {
       // Continent highlight fades in and out instead of switching.
       if (data)
         weights = data.names.map(
-          (name, index) => (weights[index] ?? 0) + ((name === lit ? 1 : 0) - (weights[index] ?? 0)) * (reduce ? 1 : 0.1),
+          (name, index) => (weights[index] ?? 0) + ((lights(lit, name) ? 1 : 0) - (weights[index] ?? 0)) * (reduce ? 1 : 0.1),
         );
 
       const pixels = size * ratio;

@@ -13,19 +13,23 @@ const countries = feature(topology, topology.objects.countries).features;
 // Same keys as the catalog's regions (packages/api schemas). Order is the index stored with each dot.
 const CONTINENTS = ['asia', 'europe', 'gulf', 'americas', 'africa', 'oceania'];
 
-// ISO 3166-1 numeric ids. Gulf: UAE, Saudi Arabia, Qatar, Bahrain, Oman, Kuwait.
-const GULF = new Set(['784', '682', '634', '048', '512', '414']);
-const YEMEN = '887';
+// ISO 3166-1 numeric ids. Gulf matches the catalog's Gulf area (apps/server catalog geo.ts):
+// UAE, Bahrain, Israel, Iraq, Jordan, Kuwait, Lebanon, Oman, Palestine, Qatar, Saudi Arabia, Yemen.
+const GULF = new Set(['784', '048', '376', '368', '400', '414', '422', '512', '275', '634', '682', '887']);
+// Middle East outside the catalog's Gulf area: Syria and Iran. Their centroids fall in the Europe and Africa boxes'
+// reach, so they're pinned to Asia (the destinations page lights Gulf with Asia, so the region reads as one).
+const ASIA = new Set(['760', '364']);
 
 /** Continent from the country's centroid. Coarse boxes, but each country lands whole in one group. */
 function continentOf(country) {
   if (GULF.has(country.id)) return 'gulf';
+  if (ASIA.has(country.id)) return 'asia';
   const [lng, lat] = geoCentroid(country);
   if (lng < -25 && lng > -170) return 'americas';
   if (lng > 110 && (lat < -10 || lng > 140)) return 'oceania';
   if (lng < -170) return 'oceania'; // Pacific islands across the antimeridian
   if (lat > 35 && lng > -30 && lng < 45) return 'europe';
-  if (country.id !== YEMEN && lat < 37.5 && lng > -20 && lng < 52 && (lng < 34.5 || lat < 18)) return 'africa';
+  if (lat < 37.5 && lng > -20 && lng < 52 && (lng < 34.5 || lat < 18)) return 'africa';
   if (lat < -60) return 'oceania'; // Antarctica, kept out of the way: no catalog continent lights it
   return 'asia';
 }
@@ -66,6 +70,10 @@ for (const [id, name] of [
   ['304', 'Greenland'],
   ['364', 'Iran'],
   ['887', 'Yemen'],
+  ['376', 'Israel'],
+  ['400', 'Jordan'],
+  ['760', 'Syria'],
+  ['368', 'Iraq'],
   ['242', 'Fiji'],
   ['232', 'Eritrea'],
 ]) {

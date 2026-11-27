@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import { invoiceLinkSchema, supportMessageSchema, supportRatingStatusSchema } from '@vela/api';
+import { invoiceLinkSchema, supportChatSchema, supportChatSummarySchema, supportMessageSchema, supportRatingStatusSchema } from '@vela/api';
 import { and, eq } from 'drizzle-orm';
 import { requireUser } from '../auth/middleware';
 import { creditNote, invoice, order } from '../db/schema';
@@ -56,6 +56,59 @@ const rateRoute = createRoute({
   responses: { 204: { description: 'Rating saved (ignored when none was asked for)' }, 401: failure('Not signed in') },
 });
 
+const messageText = z.string().trim().min(1).max(2000);
+const ratingBody = z.object({ score: z.number().int().min(1).max(5), comment: z.string().trim().max(500).nullable().default(null) });
+const chatParams = z.object({ id: z.string() });
+const jsonBody = <T extends z.ZodType>(schema: T) => ({ body: { content: { 'application/json': { schema } } } });
+
+const chatsRoute = createRoute({
+  method: 'get',
+  path: '/v1/support/chats',
+  tags: ['support'],
+  ...signedIn,
+  responses: { 200: json(z.array(supportChatSummarySchema), 'The customer’s support chats, newest activity first'), 401: failure('Not signed in') },
+});
+
+const startChatRoute = createRoute({
+  method: 'post',
+  path: '/v1/support/chats',
+  tags: ['support'],
+  ...signedIn,
+  request: jsonBody(z.object({ text: messageText, iccid: z.string().regex(/^\d{19,20}$/).nullable().default(null) })),
+  responses: {
+    201: json(supportChatSchema, 'The new chat with its first message'),
+    401: failure('Not signed in'),
+    422: failure('The eSIM is not the customer’s'),
+  },
+});
+
+const chatRoute = createRoute({
+  method: 'get',
+  path: '/v1/support/chats/{id}',
+  tags: ['support'],
+  ...signedIn,
+  request: { params: chatParams },
+  responses: { 200: json(supportChatSchema, 'One chat, oldest message first'), 401: failure('Not signed in'), 404: failure('No such chat') },
+});
+
+const chatMessageRoute = createRoute({
+  method: 'post',
+  path: '/v1/support/chats/{id}/messages',
+  tags: ['support'],
+  ...signedIn,
+  request: { params: chatParams, ...jsonBody(z.object({ text: messageText })) },
+  responses: { 200: json(supportChatSchema, 'The chat including the new message'), 401: failure('Not signed in'), 404: failure('No such chat') },
+});
+
+const chatRatingRoute = createRoute({
+  method: 'post',
+  path: '/v1/support/chats/{id}/rating',
+  tags: ['support'],
+  ...signedIn,
+  request: { params: chatParams, ...jsonBody(ratingBody) },
+  responses: { 204: { description: 'Rating saved (ignored when none was asked for)' }, 401: failure('Not signed in'), 404: failure('No such chat') },
+});
+
 const invoiceRoute = createRoute({
   method: 'get',
   path: '/v1/orders/{id}/invoice',
@@ -81,6 +134,20 @@ export const supportRoutes = new OpenAPIHono<AppEnv>()
   .openapi(rateRoute, async (c) => {
     const body = c.req.valid('json');
     await c.var.deps.support.rate(await supportFor(c), body.score, body.comment || null);
+    return c.body(null, 204);
+  })
+  .openapi(chatsRoute, async (c) => c.json(await c.var.deps.support.chats(await supportFor(c)), 200))
+  .openapi(startChatRoute, async (c) => {
+    const body = c.req.valid('json');
+    return c.json(await c.var.deps.support.start(await supportFor(c), body.text, body.iccid), 201);
+  })
+  .openapi(chatRoute, async (c) => c.json(await c.var.deps.support.chat(await supportFor(c), c.req.valid('param').id), 200))
+  .openapi(chatMessageRoute, async (c) =>
+    c.json(await c.var.deps.support.reply(await supportFor(c), c.req.valid('param').id, c.req.valid('json').text), 200),
+  )
+  .openapi(chatRatingRoute, async (c) => {
+    const body = c.req.valid('json');
+    await c.var.deps.support.rateChat(await supportFor(c), c.req.valid('param').id, body.score, body.comment || null);
     return c.body(null, 204);
   })
   .openapi(invoiceRoute, async (c) => {

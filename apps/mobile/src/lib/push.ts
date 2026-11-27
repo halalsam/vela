@@ -55,7 +55,8 @@ export async function signOutDevice() {
 function openFrom(response: Notifications.NotificationResponse | null) {
   const data = response?.notification.request.content.data;
   if (data?.kind === 'support') {
-    router.push('/support');
+    const chat = data.conversation_id;
+    router.push(typeof chat === 'string' && /^[0-9a-f-]{36}$/i.test(chat) ? { pathname: '/support', params: { chat } } : '/support');
     return;
   }
   const iccid = data?.iccid;

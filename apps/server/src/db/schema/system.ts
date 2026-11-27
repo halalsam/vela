@@ -41,6 +41,8 @@ export const supportMessage = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     userId: text().notNull(),
+    /** The ticket it belongs to. Null only for rows written before tickets existed (backfilled by 0014). */
+    conversationId: uuid(),
     sender: text().notNull(),
     text: text().notNull(),
     /** The staff member who wrote an agent message or note. */
@@ -49,5 +51,8 @@ export const supportMessage = pgTable(
     internal: boolean().notNull().default(false),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('support_message_user_idx').on(table.userId, table.createdAt)],
+  (table) => [
+    index('support_message_user_idx').on(table.userId, table.createdAt),
+    index('support_message_conversation_idx').on(table.conversationId, table.createdAt),
+  ],
 );

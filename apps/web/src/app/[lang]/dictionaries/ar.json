@@ -240,7 +240,19 @@
     "rateComment": "هل تود إضافة شيء؟ (اختياري)",
     "rateSend": "إرسال التقييم",
     "rateLater": "ليس الآن",
-    "rateThanks": "شكرًا على تقييمك."
+    "rateThanks": "شكرًا على تقييمك.",
+    "chatNew": "محادثة جديدة",
+    "chatStart": "بدء المحادثة",
+    "chatCancel": "إلغاء",
+    "chatYours": "محادثاتك",
+    "chatNumber": "المحادثة رقم {{number}}",
+    "chatPlan": "عن أي باقة تسأل؟ (اختياري)",
+    "chatNoPlan": "ليست عن باقة محددة",
+    "chatAbout": "بخصوص {{plan}}",
+    "chatNewIntro": "ابدأ محادثة جديدة لسؤال مختلف. اختر الباقة المعنية لنساعدك أسرع.",
+    "chatStatusOpen": "بانتظار الدعم",
+    "chatStatusPending": "ردّ فريق الدعم",
+    "chatStatusResolved": "تم الحل"
   },
   "footer": {
     "tagline": "تصل وأنت متصل.",

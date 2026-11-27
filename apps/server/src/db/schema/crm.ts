@@ -1,13 +1,18 @@
-import { index, integer, jsonb, pgEnum, pgTable, primaryKey, smallint, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 export const conversationStatus = pgEnum('conversation_status', ['open', 'pending', 'resolved']);
 export const broadcastStatus = pgEnum('broadcast_status', ['queued', 'sending', 'sent', 'failed']);
 
-/** One support conversation per traveller. A new customer message reopens a resolved one. */
+/** A support ticket. A traveller can have several; a new message on a resolved one reopens it. */
 export const supportConversation = pgTable(
   'support_conversation',
   {
-    userId: text().primaryKey(),
+    id: uuid().primaryKey().defaultRandom(),
+    /** Short number staff and customers can quote, shown as #1001. */
+    number: serial().notNull(),
+    userId: text().notNull(),
+    /** The eSIM (plan) this ticket is about, when the customer or staff picked one. */
+    iccid: text(),
     /** open: waiting on staff. pending: waiting on the customer. resolved: done. */
     status: conversationStatus().notNull().default('open'),
     assigneeId: text(),
@@ -20,7 +25,11 @@ export const supportConversation = pgTable(
     ratingRequestedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('support_conversation_status_idx').on(table.status, table.lastMessageAt)],
+  (table) => [
+    index('support_conversation_status_idx').on(table.status, table.lastMessageAt),
+    index('support_conversation_user_idx').on(table.userId, table.lastMessageAt),
+    uniqueIndex('support_conversation_number_idx').on(table.number),
+  ],
 );
 
 export const supportRating = pgTable(
@@ -28,6 +37,7 @@ export const supportRating = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     userId: text().notNull(),
+    conversationId: uuid(),
     /** 1 to 5. */
     score: smallint().notNull(),
     comment: text(),

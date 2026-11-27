@@ -527,7 +527,19 @@
     "rateBody": "We marked this chat as solved. Rate your help so we can keep getting better.",
     "rateStar": "{{count}} out of 5",
     "rateThanks": "Thanks for the rating.",
-    "rateLater": "Not now"
+    "rateLater": "Not now",
+    "newChat": "New chat",
+    "newChatIntro": "Start a new chat for a different question. Pick the plan it's about so we can help faster.",
+    "plan": "Which plan?",
+    "noPlan": "No specific plan",
+    "about": "About {{plan}}",
+    "chatNumber": "Chat #{{number}}",
+    "yourChats": "Your chats",
+    "start": "Start chat",
+    "statusOpen": "Waiting for support",
+    "statusPending": "Support replied",
+    "statusResolved": "Solved",
+    "cancel": "Cancel"
   },
   "notifications": {
     "channel": "Trip updates"

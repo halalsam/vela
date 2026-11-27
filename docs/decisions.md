@@ -159,9 +159,13 @@ source of truth. Resolved as follows:
   indexed; it uses the same sign-in as the account page.
 - Support and CRM (2026-11-27): Chatwoot is gone; support runs on our own database and the
   `/admin` panel. The app's chat still talks to `/v1/support/messages` and polls every 5 seconds.
-  Each traveller has one conversation (`support_conversation`): **open** waits on staff,
-  **pending** waits on the customer (set by a staff reply), **resolved** is done; a new customer
-  message reopens it. `/admin/inbox` lists conversations (longest wait first), with private notes
+  Support chats are tickets (`support_conversation`, numbered from #1001): a customer can start a
+  new chat at any time (app and website) and optionally say which of their eSIMs it is about;
+  staff can set or change that plan and start a chat from a customer's profile. **open** waits on
+  staff, **pending** waits on the customer (set by a staff reply), **resolved** is done; a new
+  message reopens that chat. `/v1/support/chats` is the ticket API; the older
+  `/v1/support/messages` and `/v1/support/rating` keep working against the most recent chat for
+  older app versions. Migration 0014 turned each traveller's existing thread into their first ticket. `/admin/inbox` lists conversations (longest wait first), with private notes
   the customer never sees, assignment to staff, saved replies (only admins delete them) and a
   header with queue sizes, median first reply over 7 days and the 30-day rating. A staff reply
   queues `support.reply`, which the worker sends as a push in the device's language and which

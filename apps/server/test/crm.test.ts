@@ -1,7 +1,10 @@
-import type { SupportMessage } from '@vela/api';
+import type { SupportChat, SupportChatSummary, SupportMessage } from '@vela/api';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { broadcast, profile, user } from '../src/db/schema';
+import { broadcast, esim, plan, profile, user } from '../src/db/schema';
+import { seedReferenceData } from '../src/modules/catalog/seed';
+import { syncCatalog } from '../src/modules/catalog/sync';
+import { createMockProvider } from '../src/modules/esims/providers/mock';
 import { JOB } from '../src/jobs/queue';
 import { broadcastJob, supportReplyJob } from '../src/jobs/registry';
 import { createMemoryPush } from '../src/modules/notifications/push';
@@ -16,6 +19,7 @@ let agent: string;
 let admin: string;
 let travellerId: string;
 let agentId: string;
+let chatId: string;
 
 const headers = (bearer: string) => ({ authorization: `Bearer ${bearer}`, 'content-type': 'application/json' });
 const call = (method: string, path: string, bearer: string, body?: unknown) =>
@@ -33,7 +37,7 @@ type Conversation = {
   rating_requested: boolean;
   messages: { from: string; text: string; internal: boolean; staff: { name: string } | null }[];
 };
-type Row = { user_id: string; status: string; unread: number; assignee: unknown; last_message: { text: string } | null };
+type Row = { id: string; number: number; user_id: string; status: string; unread: number; assignee: unknown; last_message: { text: string } | null };
 
 beforeAll(async () => {
   const test = await createTestDb();
@@ -65,19 +69,20 @@ describe('support inbox', () => {
     await call('POST', '/v1/support/messages', traveller, { text: 'No data in Tokyo' });
     const rows = await json<Row[]>(call('GET', '/v1/admin/conversations?status=open', agent));
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ user_id: travellerId, status: 'open', unread: 1, assignee: null, last_message: { text: 'No data in Tokyo' } });
+    expect(rows[0]).toMatchObject({ user_id: travellerId, number: 1001, status: 'open', unread: 1, assignee: null, last_message: { text: 'No data in Tokyo' } });
+    chatId = rows[0]?.id ?? '';
     const stats = await json<{ open: number; unassigned: number }>(call('GET', '/v1/admin/conversations/stats', agent));
     expect(stats).toMatchObject({ open: 1, unassigned: 1 });
   });
 
   it('keeps notes private, sends replies with a push and assigns whoever answered', async () => {
-    const opened = await json<Conversation>(call('GET', `/v1/admin/conversations/${travellerId}`, agent));
+    const opened = await json<Conversation>(call('GET', `/v1/admin/conversations/${chatId}`, agent));
     expect(opened.messages.map((item) => item.text)).toEqual(['No data in Tokyo']);
     expect((await json<Row[]>(call('GET', '/v1/admin/conversations', agent)))[0]?.unread).toBe(0);
 
-    await call('POST', `/v1/admin/conversations/${travellerId}/messages`, agent, { text: 'Paid for 10GB, check roaming', internal: true });
+    await call('POST', `/v1/admin/conversations/${chatId}/messages`, agent, { text: 'Paid for 10GB, check roaming', internal: true });
     const replied = await json<Conversation>(
-      call('POST', `/v1/admin/conversations/${travellerId}/messages`, agent, { text: 'Turn on Data Roaming in Settings.' }),
+      call('POST', `/v1/admin/conversations/${chatId}/messages`, agent, { text: 'Turn on Data Roaming in Settings.' }),
     );
     expect(replied).toMatchObject({ status: 'pending', assignee: { user_id: agentId, name: 'Aisha' } });
     expect(replied.messages.map((item) => [item.from, item.internal, item.staff?.name ?? null])).toEqual([
@@ -90,7 +95,7 @@ describe('support inbox', () => {
     expect(thread.map((item) => item.text).slice(1)).toEqual(['No data in Tokyo', 'Turn on Data Roaming in Settings.']);
 
     const queued = harness.queue.sent.filter((item) => item.name === JOB.supportReply);
-    expect(queued).toEqual([{ name: JOB.supportReply, data: { userId: travellerId, text: 'Turn on Data Roaming in Settings.' } }]);
+    expect(queued).toEqual([{ name: JOB.supportReply, data: { userId: travellerId, conversationId: chatId, text: 'Turn on Data Roaming in Settings.' } }]);
   });
 
   it('pushes the reply in the traveller’s language', async () => {
@@ -99,13 +104,13 @@ describe('support inbox', () => {
     const job = harness.queue.sent.find((item) => item.name === JOB.supportReply);
     await supportReplyJob.handle([{ data: job?.data } as never], { db, logger: silentLogger, push } as never);
     expect(push.sent).toEqual([
-      expect.objectContaining({ message: { title: 'ردّ فريق دعم vela', body: 'Turn on Data Roaming in Settings.', data: { kind: 'support' } } }),
+      expect.objectContaining({ message: { title: 'ردّ فريق دعم vela', body: 'Turn on Data Roaming in Settings.', data: { kind: 'support', conversation_id: chatId } } }),
     ]);
   });
 
   it('asks for a rating on resolve, takes one, and reopens on the next message', async () => {
     expect(await json(call('GET', '/v1/support/rating', traveller))).toEqual({ asked: false });
-    const resolved = await json<Conversation>(call('PATCH', `/v1/admin/conversations/${travellerId}`, agent, { status: 'resolved' }));
+    const resolved = await json<Conversation>(call('PATCH', `/v1/admin/conversations/${chatId}`, agent, { status: 'resolved' }));
     expect(resolved).toMatchObject({ status: 'resolved', rating_requested: true });
     expect(await json(call('GET', '/v1/support/rating', traveller))).toEqual({ asked: true });
 
@@ -124,10 +129,10 @@ describe('support inbox', () => {
 
   it('only assigns to staff', async () => {
     const otherId = await idOf('+919855500002');
-    expect((await call('PATCH', `/v1/admin/conversations/${travellerId}`, agent, { assignee_id: otherId })).status).toBe(422);
+    expect((await call('PATCH', `/v1/admin/conversations/${chatId}`, agent, { assignee_id: otherId })).status).toBe(422);
     const mine = await json<Row[]>(call('GET', '/v1/admin/conversations?assignee=me&status=all', agent));
-    expect(mine.map((item) => item.user_id)).toEqual([travellerId]);
-    await call('PATCH', `/v1/admin/conversations/${travellerId}`, agent, { assignee_id: null });
+    expect(mine.map((item) => item.id)).toEqual([chatId]);
+    await call('PATCH', `/v1/admin/conversations/${chatId}`, agent, { assignee_id: null });
     expect(await json<Row[]>(call('GET', '/v1/admin/conversations?assignee=me&status=all', agent))).toEqual([]);
   });
 
@@ -165,10 +170,10 @@ describe('customers', () => {
   });
 
   it('shows a customer profile with chat, ratings and staff history', async () => {
-    const detail = await json<{ name: string; tags: string[]; conversation: { status: string }; ratings: { score: number }[]; history: { action: string }[]; devices: unknown[] }>(
+    const detail = await json<{ name: string; tags: string[]; conversations: { status: string }[]; ratings: { score: number }[]; history: { action: string }[]; devices: unknown[] }>(
       call('GET', `/v1/admin/customers/${travellerId}`, agent),
     );
-    expect(detail).toMatchObject({ name: 'Ravi Kumar', tags: ['had issue', 'vip'], conversation: { status: 'open' }, ratings: [{ score: 5 }] });
+    expect(detail).toMatchObject({ name: 'Ravi Kumar', tags: ['had issue', 'vip'], conversations: [{ status: 'open' }], ratings: [{ score: 5 }] });
     expect(detail.devices).toHaveLength(1);
     expect(detail.history.map((item) => item.action)).toContain('customer.tags');
     expect((await call('GET', '/v1/admin/customers/nobody', agent)).status).toBe(404);
@@ -200,5 +205,88 @@ describe('broadcasts', () => {
     const listed = await json<{ id: string; status: string }[]>(call('GET', '/v1/admin/broadcasts', agent));
     expect(listed[0]).toMatchObject({ id: created.id, status: 'sent' });
     void other;
+  });
+});
+
+describe('support chats (tickets)', () => {
+  const japan = '8981100022233344455';
+  const strangers = '8981100022233399999';
+
+  beforeAll(async () => {
+    await seedReferenceData(db, { sampleContent: false });
+    await syncCatalog(db, createMockProvider(), { marginPercent: 40, logger: silentLogger });
+    const [anyPlan] = await db.select({ id: plan.id }).from(plan).limit(1);
+    const otherId = await idOf('+919855500002');
+    const row = (userId: string, iccid: string) => ({
+      userId,
+      iccid,
+      planId: anyPlan?.id ?? '',
+      providerRef: `ref-${iccid}`,
+      label: 'Japan · 10 GB',
+      dataTotalMb: 10_240,
+      smdp: 'smdp.example.com',
+      lpaEnc: 'x',
+      activationCodeEnc: 'x',
+    });
+    await db.insert(esim).values([row(travellerId, japan), row(otherId, strangers)]);
+  });
+
+  it('lists the existing chat and starts a new one about a plan', async () => {
+    const before = await json<SupportChatSummary[]>(call('GET', '/v1/support/chats', traveller));
+    expect(before.map((item) => item.number)).toEqual([1001]);
+
+    expect((await call('POST', '/v1/support/chats', traveller, { text: 'Hi', iccid: strangers })).status).toBe(422);
+    const started = await call('POST', '/v1/support/chats', traveller, { text: 'Can I top up the Japan plan?', iccid: japan });
+    expect(started.status).toBe(201);
+    const chat = (await started.json()) as SupportChat;
+    expect(chat.chat).toMatchObject({ number: 1002, status: 'open', esim: { iccid: japan, label: 'Japan · 10 GB' }, rating_asked: false });
+    expect(chat.messages.map((item) => item.text).slice(1)).toEqual(['Can I top up the Japan plan?']);
+
+    const after = await json<SupportChatSummary[]>(call('GET', '/v1/support/chats', traveller));
+    expect(after.map((item) => item.number)).toEqual([1002, 1001]);
+    // The old single-thread endpoints follow the most recent chat.
+    const legacy = await json<SupportMessage[]>(call('GET', '/v1/support/messages', traveller));
+    expect(legacy.at(-1)?.text).toBe('Can I top up the Japan plan?');
+  });
+
+  it('keeps each chat’s messages, ratings and staff work separate', async () => {
+    const [newest] = await json<SupportChatSummary[]>(call('GET', '/v1/support/chats', traveller));
+    const id = newest?.id ?? '';
+    const rows = await json<(Row & { esim: { label: string } | null })[]>(call('GET', '/v1/admin/conversations?status=open', agent));
+    expect(rows.map((item) => item.number).sort()).toEqual([1001, 1002]);
+    expect(rows.find((item) => item.id === id)?.esim).toEqual({ iccid: japan, label: 'Japan · 10 GB' });
+
+    await call('POST', `/v1/admin/conversations/${id}/messages`, agent, { text: 'Yes, from Trips › Top up.', status: 'resolved' });
+    const theirs = await json<SupportChat>(call('GET', `/v1/support/chats/${id}`, traveller));
+    expect(theirs.chat).toMatchObject({ status: 'resolved', rating_asked: true });
+    expect(theirs.messages.at(-1)?.text).toBe('Yes, from Trips › Top up.');
+    const older = await json<SupportChat>(call('GET', `/v1/support/chats/${chatId}`, traveller));
+    expect(older.messages.map((item) => item.text)).not.toContain('Yes, from Trips › Top up.');
+
+    expect((await call('POST', `/v1/support/chats/${id}/rating`, traveller, { score: 4 })).status).toBe(204);
+    expect((await json<SupportChat>(call('GET', `/v1/support/chats/${id}`, traveller))).chat.rating_asked).toBe(false);
+
+    const replied = await json<SupportChat>(call('POST', `/v1/support/chats/${id}/messages`, traveller, { text: 'One more thing' }));
+    expect(replied.chat.status).toBe('open');
+  });
+
+  it('hides other people’s chats', async () => {
+    const [newest] = await json<SupportChatSummary[]>(call('GET', '/v1/support/chats', traveller));
+    expect((await call('GET', `/v1/support/chats/${newest?.id}`, other)).status).toBe(404);
+    expect((await call('POST', `/v1/support/chats/${newest?.id}/messages`, other, { text: 'hi' })).status).toBe(404);
+    expect((await call('GET', '/v1/support/chats/not-a-uuid', traveller)).status).toBe(404);
+  });
+
+  it('lets staff start a chat from a profile and change its plan', async () => {
+    const started = await call('POST', `/v1/admin/customers/${travellerId}/conversations`, agent, { text: 'Your Japan plan ends tomorrow.', iccid: japan });
+    expect(started.status).toBe(201);
+    const chat = (await started.json()) as { id: string; number: number; status: string; esim: unknown; other_chats: unknown[] };
+    expect(chat).toMatchObject({ number: 1003, status: 'pending', esim: { iccid: japan } });
+    expect(chat.other_chats).toHaveLength(2);
+    expect((await call('PATCH', `/v1/admin/conversations/${chat.id}`, agent, { iccid: strangers })).status).toBe(422);
+    const cleared = await json<{ esim: unknown }>(call('PATCH', `/v1/admin/conversations/${chat.id}`, agent, { iccid: null }));
+    expect(cleared.esim).toBeNull();
+    const chats = await json<SupportChatSummary[]>(call('GET', '/v1/support/chats', traveller));
+    expect(chats[0]).toMatchObject({ number: 1003, status: 'pending' });
   });
 });

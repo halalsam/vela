@@ -535,7 +535,19 @@
     "rateBody": "أغلقنا هذه المحادثة بعد حل المشكلة. قيّم المساعدة لنواصل التحسن.",
     "rateStar": "{{count}} من 5",
     "rateThanks": "شكرًا على تقييمك.",
-    "rateLater": "ليس الآن"
+    "rateLater": "ليس الآن",
+    "newChat": "محادثة جديدة",
+    "newChatIntro": "ابدأ محادثة جديدة لسؤال مختلف. اختر الباقة المعنية لنساعدك أسرع.",
+    "plan": "أي باقة؟",
+    "noPlan": "ليست عن باقة محددة",
+    "about": "بخصوص {{plan}}",
+    "chatNumber": "المحادثة رقم {{number}}",
+    "yourChats": "محادثاتك",
+    "start": "بدء المحادثة",
+    "statusOpen": "بانتظار الدعم",
+    "statusPending": "ردّ فريق الدعم",
+    "statusResolved": "تم الحل",
+    "cancel": "إلغاء"
   },
   "notifications": {
     "channel": "تحديثات الرحلة"

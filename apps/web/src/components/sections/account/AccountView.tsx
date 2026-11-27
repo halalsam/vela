@@ -177,7 +177,7 @@ function SignedInAccount({ locale, labels, names, identity, live = false, onSign
           ))}
         </ul>
       )}
-      <SupportChat locale={locale} labels={labels} />
+      <SupportChat locale={locale} labels={labels} esims={state.status === 'ready' ? state.esims : []} />
     </div>
   );
 }

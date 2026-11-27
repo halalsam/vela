@@ -13,6 +13,8 @@ import {
   rewardsSchema,
   supportMessageSchema,
   supportRatingStatusSchema,
+  supportChatSchema,
+  supportChatSummarySchema,
   countrySchema,
   dailyUsageSchema,
   esimSchema,
@@ -34,6 +36,8 @@ import {
   type Rewards,
   type SupportMessage,
   type SupportRatingStatus,
+  type SupportChat,
+  type SupportChatSummary,
   type Country,
   type Currency,
   type DailyUsage,
@@ -79,6 +83,13 @@ export type VelaApi = {
   /** Whether support resolved the chat and asks for a rating. */
   getSupportRating(): Promise<SupportRatingStatus>;
   rateSupport(score: number, comment?: string | null): Promise<void>;
+  /** The customer's support chats (tickets), newest activity first. */
+  getSupportChats(): Promise<SupportChatSummary[]>;
+  getSupportChat(id: string): Promise<SupportChat>;
+  /** Starts a new chat, optionally about one of the customer's eSIMs. */
+  startSupportChat(input: { text: string; iccid?: string | null }): Promise<SupportChat>;
+  sendSupportChatMessage(id: string, text: string): Promise<SupportChat>;
+  rateSupportChat(id: string, score: number, comment?: string | null): Promise<void>;
   redeemCoupon(code: string): Promise<Coupon>;
   createOrder(input: CreateOrderInput): Promise<Checkout>;
   confirmPayment(orderId: string, result: PaymentResult): Promise<Order>;
@@ -148,6 +159,38 @@ function notFound(what: string): never {
 export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: MockApiOptions = {}): VelaApi {
   const esimStore: Esim[] = [...mocks.esims];
   const thread: SupportMessage[] = [...mocks.supportThread];
+  type MockChat = { summary: SupportChatSummary; messages: SupportMessage[] };
+  const firstEsim = mocks.esims[0];
+  const chats: MockChat[] = [
+    {
+      summary: {
+        id: 'chat-1001',
+        number: 1001,
+        status: 'pending',
+        esim: firstEsim ? { iccid: firstEsim.iccid, label: firstEsim.label } : null,
+        last_message: null,
+        updated_at: thread.at(-1)?.sent_at ?? new Date().toISOString(),
+        rating_asked: false,
+      },
+      messages: thread,
+    },
+  ];
+  const chatOut = (chat: MockChat): SupportChat => {
+    const last = chat.messages.at(-1);
+    chat.summary.last_message = last ? { text: last.text, from: last.from, sent_at: last.sent_at } : null;
+    return { chat: chat.summary, messages: chat.messages };
+  };
+  const findChat = (id: string) => {
+    const chat = chats.find((item) => item.summary.id === id);
+    if (!chat) throw new ApiError('Chat not found', 404);
+    return chat;
+  };
+  const say = (chat: MockChat, text: string) => {
+    chat.messages.push({ id: `u${Date.now()}`, from: 'user', text, sent_at: new Date().toISOString(), install_step: null });
+    chat.summary.status = 'open';
+    chat.summary.rating_asked = false;
+    chat.summary.updated_at = new Date().toISOString();
+  };
   const orders = new Map<string, Order>();
 
   async function respond<T>(schema: z.ZodType<T>, data: () => unknown, options: { list?: boolean } = {}): Promise<T> {
@@ -207,6 +250,41 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
     },
     getSupportRating: () => respond(supportRatingStatusSchema, () => ({ asked: false })),
     rateSupport: async () => {
+      await wait(latencyMs);
+    },
+    getSupportChats: () =>
+      respond(
+        z.array(supportChatSummarySchema),
+        () => [...chats].map((chat) => chatOut(chat).chat).sort((a, b) => b.updated_at.localeCompare(a.updated_at)),
+        { list: true },
+      ),
+    getSupportChat: (id) => respond(supportChatSchema, () => chatOut(findChat(id))),
+    startSupportChat: async ({ text, iccid }) => {
+      const esim = iccid ? esimStore.find((item) => item.iccid === iccid) : undefined;
+      const number = 1001 + chats.length;
+      const chat: MockChat = {
+        summary: {
+          id: `chat-${number}`,
+          number,
+          status: 'open',
+          esim: esim ? { iccid: esim.iccid, label: esim.label } : null,
+          last_message: null,
+          updated_at: new Date().toISOString(),
+          rating_asked: false,
+        },
+        messages: [{ id: `w${number}`, from: 'agent', text: 'Hi, this is vela support. Ask us anything about installing or using your eSIM.', sent_at: new Date().toISOString(), install_step: null }],
+      };
+      say(chat, text);
+      chats.push(chat);
+      return respond(supportChatSchema, () => chatOut(chat));
+    },
+    sendSupportChatMessage: async (id, text) => {
+      const chat = findChat(id);
+      say(chat, text);
+      return respond(supportChatSchema, () => chatOut(chat));
+    },
+    rateSupportChat: async (id) => {
+      findChat(id).summary.rating_asked = false;
       await wait(latencyMs);
     },
     redeemCoupon: async (code) => respond(couponSchema, () => findCoupon(code)),

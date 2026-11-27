@@ -14,6 +14,7 @@ import {
 import { HttpError, notFound } from '../../lib/errors';
 import { fromMinor } from '../../lib/money';
 import { listOrders } from '../admin/admin';
+import { esimLabels } from '../support/support';
 
 export const ACTIVITIES = ['active_esim', 'expiring_3d', 'bought_30d', 'never_bought', 'lapsed_90d'] as const;
 export type Activity = (typeof ACTIVITIES)[number];
@@ -123,9 +124,15 @@ export async function listCustomers(db: Database, filter: CustomerFilter & { bef
   if (filter.before) where.push(lt(profile.createdAt, filter.before));
   const [rows, [total]] = await Promise.all([
     db
-      .select({ profile, conversation: supportConversation.status })
+      .select({
+        profile,
+        // The chat that most needs attention: open, then waiting on the customer, then resolved.
+        conversation: sql<'open' | 'pending' | 'resolved' | null>`(
+          select ${supportConversation.status} from ${supportConversation} where ${supportConversation.userId} = ${profile.userId}
+          order by case ${supportConversation.status} when 'open' then 0 when 'pending' then 1 else 2 end limit 1
+        )`,
+      })
       .from(profile)
-      .leftJoin(supportConversation, eq(supportConversation.userId, profile.userId))
       .where(and(...where))
       .orderBy(desc(profile.createdAt))
       .limit(filter.limit),
@@ -170,13 +177,16 @@ export async function customerDetail(db: Database, userId: string) {
       .groupBy(creditLedger.currency),
     db.select().from(device).where(eq(device.userId, userId)).orderBy(desc(device.lastSeenAt)),
     tagsFor(db, [userId]),
-    db.select().from(supportConversation).where(eq(supportConversation.userId, userId)),
+    db.select().from(supportConversation).where(eq(supportConversation.userId, userId)).orderBy(desc(supportConversation.lastMessageAt)).limit(30),
     db.select().from(supportRating).where(eq(supportRating.userId, userId)).orderBy(desc(supportRating.createdAt)).limit(10),
     db.select().from(auditLog).where(eq(auditLog.target, `user:${userId}`)).orderBy(desc(auditLog.createdAt)).limit(50),
     db.select({ value: count() }).from(profile).where(eq(profile.referredBy, row.referralCode)),
     spendFor(db, [userId]),
   ]);
-  const chat = conversation[0];
+  const labels = await esimLabels(
+    db,
+    conversation.map((item) => item.iccid),
+  );
   const money = spend.get(userId);
   return {
     user_id: row.userId,
@@ -207,9 +217,14 @@ export async function customerDetail(db: Database, userId: string) {
       activated_at: item.activatedAt?.toISOString() ?? null,
       expires_at: item.expiresAt?.toISOString() ?? null,
     })),
-    conversation: chat
-      ? { status: chat.status, assignee_id: chat.assigneeId, last_message_at: chat.lastMessageAt.toISOString() }
-      : null,
+    conversations: conversation.map((item) => ({
+      id: item.id,
+      number: item.number,
+      status: item.status,
+      esim: item.iccid ? { iccid: item.iccid, label: labels.get(item.iccid) ?? item.iccid } : null,
+      assignee_id: item.assigneeId,
+      last_message_at: item.lastMessageAt.toISOString(),
+    })),
     ratings: ratings.map((item) => ({ score: item.score, comment: item.comment, at: item.createdAt.toISOString() })),
     history: history.map((item) => ({ action: item.action, actor_id: item.actorId, data: item.data, at: item.createdAt.toISOString() })),
   };

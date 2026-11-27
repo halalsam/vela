@@ -23,12 +23,12 @@ const STAFF = [
 ];
 
 type Message = AdminConversation['messages'][number];
-type Thread = { status: ConversationStatus; assignee: { user_id: string; name: string } | null; readAt: number; ratingRequested: boolean; resolvedAt: string | null; messages: Message[] };
+type Thread = { id: string; number: number; userId: string; iccid: string | null; status: ConversationStatus; assignee: { user_id: string; name: string } | null; readAt: number; ratingRequested: boolean; resolvedAt: string | null; messages: Message[] };
 
 type Fail = (status: number, message: string) => never;
 
 type Store = {
-  customers: Map<string, Omit<AdminCustomer, 'orders' | 'esims' | 'orders_count' | 'spend' | 'last_order_at' | 'conversation'>>;
+  customers: Map<string, Omit<AdminCustomer, 'orders' | 'esims' | 'orders_count' | 'spend' | 'last_order_at' | 'conversations'>>;
   threads: Map<string, Thread>;
   replies: SavedReply[];
   broadcasts: AdminBroadcast[];
@@ -75,9 +75,14 @@ function seed(orders: AdminOrder[]): Store {
     ...extra,
   });
   const threads: Store['threads'] = new Map();
-  const add = (index: number, thread: Omit<Thread, 'readAt' | 'ratingRequested' | 'resolvedAt'> & Partial<Thread>) => {
-    const id = ids[index];
-    if (id) threads.set(id, { readAt: 0, ratingRequested: false, resolvedAt: null, ...thread });
+  let number = 1000;
+  const add = (index: number, thread: Omit<Thread, 'id' | 'number' | 'userId' | 'iccid' | 'readAt' | 'ratingRequested' | 'resolvedAt'> & Partial<Thread>) => {
+    const userId = ids[index];
+    if (!userId) return;
+    number += 1;
+    const iccid = thread.iccid ?? (index % 2 === 1 ? (orders.find((order) => order.customer.user_id === userId && order.esim)?.esim?.iccid ?? null) : null);
+    const id = `00000000-0000-4000-a000-${String(number).padStart(12, '0')}`;
+    threads.set(id, { id, number, userId, readAt: 0, ratingRequested: false, resolvedAt: null, ...thread, iccid });
   };
   add(1, {
     status: 'open',
@@ -112,6 +117,16 @@ function seed(orders: AdminOrder[]): Store {
       say('user', 'The QR code email never arrived.', 60 * 32),
       say('agent', 'Sent again just now. You can also install it from the app under Trips.', 60 * 31 + 10),
       say('user', 'Got it, installed. Thanks!', 60 * 31),
+    ],
+    readAt: Date.now(),
+  });
+  add(4, {
+    status: 'resolved',
+    assignee: STAFF[1]!,
+    resolvedAt: at(60 * 24 * 12),
+    messages: [
+      say('user', 'My QR code shows as already used.', 60 * 24 * 12 + 30),
+      say('agent', 'We re-issued it. Please scan the new one in your email.', 60 * 24 * 12),
     ],
     readAt: Date.now(),
   });
@@ -216,43 +231,59 @@ function filterFrom(params: URLSearchParams | Record<string, unknown>): Customer
   return { q: get('q'), tag: get('tag'), language: get('language') as 'en' | 'ar' | undefined, activity: get('activity') as Activity | undefined, country: get('country') };
 }
 
-function conversation(state: Store, orders: AdminOrder[], userId: string, fail: Fail): AdminConversation {
-  const customer = state.customers.get(userId);
+function planOf(orders: AdminOrder[], iccid: string | null) {
+  if (!iccid) return null;
+  const order = orders.find((item) => item.esim?.iccid === iccid);
+  return { iccid, label: order?.plan_id ?? 'eSIM' };
+}
+
+function conversation(state: Store, orders: AdminOrder[], id: string, fail: Fail): AdminConversation {
+  const thread = state.threads.get(id);
+  if (!thread) fail(404, 'Conversation not found');
+  const customer = state.customers.get(thread.userId);
   if (!customer) fail(404, 'Customer not found');
-  const thread = state.threads.get(userId);
-  const mine = ordersOf(orders, userId);
+  const mine = ordersOf(orders, thread.userId);
   return {
-    user_id: userId,
-    status: thread?.status ?? null,
-    assignee: thread?.assignee ?? null,
-    resolved_at: thread?.resolvedAt ?? null,
-    rating_requested: thread?.ratingRequested ?? false,
+    id,
+    number: thread.number,
+    user_id: thread.userId,
+    status: thread.status,
+    esim: planOf(orders, thread.iccid),
+    other_chats: [...state.threads.values()]
+      .filter((item) => item.userId === thread.userId && item.id !== id)
+      .map((item) => ({ id: item.id, number: item.number, status: item.status, esim: planOf(orders, item.iccid), last_message_at: item.messages.at(-1)?.at ?? customer.joined_at })),
+    assignee: thread.assignee,
+    resolved_at: thread.resolvedAt,
+    rating_requested: thread.ratingRequested,
     last_rating: customer.ratings[0] ?? null,
     customer: { name: customer.name, phone: customer.phone, email: customer.email, language: customer.language, joined_at: customer.joined_at, tags: customer.tags },
-    messages: thread?.messages ?? [],
+    messages: thread.messages,
     orders: mine.slice(0, 5).map(orderRow),
-    esims: esimsOf(mine).slice(0, 5),
+    esims: esimsOf(mine).slice(0, 10),
   };
 }
 
-function rows(state: Store, url: URL): AdminConversationRow[] {
+function rows(state: Store, orders: AdminOrder[], url: URL): AdminConversationRow[] {
   const status = url.searchParams.get('status') ?? 'open';
   const assignee = url.searchParams.get('assignee') ?? 'any';
-  const q = url.searchParams.get('q')?.toLowerCase();
+  const q = url.searchParams.get('q')?.toLowerCase().replace(/^#/, '');
   const tag = url.searchParams.get('tag');
   const list: AdminConversationRow[] = [];
-  for (const [userId, thread] of state.threads) {
-    const customer = state.customers.get(userId);
+  for (const thread of state.threads.values()) {
+    const customer = state.customers.get(thread.userId);
     if (!customer) continue;
     if (status !== 'all' && thread.status !== status) continue;
     if (assignee === 'me' && thread.assignee?.user_id !== ME.user_id) continue;
     if (assignee === 'unassigned' && thread.assignee) continue;
     if (tag && !customer.tags.includes(tag)) continue;
-    if (q && ![customer.name, customer.phone, customer.email, ...thread.messages.map((item) => item.text)].some((value) => value?.toLowerCase().includes(q))) continue;
+    if (q && ![customer.name, customer.phone, customer.email, String(thread.number), ...thread.messages.map((item) => item.text)].some((value) => value?.toLowerCase().includes(q))) continue;
     const last = thread.messages.at(-1);
     const lastCustomer = [...thread.messages].reverse().find((item) => item.from === 'user');
     list.push({
-      user_id: userId,
+      id: thread.id,
+      number: thread.number,
+      user_id: thread.userId,
+      esim: planOf(orders, thread.iccid),
       customer: { name: customer.name, phone: customer.phone, email: customer.email, language: customer.language },
       status: thread.status,
       assignee: thread.assignee,
@@ -267,6 +298,19 @@ function rows(state: Store, url: URL): AdminConversationRow[] {
     if (a.status === 'open') return (a.waiting_since ?? '').localeCompare(b.waiting_since ?? '');
     return b.last_message_at.localeCompare(a.last_message_at);
   });
+}
+
+function staffWrite(thread: Thread, body: Record<string, unknown>, fail: Fail) {
+  const text = String(body.text ?? '').trim();
+  if (!text) fail(400, 'Write a message first');
+  const internal = Boolean(body.internal);
+  thread.messages.push({ id: crypto.randomUUID(), from: 'agent', text, internal, staff: ME, at: new Date().toISOString() });
+  if (internal) return;
+  thread.status = (body.status as ConversationStatus | undefined) ?? 'pending';
+  thread.assignee ??= ME;
+  thread.readAt = Date.now();
+  thread.ratingRequested = thread.status === 'resolved';
+  thread.resolvedAt = thread.status === 'resolved' ? new Date().toISOString() : null;
 }
 
 /** Demo answers for the CRM endpoints. Returns `undefined` for paths it doesn't handle. */
@@ -289,41 +333,28 @@ export function demoCrm(orders: AdminOrder[], url: URL, method: string, body: Re
       rating_30d: ratings.length ? { average: ratings.reduce((sum, item) => sum + item.score, 0) / ratings.length, count: ratings.length } : null,
     };
   }
-  if (path === '/v1/admin/conversations' && method === 'GET') return rows(state, url);
+  if (path === '/v1/admin/conversations' && method === 'GET') return rows(state, orders, url);
   if (parts[2] === 'conversations' && parts[3]) {
-    const userId = decodeURIComponent(parts[3]);
+    const id = decodeURIComponent(parts[3]);
+    const thread = state.threads.get(id);
+    if (!thread) fail(404, 'Conversation not found');
     if (parts[4] === 'messages' && method === 'POST') {
-      if (!state.customers.has(userId)) fail(404, 'Customer not found');
-      const text = String(body.text ?? '').trim();
-      if (!text) fail(400, 'Write a message first');
-      const internal = Boolean(body.internal);
-      const thread = state.threads.get(userId) ?? { status: 'open' as ConversationStatus, assignee: null, readAt: Date.now(), ratingRequested: false, resolvedAt: null, messages: [] };
-      thread.messages.push({ id: crypto.randomUUID(), from: 'agent', text, internal, staff: ME, at: new Date().toISOString() });
-      if (!internal) {
-        thread.status = (body.status as ConversationStatus | undefined) ?? 'pending';
-        thread.assignee ??= ME;
-        thread.readAt = Date.now();
-        thread.ratingRequested = thread.status === 'resolved';
-        thread.resolvedAt = thread.status === 'resolved' ? new Date().toISOString() : null;
-      }
-      state.threads.set(userId, thread);
-      return conversation(state, orders, userId, fail);
+      staffWrite(thread, body, fail);
+      return conversation(state, orders, id, fail);
     }
     if (method === 'PATCH') {
-      const thread = state.threads.get(userId);
-      if (!thread) fail(404, 'Conversation not found');
       if (typeof body.status === 'string' && body.status !== thread.status) {
         thread.status = body.status as ConversationStatus;
         thread.resolvedAt = thread.status === 'resolved' ? new Date().toISOString() : null;
         thread.ratingRequested = thread.status === 'resolved' && thread.messages.some((item) => item.from === 'agent' && !item.internal);
       }
       if ('assignee_id' in body) thread.assignee = STAFF.find((item) => item.user_id === body.assignee_id) ?? null;
-      return conversation(state, orders, userId, fail);
+      if ('iccid' in body) thread.iccid = (body.iccid as string | null) ?? null;
+      return conversation(state, orders, id, fail);
     }
     if (method === 'GET') {
-      const thread = state.threads.get(userId);
-      if (thread && url.searchParams.get('read') !== '0') thread.readAt = Date.now();
-      return conversation(state, orders, userId, fail);
+      if (url.searchParams.get('read') !== '0') thread.readAt = Date.now();
+      return conversation(state, orders, id, fail);
     }
   }
   if (path === '/v1/admin/saved-replies' && method === 'GET') return [...state.replies].sort((a, b) => a.title.localeCompare(b.title));
@@ -367,7 +398,11 @@ export function demoCrm(orders: AdminOrder[], url: URL, method: string, body: Re
           spend: summary.spend,
           last_order_at: summary.last,
           tags: customer.tags,
-          conversation: state.threads.get(customer.user_id)?.status ?? null,
+          conversation:
+            [...state.threads.values()]
+              .filter((item) => item.userId === customer.user_id)
+              .map((item) => item.status)
+              .sort((x, y) => ['open', 'pending', 'resolved'].indexOf(x) - ['open', 'pending', 'resolved'].indexOf(y))[0] ?? null,
         };
       }),
     };
@@ -384,7 +419,14 @@ export function demoCrm(orders: AdminOrder[], url: URL, method: string, body: Re
     }
     const mine = ordersOf(orders, customer.user_id);
     const summary = stats(mine);
-    const thread = state.threads.get(customer.user_id);
+    if (parts[4] === 'conversations' && method === 'POST') {
+      const number = Math.max(1000, ...[...state.threads.values()].map((item) => item.number)) + 1;
+      const id = `00000000-0000-4000-a000-${String(number).padStart(12, '0')}`;
+      const thread: Thread = { id, number, userId: customer.user_id, iccid: (body.iccid as string | null) ?? null, status: 'open', assignee: ME, readAt: Date.now(), ratingRequested: false, resolvedAt: null, messages: [] };
+      staffWrite(thread, body, fail);
+      state.threads.set(id, thread);
+      return conversation(state, orders, id, fail);
+    }
     return {
       ...customer,
       orders_count: summary.orders,
@@ -392,7 +434,17 @@ export function demoCrm(orders: AdminOrder[], url: URL, method: string, body: Re
       last_order_at: summary.last,
       orders: mine.map(orderRow),
       esims: esimsOf(mine),
-      conversation: thread ? { status: thread.status, assignee_id: thread.assignee?.user_id ?? null, last_message_at: thread.messages.at(-1)?.at ?? customer.joined_at } : null,
+      conversations: [...state.threads.values()]
+        .filter((item) => item.userId === customer.user_id)
+        .map((item) => ({
+          id: item.id,
+          number: item.number,
+          status: item.status,
+          esim: planOf(orders, item.iccid),
+          assignee_id: item.assignee?.user_id ?? null,
+          last_message_at: item.messages.at(-1)?.at ?? customer.joined_at,
+        }))
+        .sort((x, y) => y.last_message_at.localeCompare(x.last_message_at)),
     } satisfies AdminCustomer;
   }
   if (parts[2] === 'users' && parts[3] && parts[4] === 'credit' && method === 'POST') {

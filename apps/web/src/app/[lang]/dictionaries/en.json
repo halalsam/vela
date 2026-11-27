@@ -232,7 +232,19 @@
     "rateComment": "Anything to add? (optional)",
     "rateSend": "Send rating",
     "rateLater": "Not now",
-    "rateThanks": "Thanks for the rating."
+    "rateThanks": "Thanks for the rating.",
+    "chatNew": "New chat",
+    "chatStart": "Start chat",
+    "chatCancel": "Cancel",
+    "chatYours": "Your chats",
+    "chatNumber": "Chat #{{number}}",
+    "chatPlan": "Which plan is this about? (optional)",
+    "chatNoPlan": "No specific plan",
+    "chatAbout": "About {{plan}}",
+    "chatNewIntro": "Start a new chat for a different question. Pick the plan it's about so we can help faster.",
+    "chatStatusOpen": "Waiting for support",
+    "chatStatusPending": "Support replied",
+    "chatStatusResolved": "Solved"
   },
   "footer": {
     "tagline": "land connected.",

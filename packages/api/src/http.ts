@@ -18,6 +18,8 @@ import {
   rewardsSchema,
   supportMessageSchema,
   supportRatingStatusSchema,
+  supportChatSchema,
+  supportChatSummarySchema,
   topUpPackSchema,
   type Currency,
 } from './schemas';
@@ -54,6 +56,11 @@ export const httpServedMethods = [
   'sendSupportMessage',
   'getSupportRating',
   'rateSupport',
+  'getSupportChats',
+  'getSupportChat',
+  'startSupportChat',
+  'sendSupportChatMessage',
+  'rateSupportChat',
   'getBlogPosts',
   'getBlogPost',
   'getSeo',
@@ -133,6 +140,14 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     getSupportRating: () => get('/v1/support/rating', supportRatingStatusSchema),
     rateSupport: async (score, comment = null) => {
       await send('/v1/support/rating', z.unknown(), { method: 'POST', body: { score, comment } });
+    },
+    getSupportChats: () => get('/v1/support/chats', z.array(supportChatSummarySchema)),
+    getSupportChat: (id) => get(`/v1/support/chats/${encodeURIComponent(id)}`, supportChatSchema),
+    startSupportChat: ({ text, iccid = null }) => send('/v1/support/chats', supportChatSchema, { method: 'POST', body: { text, iccid } }),
+    sendSupportChatMessage: (id, text) =>
+      send(`/v1/support/chats/${encodeURIComponent(id)}/messages`, supportChatSchema, { method: 'POST', body: { text } }),
+    rateSupportChat: async (id, score, comment = null) => {
+      await send(`/v1/support/chats/${encodeURIComponent(id)}/rating`, z.unknown(), { method: 'POST', body: { score, comment } });
     },
     getDailyUsage: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}/usage/daily`, z.array(dailyUsageSchema)),
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Button, Card, Field, Pill } from '@/components/ui';
 import {
@@ -15,13 +16,14 @@ import {
   statusTone,
   when,
   type Activity,
+  type AdminConversation,
   type AdminCustomer,
   type AdminCustomerRow,
   type CustomerFilter,
 } from '@/lib/adminApi';
 import { cn, type } from '@/lib/type';
 import { useStaffRole } from './AdminShell';
-import { Empty, ErrorNote, Row, Section, Select, Skeleton, Stat, usePolled } from './kit';
+import { Empty, ErrorNote, Row, Section, Select, Skeleton, Stat, TextArea, usePolled } from './kit';
 
 type TagCount = { tag: string; customers: number };
 
@@ -264,6 +266,84 @@ function CreditForm({ userId, currency, onDone }: { userId: string; currency: st
   );
 }
 
+function SupportChats({ customer }: { customer: AdminCustomer }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [iccid, setIccid] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function start(event: FormEvent) {
+    event.preventDefault();
+    if (!text.trim()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const chat = await adminFetch<AdminConversation>(`/v1/admin/customers/${encodeURIComponent(customer.user_id)}/conversations`, {
+        method: 'POST',
+        body: { text: text.trim(), iccid: iccid || null },
+      });
+      router.push(`/admin/inbox?c=${encodeURIComponent(chat.id)}`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Couldn’t start the chat');
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {customer.conversations.length === 0 ? (
+        <p className={cn(type.callout, 'text-fg-secondary')}>No chats yet.</p>
+      ) : (
+        <dl>
+          {customer.conversations.map((item) => (
+            <Row
+              key={item.id}
+              label={
+                <Link href={`/admin/inbox?c=${encodeURIComponent(item.id)}`} className="flex flex-col hover:underline">
+                  <span className={cn(type.calloutStrong, 'text-accent')}>#{item.number}</span>
+                  <span className={cn(type.caption, 'text-fg-tertiary')}>
+                    {item.esim?.label ?? 'No plan'} · {when(item.last_message_at)}
+                  </span>
+                </Link>
+              }
+            >
+              <Pill tone={conversationTone[item.status]}>{conversationLabel[item.status]}</Pill>
+            </Row>
+          ))}
+        </dl>
+      )}
+      {open ? (
+        <form onSubmit={start} className="flex flex-col gap-3 border-t border-line pt-3">
+          <Select label="About plan (optional)" value={iccid} onChange={(event) => setIccid(event.target.value)}>
+            <option value="">No plan</option>
+            {customer.esims.map((item) => (
+              <option key={item.iccid} value={item.iccid}>
+                {item.label} · …{item.iccid.slice(-4)}
+              </option>
+            ))}
+          </Select>
+          <TextArea label="First message" rows={3} maxLength={2000} dir="auto" value={text} onChange={(event) => setText(event.target.value)} hint="The customer gets a push and sees it as a new chat." />
+          {error ? <ErrorNote>{error}</ErrorNote> : null}
+          <div className="flex gap-2">
+            <Button type="submit" disabled={busy || !text.trim()}>
+              Send and open chat
+            </Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <Button variant="secondary" size="sm" className="self-start" onClick={() => setOpen(true)}>
+          New chat
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function Lines({ items, empty, children }: { items: unknown[]; empty: string; children: ReactNode }) {
   return items.length === 0 ? <p className={cn(type.callout, 'text-fg-secondary')}>{empty}</p> : <dl>{children}</dl>;
 }
@@ -280,21 +360,7 @@ export function CustomerView({ id }: { id: string }) {
         <Link href="/admin/customers" className={cn(type.callout, 'text-fg-secondary hover:text-fg')}>
           ← Customers
         </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className={cn(type.displayLg, 'me-auto')}>{personName(customer).toLowerCase()}</h1>
-          <Link
-            href={`/admin/inbox?c=${encodeURIComponent(customer.user_id)}`}
-            className={cn(type.calloutStrong, 'inline-flex h-button items-center rounded-button bg-fg px-6 text-fg-inverse hover:bg-ivory')}
-          >
-            {customer.conversation ? 'Open chat' : 'Message'}
-          </Link>
-        </div>
-        {customer.conversation ? (
-          <span className="flex items-center gap-2">
-            <Pill tone={conversationTone[customer.conversation.status]}>{conversationLabel[customer.conversation.status]}</Pill>
-            <span className={cn(type.caption, 'text-fg-tertiary')}>Last message {when(customer.conversation.last_message_at)}</span>
-          </span>
-        ) : null}
+        <h1 className={type.displayLg}>{personName(customer).toLowerCase()}</h1>
       </div>
       <div className="grid grid-cols-2 gap-card-gap md:grid-cols-4">
         <Stat label="Orders" value={customer.orders_count} />
@@ -332,6 +398,9 @@ export function CustomerView({ id }: { id: string }) {
           </Lines>
         </Section>
       </div>
+      <Section title="Support chats">
+        <SupportChats customer={customer} />
+      </Section>
       <Section title="eSIMs">
         <Lines items={customer.esims} empty="No eSIMs yet.">
           {customer.esims.map((item) => (

@@ -4,13 +4,17 @@ import { auditLog, customerTag, esim, profile, savedReply, supportConversation, 
 import { JOB, type JobQueue } from '../../jobs/queue';
 import { HttpError, notFound } from '../../lib/errors';
 import { listOrders } from '../admin/admin';
+import { esimLabels, ownedIccid } from '../support/support';
 
 export const CONVERSATION_STATUSES = ['open', 'pending', 'resolved'] as const;
 export type ConversationStatus = (typeof CONVERSATION_STATUSES)[number];
 
-export type SupportReplyJob = { userId: string; text: string };
+export type SupportReplyJob = { userId: string; conversationId?: string; text: string };
 
 const isId = (value: string) => /^[A-Za-z0-9_-]{1,64}$/.test(value);
+const isUuid = (value: string) => /^[0-9a-f-]{36}$/i.test(value);
+
+type ConversationRow = typeof supportConversation.$inferSelect;
 
 async function staffNames(db: Database, ids: (string | null)[]) {
   const wanted = [...new Set(ids.filter((id): id is string => Boolean(id)))];
@@ -41,7 +45,8 @@ export async function listConversations(
     const term = `%${filter.q.trim()}%`;
     where.push(
       sql`(${profile.name} ilike ${term} or ${profile.phone} ilike ${term} or ${profile.email} ilike ${term}
-        or exists (select 1 from ${supportMessage} where ${supportMessage.userId} = ${supportConversation.userId} and ${supportMessage.text} ilike ${term}))`,
+        or ${supportConversation.number}::text = ${filter.q.trim().replace(/^#/, '')}
+        or exists (select 1 from ${supportMessage} where ${supportMessage.conversationId} = ${supportConversation.id} and ${supportMessage.text} ilike ${term}))`,
     );
   }
   if (filter.tag) {
@@ -59,76 +64,103 @@ export async function listConversations(
       desc(supportConversation.lastMessageAt),
     )
     .limit(filter.limit);
-  const ids = rows.map((row) => row.conversation.userId);
+  const ids = rows.map((row) => row.conversation.id);
   if (ids.length === 0) return [];
-  const [latest, unread, names] = await Promise.all([
+  const [latest, unread, names, labels] = await Promise.all([
     db
-      .selectDistinctOn([supportMessage.userId], {
-        userId: supportMessage.userId,
+      .selectDistinctOn([supportMessage.conversationId], {
+        conversationId: supportMessage.conversationId,
         text: supportMessage.text,
         sender: supportMessage.sender,
         internal: supportMessage.internal,
         at: supportMessage.createdAt,
       })
       .from(supportMessage)
-      .where(inArray(supportMessage.userId, ids))
-      .orderBy(supportMessage.userId, desc(supportMessage.createdAt)),
+      .where(inArray(supportMessage.conversationId, ids))
+      .orderBy(supportMessage.conversationId, desc(supportMessage.createdAt)),
     db
-      .select({ userId: supportMessage.userId, value: count() })
+      .select({ conversationId: supportMessage.conversationId, value: count() })
       .from(supportMessage)
-      .innerJoin(supportConversation, eq(supportConversation.userId, supportMessage.userId))
+      .innerJoin(supportConversation, eq(supportConversation.id, supportMessage.conversationId))
       .where(
         and(
-          inArray(supportMessage.userId, ids),
+          inArray(supportMessage.conversationId, ids),
           eq(supportMessage.sender, 'user'),
           sql`${supportMessage.createdAt} > coalesce(${supportConversation.staffReadAt}, 'epoch'::timestamptz)`,
         ),
       )
-      .groupBy(supportMessage.userId),
+      .groupBy(supportMessage.conversationId),
     staffNames(
       db,
       rows.map((row) => row.conversation.assigneeId),
     ),
+    esimLabels(
+      db,
+      rows.map((row) => row.conversation.iccid),
+    ),
   ]);
-  const last = new Map(latest.map((item) => [item.userId, item]));
-  const unseen = new Map(unread.map((item) => [item.userId, item.value]));
+  const last = new Map(latest.map((item) => [item.conversationId, item]));
+  const unseen = new Map(unread.map((item) => [item.conversationId, item.value]));
   return rows.map((row) => {
-    const message = last.get(row.conversation.userId);
+    const message = last.get(row.conversation.id);
     return {
+      id: row.conversation.id,
+      number: row.conversation.number,
       user_id: row.conversation.userId,
       customer: { name: row.name, phone: row.phone, email: row.email, language: row.language ?? 'en' },
       status: row.conversation.status,
+      esim: row.conversation.iccid ? { iccid: row.conversation.iccid, label: labels.get(row.conversation.iccid) ?? row.conversation.iccid } : null,
       assignee: row.conversation.assigneeId ? { user_id: row.conversation.assigneeId, name: names.get(row.conversation.assigneeId) ?? 'Staff' } : null,
       last_message: message
         ? { text: message.text, from: message.sender === 'agent' ? 'agent' : 'user', internal: message.internal, at: message.at.toISOString() }
         : null,
-      unread: unseen.get(row.conversation.userId) ?? 0,
+      unread: unseen.get(row.conversation.id) ?? 0,
       waiting_since: row.conversation.status === 'open' ? (row.conversation.lastCustomerAt?.toISOString() ?? null) : null,
       last_message_at: row.conversation.lastMessageAt.toISOString(),
     };
   });
 }
 
-export async function conversationDetail(db: Database, userId: string, options: { markRead: boolean }) {
-  if (!isId(userId)) throw notFound('Conversation');
+async function conversationRow(db: Database, id: string): Promise<ConversationRow> {
+  if (!isUuid(id)) throw notFound('Conversation');
+  const [row] = await db.select().from(supportConversation).where(eq(supportConversation.id, id));
+  if (!row) throw notFound('Conversation');
+  return row;
+}
+
+export async function conversationDetail(db: Database, id: string, options: { markRead: boolean }) {
+  const current = await conversationRow(db, id);
+  const userId = current.userId;
   const [person] = await db.select().from(profile).where(eq(profile.userId, userId));
   if (!person) throw notFound('Customer');
-  if (options.markRead) await db.update(supportConversation).set({ staffReadAt: new Date() }).where(eq(supportConversation.userId, userId));
-  const [[conversation], messages, tags, orders, esims, ratings] = await Promise.all([
-    db.select().from(supportConversation).where(eq(supportConversation.userId, userId)),
-    db.select().from(supportMessage).where(eq(supportMessage.userId, userId)).orderBy(asc(supportMessage.createdAt)),
+  if (options.markRead) await db.update(supportConversation).set({ staffReadAt: new Date() }).where(eq(supportConversation.id, id));
+  const [messages, tags, orders, esims, ratings, others] = await Promise.all([
+    db.select().from(supportMessage).where(eq(supportMessage.conversationId, id)).orderBy(asc(supportMessage.createdAt)),
     db.select({ tag: customerTag.tag }).from(customerTag).where(eq(customerTag.userId, userId)).orderBy(asc(customerTag.tag)),
     listOrders(db, { userId, limit: 5 }),
-    db.select().from(esim).where(eq(esim.userId, userId)).orderBy(desc(esim.createdAt)).limit(5),
-    db.select().from(supportRating).where(eq(supportRating.userId, userId)).orderBy(desc(supportRating.createdAt)).limit(1),
+    db.select().from(esim).where(eq(esim.userId, userId)).orderBy(desc(esim.createdAt)).limit(10),
+    db.select().from(supportRating).where(eq(supportRating.conversationId, id)).orderBy(desc(supportRating.createdAt)).limit(1),
+    db
+      .select()
+      .from(supportConversation)
+      .where(and(eq(supportConversation.userId, userId), ne(supportConversation.id, id)))
+      .orderBy(desc(supportConversation.lastMessageAt))
+      .limit(20),
   ]);
-  const names = await staffNames(db, [conversation?.assigneeId ?? null, ...messages.map((item) => item.staffId)]);
+  const [names, labels] = await Promise.all([
+    staffNames(db, [current.assigneeId, ...messages.map((item) => item.staffId)]),
+    esimLabels(db, [current.iccid, ...others.map((item) => item.iccid)]),
+  ]);
+  const plan = (iccid: string | null) => (iccid ? { iccid, label: labels.get(iccid) ?? iccid } : null);
   return {
+    id,
+    number: current.number,
     user_id: userId,
-    status: conversation?.status ?? null,
-    assignee: conversation?.assigneeId ? { user_id: conversation.assigneeId, name: names.get(conversation.assigneeId) ?? 'Staff' } : null,
-    resolved_at: conversation?.resolvedAt?.toISOString() ?? null,
-    rating_requested: Boolean(conversation?.ratingRequestedAt),
+    status: current.status,
+    esim: plan(current.iccid),
+    assignee: current.assigneeId ? { user_id: current.assigneeId, name: names.get(current.assigneeId) ?? 'Staff' } : null,
+    resolved_at: current.resolvedAt?.toISOString() ?? null,
+    rating_requested: Boolean(current.ratingRequestedAt),
     last_rating: ratings[0] ? { score: ratings[0].score, comment: ratings[0].comment, at: ratings[0].createdAt.toISOString() } : null,
     customer: {
       name: person.name,
@@ -146,6 +178,13 @@ export async function conversationDetail(db: Database, userId: string, options: 
       staff: item.staffId ? { user_id: item.staffId, name: names.get(item.staffId) ?? 'Staff' } : null,
       at: item.createdAt.toISOString(),
     })),
+    other_chats: others.map((item) => ({
+      id: item.id,
+      number: item.number,
+      status: item.status,
+      esim: plan(item.iccid),
+      last_message_at: item.lastMessageAt.toISOString(),
+    })),
     orders,
     esims: esims.map((item) => ({
       iccid: item.iccid,
@@ -158,55 +197,66 @@ export async function conversationDetail(db: Database, userId: string, options: 
   };
 }
 
-export async function staffReply(
+type ReplyInput = { text: string; internal: boolean; status?: ConversationStatus };
+
+async function writeStaffMessage(deps: { db: Database; queue: JobQueue }, actorId: string, current: ConversationRow, input: ReplyInput) {
+  const { db } = deps;
+  const now = new Date();
+  await db
+    .insert(supportMessage)
+    .values({ userId: current.userId, conversationId: current.id, sender: 'agent', text: input.text, staffId: actorId, internal: input.internal, createdAt: now });
+  if (input.internal) return;
+  // A reply means the chat now waits on the customer, unless staff picked another status.
+  const status = input.status ?? 'pending';
+  const resolved = status === 'resolved';
+  await db
+    .update(supportConversation)
+    .set({
+      status,
+      lastMessageAt: now,
+      staffReadAt: now,
+      assigneeId: sql`coalesce(${supportConversation.assigneeId}, ${actorId})`,
+      resolvedAt: resolved ? now : null,
+      ratingRequestedAt: resolved ? now : null,
+    })
+    .where(eq(supportConversation.id, current.id));
+  const job: SupportReplyJob = { userId: current.userId, conversationId: current.id, text: input.text };
+  await deps.queue.send(JOB.supportReply, job);
+}
+
+export async function staffReply(deps: { db: Database; queue: JobQueue }, actorId: string, id: string, input: ReplyInput) {
+  await writeStaffMessage(deps, actorId, await conversationRow(deps.db, id), input);
+  return conversationDetail(deps.db, id, { markRead: false });
+}
+
+/** Staff open a new chat with a customer (from their profile), optionally about one of their eSIMs. */
+export async function staffStartConversation(
   deps: { db: Database; queue: JobQueue },
   actorId: string,
   userId: string,
-  input: { text: string; internal: boolean; status?: ConversationStatus },
+  input: ReplyInput & { iccid: string | null },
 ) {
-  const { db } = deps;
   if (!isId(userId)) throw notFound('Customer');
-  const [person] = await db.select({ id: profile.userId }).from(profile).where(eq(profile.userId, userId));
+  const [person] = await deps.db.select({ id: profile.userId }).from(profile).where(eq(profile.userId, userId));
   if (!person) throw notFound('Customer');
-  const now = new Date();
-  await db.insert(supportMessage).values({ userId, sender: 'agent', text: input.text, staffId: actorId, internal: input.internal, createdAt: now });
-  if (input.internal) {
-    await db
-      .insert(supportConversation)
-      .values({ userId, status: 'open', lastMessageAt: now, createdAt: now })
-      .onConflictDoNothing();
-  } else {
-    // A reply means the conversation now waits on the customer, unless staff picked another status.
-    const status = input.status ?? 'pending';
-    const resolved = status === 'resolved';
-    await db
-      .insert(supportConversation)
-      .values({ userId, status, assigneeId: actorId, lastMessageAt: now, staffReadAt: now, createdAt: now, resolvedAt: resolved ? now : null, ratingRequestedAt: resolved ? now : null })
-      .onConflictDoUpdate({
-        target: supportConversation.userId,
-        set: {
-          status,
-          lastMessageAt: now,
-          staffReadAt: now,
-          assigneeId: sql`coalesce(${supportConversation.assigneeId}, ${actorId})`,
-          resolvedAt: resolved ? now : null,
-          ratingRequestedAt: resolved ? now : null,
-        },
-      });
-    const job: SupportReplyJob = { userId, text: input.text };
-    await deps.queue.send(JOB.supportReply, job);
-  }
-  return conversationDetail(db, userId, { markRead: false });
+  const iccid = await ownedIccid(deps.db, userId, input.iccid);
+  const [created] = await deps.db
+    .insert(supportConversation)
+    .values({ userId, iccid, status: input.internal ? 'open' : 'pending', assigneeId: actorId })
+    .returning();
+  if (!created) throw new Error('Conversation was not stored');
+  await writeStaffMessage(deps, actorId, created, input);
+  await deps.db.insert(auditLog).values({ actorId, action: 'conversation.start', target: `user:${userId}`, data: { conversation: created.id, iccid } });
+  return conversationDetail(deps.db, created.id, { markRead: false });
 }
 
 export async function updateConversation(
   db: Database,
   actorId: string,
-  userId: string,
-  input: { status?: ConversationStatus; assignee_id?: string | null },
+  id: string,
+  input: { status?: ConversationStatus; assignee_id?: string | null; iccid?: string | null },
 ) {
-  const [current] = await db.select().from(supportConversation).where(eq(supportConversation.userId, userId));
-  if (!current) throw notFound('Conversation');
+  const current = await conversationRow(db, id);
   const set: Partial<typeof supportConversation.$inferInsert> = {};
   if (input.status && input.status !== current.status) {
     set.status = input.status;
@@ -216,7 +266,7 @@ export async function updateConversation(
       const [answered] = await db
         .select({ value: count() })
         .from(supportMessage)
-        .where(and(eq(supportMessage.userId, userId), eq(supportMessage.sender, 'agent'), eq(supportMessage.internal, false)));
+        .where(and(eq(supportMessage.conversationId, id), eq(supportMessage.sender, 'agent'), eq(supportMessage.internal, false)));
       set.ratingRequestedAt = (answered?.value ?? 0) > 0 ? new Date() : null;
     } else {
       set.resolvedAt = null;
@@ -230,11 +280,12 @@ export async function updateConversation(
     }
     set.assigneeId = input.assignee_id;
   }
+  if (input.iccid !== undefined && input.iccid !== current.iccid) set.iccid = await ownedIccid(db, current.userId, input.iccid);
   if (Object.keys(set).length > 0) {
-    await db.update(supportConversation).set(set).where(eq(supportConversation.userId, userId));
-    await db.insert(auditLog).values({ actorId, action: 'conversation.update', target: `user:${userId}`, data: input });
+    await db.update(supportConversation).set(set).where(eq(supportConversation.id, id));
+    await db.insert(auditLog).values({ actorId, action: 'conversation.update', target: `user:${current.userId}`, data: { conversation: id, ...input } });
   }
-  return conversationDetail(db, userId, { markRead: false });
+  return conversationDetail(db, id, { markRead: false });
 }
 
 const DAY = 86_400_000;
@@ -257,15 +308,15 @@ export async function supportStats(db: Database, now = new Date()) {
       .from(supportRating)
       .where(gte(supportRating.createdAt, new Date(now.getTime() - 30 * DAY))),
     db
-      .select({ userId: supportMessage.userId, sender: supportMessage.sender, at: supportMessage.createdAt })
+      .select({ userId: supportMessage.conversationId, sender: supportMessage.sender, at: supportMessage.createdAt })
       .from(supportMessage)
       .where(and(gte(supportMessage.createdAt, week), eq(supportMessage.internal, false)))
-      .orderBy(supportMessage.userId, asc(supportMessage.createdAt))
+      .orderBy(supportMessage.conversationId, asc(supportMessage.createdAt))
       .limit(20_000),
   ]);
   // First reply: from the first customer message after an agent message (or the start) to the next agent message.
   const waits: number[] = [];
-  let user = '';
+  let user: string | null = '';
   let waitingFrom: Date | null = null;
   for (const message of recent) {
     if (message.userId !== user) {

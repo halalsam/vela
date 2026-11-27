@@ -181,8 +181,13 @@ export const statusTone: Record<string, 'neutral' | 'accent' | 'success' | 'warn
 export type ConversationStatus = 'open' | 'pending' | 'resolved';
 export type StaffRef = { user_id: string; name: string };
 
+export type ChatPlan = { iccid: string; label: string } | null;
+
 export type AdminConversationRow = {
+  id: string;
+  number: number;
   user_id: string;
+  esim: ChatPlan;
   customer: { name: string | null; phone: string | null; email: string | null; language: string };
   status: ConversationStatus;
   assignee: StaffRef | null;
@@ -203,9 +208,15 @@ export type AdminEsimSummary = {
   expires_at: string | null;
 };
 
+export type AdminOtherChat = { id: string; number: number; status: ConversationStatus; esim: ChatPlan; last_message_at: string };
+
 export type AdminConversation = {
+  id: string;
+  number: number;
   user_id: string;
-  status: ConversationStatus | null;
+  status: ConversationStatus;
+  esim: ChatPlan;
+  other_chats: AdminOtherChat[];
   assignee: StaffRef | null;
   resolved_at: string | null;
   rating_requested: boolean;
@@ -275,7 +286,7 @@ export type AdminCustomer = {
   devices: { platform: string; locale: string; last_seen_at: string }[];
   orders: AdminOrderRow[];
   esims: AdminEsimSummary[];
-  conversation: { status: ConversationStatus; assignee_id: string | null; last_message_at: string } | null;
+  conversations: (AdminOtherChat & { assignee_id: string | null })[];
   ratings: { score: number; comment: string | null; at: string }[];
   history: { action: string; actor_id: string; data: unknown; at: string }[];
 };

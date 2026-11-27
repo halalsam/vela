@@ -29,6 +29,7 @@ import {
   listSavedReplies,
   listStaff,
   staffReply,
+  staffStartConversation,
   supportStats,
   updateConversation,
   updateSavedReply,
@@ -243,6 +244,7 @@ const seoTarget = (c: { req: { param: (name: string) => string } }) =>
     locale: c.req.param('locale'),
   });
 
+const iccidValue = z.string().regex(/^\d{19,20}$/, 'Not an ICCID');
 const tagValue = z.string().trim().toLowerCase().max(30);
 const segmentFields = z
   .object({
@@ -411,22 +413,37 @@ export const adminRoutes = new Hono<AdminEnv>()
     return c.json(await listConversations(c.var.deps.db, c.var.user.id, query));
   })
   .get('/v1/admin/conversations/stats', async (c) => c.json(await supportStats(c.var.deps.db)))
-  .get('/v1/admin/conversations/:userId', async (c) =>
-    c.json(await conversationDetail(c.var.deps.db, c.req.param('userId'), { markRead: c.req.query('read') !== '0' })),
+  .get('/v1/admin/conversations/:id', async (c) =>
+    c.json(await conversationDetail(c.var.deps.db, c.req.param('id'), { markRead: c.req.query('read') !== '0' })),
   )
-  .post('/v1/admin/conversations/:userId/messages', async (c) => {
+  .post('/v1/admin/conversations/:id/messages', async (c) => {
     const body = parse(
       z.object({ text: z.string().trim().min(1).max(2000), internal: z.boolean().default(false), status: z.enum(CONVERSATION_STATUSES).optional() }),
       await c.req.json().catch(() => null),
     );
-    return c.json(await staffReply({ db: c.var.deps.db, queue: c.var.deps.queue }, c.var.user.id, c.req.param('userId'), body), 201);
+    return c.json(await staffReply({ db: c.var.deps.db, queue: c.var.deps.queue }, c.var.user.id, c.req.param('id'), body), 201);
   })
-  .patch('/v1/admin/conversations/:userId', async (c) => {
+  .patch('/v1/admin/conversations/:id', async (c) => {
     const body = parse(
-      z.object({ status: z.enum(CONVERSATION_STATUSES).optional(), assignee_id: z.string().max(64).nullable().optional() }),
+      z.object({
+        status: z.enum(CONVERSATION_STATUSES).optional(),
+        assignee_id: z.string().max(64).nullable().optional(),
+        iccid: iccidValue.nullable().optional(),
+      }),
       await c.req.json().catch(() => null),
     );
-    return c.json(await updateConversation(c.var.deps.db, c.var.user.id, c.req.param('userId'), body));
+    return c.json(await updateConversation(c.var.deps.db, c.var.user.id, c.req.param('id'), body));
+  })
+  .post('/v1/admin/customers/:id/conversations', async (c) => {
+    const body = parse(
+      z.object({
+        text: z.string().trim().min(1).max(2000),
+        internal: z.boolean().default(false),
+        iccid: iccidValue.nullable().default(null),
+      }),
+      await c.req.json().catch(() => null),
+    );
+    return c.json(await staffStartConversation({ db: c.var.deps.db, queue: c.var.deps.queue }, c.var.user.id, c.req.param('id'), body), 201);
   })
   .get('/v1/admin/saved-replies', async (c) => c.json(await listSavedReplies(c.var.deps.db)))
   .post('/v1/admin/saved-replies', async (c) => {

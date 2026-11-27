@@ -120,7 +120,10 @@ export const supportReplyJob: JobDefinition<SupportReplyJob> = {
   retryLimit: 2,
   handle: async (jobs, context) => {
     for (const job of jobs) {
-      const sent = await notifyUser(context, job.data.userId, (locale) => supportReplyMessage(locale, job.data.text), { kind: 'support' });
+      const sent = await notifyUser(context, job.data.userId, (locale) => supportReplyMessage(locale, job.data.text), {
+        kind: 'support',
+        ...(job.data.conversationId ? { conversation_id: job.data.conversationId } : {}),
+      });
       context.logger.info({ userId: job.data.userId, sent }, 'support reply push');
     }
   },

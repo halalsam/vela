@@ -179,6 +179,24 @@ export const supportRatingStatusSchema = z.object({
   asked: z.boolean(),
 });
 
+export const supportChatSummarySchema = z.object({
+  id: z.string(),
+  /** Ticket number to quote, shown as #1001. */
+  number: z.number().int(),
+  /** open: waiting on support. pending: support replied. resolved: done (writing again reopens it). */
+  status: z.enum(['open', 'pending', 'resolved']),
+  /** The plan the chat is about, if one was picked. */
+  esim: z.object({ iccid: z.string(), label: z.string() }).nullable(),
+  last_message: z.object({ text: z.string(), from: z.enum(['agent', 'user']), sent_at: z.iso.datetime() }).nullable(),
+  updated_at: z.iso.datetime(),
+  rating_asked: z.boolean(),
+});
+
+export const supportChatSchema = z.object({
+  chat: supportChatSummarySchema,
+  messages: z.array(supportMessageSchema),
+});
+
 export const profileSchema = z.object({
   name: z.string(),
   email: z.string().nullable(),
@@ -198,6 +216,8 @@ export type Referral = z.infer<typeof referralSchema>;
 export type Rewards = z.infer<typeof rewardsSchema>;
 export type SupportMessage = z.infer<typeof supportMessageSchema>;
 export type SupportRatingStatus = z.infer<typeof supportRatingStatusSchema>;
+export type SupportChatSummary = z.infer<typeof supportChatSummarySchema>;
+export type SupportChat = z.infer<typeof supportChatSchema>;
 export type Profile = z.infer<typeof profileSchema>;
 
 export const blogLocaleSchema = z.enum(['en', 'ar']);

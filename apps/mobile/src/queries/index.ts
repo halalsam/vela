@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CreateOrderInput, Order, OrderStatus } from '@vela/api';
+import type { CreateOrderInput, Order, OrderStatus, SupportChat } from '@vela/api';
 import { api, usingLiveCatalog } from '@/lib/api';
 import { collectPayment } from '@/lib/payments';
 
@@ -18,8 +18,8 @@ export const queryKeys = {
   profile: ['profile'] as const,
   rewards: ['rewards'] as const,
   orders: ['orders'] as const,
-  support: ['support'] as const,
-  supportRating: ['supportRating'] as const,
+  supportChats: ['supportChats'] as const,
+  supportChat: (id: string) => ['supportChat', id] as const,
 };
 
 export const useCountries = () => useQuery({ queryKey: queryKeys.countries, queryFn: api.getCountries, staleTime: 3_600_000 });
@@ -41,8 +41,6 @@ export const useDailyUsage = (iccid: string | undefined) =>
 export const useProfile = () => useQuery({ queryKey: queryKeys.profile, queryFn: api.getProfile });
 export const useRewards = () => useQuery({ queryKey: queryKeys.rewards, queryFn: api.getRewards });
 export const useOrders = () => useQuery({ queryKey: queryKeys.orders, queryFn: api.getOrders });
-export const useSupportThread = () =>
-  useQuery({ queryKey: queryKeys.support, queryFn: api.getSupportThread, refetchInterval: usingLiveCatalog ? 5000 : false });
 
 export function useRedeemCoupon() {
   return useMutation({ mutationFn: api.redeemCoupon });
@@ -107,25 +105,37 @@ export function useTopUp() {
   });
 }
 
-export const useSupportRating = () =>
-  useQuery({ queryKey: queryKeys.supportRating, queryFn: api.getSupportRating, refetchInterval: usingLiveCatalog ? 15_000 : false });
+const chatPoll = usingLiveCatalog ? 5000 : false;
 
-export function useRateSupport() {
+export const useSupportChats = () => useQuery({ queryKey: queryKeys.supportChats, queryFn: api.getSupportChats, refetchInterval: chatPoll });
+
+export const useSupportChat = (id: string | null) =>
+  useQuery({ queryKey: queryKeys.supportChat(id ?? ''), queryFn: () => api.getSupportChat(id ?? ''), enabled: Boolean(id), refetchInterval: chatPoll });
+
+function useChatCache() {
   const client = useQueryClient();
-  return useMutation({
-    mutationFn: ({ score, comment }: { score: number; comment?: string | null }) => api.rateSupport(score, comment ?? null),
-    onSuccess: () => client.setQueryData(queryKeys.supportRating, { asked: false }),
-  });
+  return (chat: SupportChat) => {
+    client.setQueryData(queryKeys.supportChat(chat.chat.id), chat);
+    void client.invalidateQueries({ queryKey: queryKeys.supportChats });
+  };
 }
 
-export function useSendSupportMessage() {
+export function useStartSupportChat() {
+  const store = useChatCache();
+  return useMutation({ mutationFn: api.startSupportChat, onSuccess: store });
+}
+
+export function useSendSupportChatMessage() {
+  const store = useChatCache();
+  return useMutation({ mutationFn: ({ id, text }: { id: string; text: string }) => api.sendSupportChatMessage(id, text), onSuccess: store });
+}
+
+export function useRateSupportChat() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: api.sendSupportMessage,
-    onSuccess: (thread) => {
-      client.setQueryData(queryKeys.support, thread);
-      // Writing again reopens the chat, so any rating request is gone.
-      client.setQueryData(queryKeys.supportRating, { asked: false });
+    mutationFn: ({ id, score, comment }: { id: string; score: number; comment?: string | null }) => api.rateSupportChat(id, score, comment ?? null),
+    onSuccess: (_, { id }) => {
+      client.setQueryData<SupportChat>(queryKeys.supportChat(id), (chat) => (chat ? { ...chat, chat: { ...chat.chat, rating_asked: false } } : chat));
     },
   });
 }

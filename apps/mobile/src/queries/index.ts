@@ -19,6 +19,7 @@ export const queryKeys = {
   rewards: ['rewards'] as const,
   orders: ['orders'] as const,
   support: ['support'] as const,
+  supportRating: ['supportRating'] as const,
 };
 
 export const useCountries = () => useQuery({ queryKey: queryKeys.countries, queryFn: api.getCountries, staleTime: 3_600_000 });
@@ -106,10 +107,25 @@ export function useTopUp() {
   });
 }
 
+export const useSupportRating = () =>
+  useQuery({ queryKey: queryKeys.supportRating, queryFn: api.getSupportRating, refetchInterval: usingLiveCatalog ? 15_000 : false });
+
+export function useRateSupport() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ score, comment }: { score: number; comment?: string | null }) => api.rateSupport(score, comment ?? null),
+    onSuccess: () => client.setQueryData(queryKeys.supportRating, { asked: false }),
+  });
+}
+
 export function useSendSupportMessage() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: api.sendSupportMessage,
-    onSuccess: (thread) => client.setQueryData(queryKeys.support, thread),
+    onSuccess: (thread) => {
+      client.setQueryData(queryKeys.support, thread);
+      // Writing again reopens the chat, so any rating request is gone.
+      client.setQueryData(queryKeys.supportRating, { asked: false });
+    },
   });
 }

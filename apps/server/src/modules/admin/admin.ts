@@ -18,8 +18,9 @@ export async function audit(db: Database, actorId: string, action: string, targe
   await db.insert(auditLog).values({ actorId, action, target, data });
 }
 
-export async function listOrders(db: Database, filter: { status?: OrderStatus; q?: string; before?: Date; limit: number }) {
+export async function listOrders(db: Database, filter: { status?: OrderStatus; q?: string; before?: Date; userId?: string; limit: number }) {
   const where: SQL[] = [];
+  if (filter.userId) where.push(eq(order.userId, filter.userId));
   if (filter.status) where.push(eq(order.status, filter.status));
   if (filter.before) where.push(lt(order.createdAt, filter.before));
   if (filter.q) {
@@ -46,7 +47,7 @@ export async function listOrders(db: Database, filter: { status?: OrderStatus; q
     total: fromMinor(row.order.totalMinor, row.order.currency),
     currency: row.order.currency,
     created_at: row.order.createdAt.toISOString(),
-    customer: { name: row.name, phone: row.phone, email: row.email },
+    customer: { user_id: row.order.userId, name: row.name, phone: row.phone, email: row.email },
     invoice_number: row.invoice,
   }));
 }

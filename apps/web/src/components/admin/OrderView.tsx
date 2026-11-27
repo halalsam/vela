@@ -110,8 +110,10 @@ export function OrderView({ id }: { id: string }) {
             <Row label="Name">{order.customer.name ?? 'Not given'}</Row>
             <Row label="Phone">{order.customer.phone ?? 'Not given'}</Row>
             <Row label="Email">{order.customer.email ?? 'Not given'}</Row>
-            <Row label="User ID">
-              <span className={type.caption}>{order.customer.user_id}</span>
+            <Row label="Profile">
+              <Link href={`/admin/customers/${encodeURIComponent(order.customer.user_id)}`} className={cn(type.calloutStrong, 'text-accent hover:underline')}>
+                Open customer →
+              </Link>
             </Row>
           </dl>
         </Section>

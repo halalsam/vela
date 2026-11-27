@@ -7,6 +7,8 @@ export const JOB = {
   usage: 'esim.usage',
   usageOne: 'esim.usage.one',
   fx: 'fx.refresh',
+  supportReply: 'support.reply',
+  broadcast: 'crm.broadcast',
 } as const;
 
 export type OrderJob = { orderId: string };

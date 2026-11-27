@@ -53,7 +53,12 @@ export async function signOutDevice() {
 }
 
 function openFrom(response: Notifications.NotificationResponse | null) {
-  const iccid = response?.notification.request.content.data?.iccid;
+  const data = response?.notification.request.content.data;
+  if (data?.kind === 'support') {
+    router.push('/support');
+    return;
+  }
+  const iccid = data?.iccid;
   if (typeof iccid === 'string' && /^\d{19,20}$/.test(iccid)) router.push({ pathname: '/usage/[iccid]', params: { iccid } });
 }
 

@@ -6,3 +6,4 @@ export * from './content';
 export * from './enums';
 export * from './esims';
 export * from './system';
+export * from './crm';

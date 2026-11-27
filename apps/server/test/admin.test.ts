@@ -1,8 +1,7 @@
-import { createHmac } from 'node:crypto';
 import type { Checkout, InvoiceLink, Rewards, SupportMessage } from '@vela/api';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { auditLog, invoice, payment, profile, supportContact, user } from '../src/db/schema';
+import { auditLog, invoice, payment, profile, user } from '../src/db/schema';
 import { loadEnv } from '../src/env';
 import { memoryQueue } from '../src/jobs/queue';
 import { seedReferenceData } from '../src/modules/catalog/seed';
@@ -12,7 +11,6 @@ import { financialYear, invoiceNumber, type InvoiceData } from '../src/modules/i
 import { createMemoryPush } from '../src/modules/notifications/push';
 import { provisionOrder } from '../src/modules/orders/fulfil';
 import { createMockPayments, MOCK_SIGNATURE } from '../src/modules/payments/mock';
-import { createSupportDesk } from '../src/modules/support/support';
 import { createTestApp, createTestDb, signInWithPhone, silentLogger, testEnv, testKey } from './helpers';
 
 let db: Awaited<ReturnType<typeof createTestDb>>['db'];
@@ -185,57 +183,12 @@ describe('admin', () => {
 });
 
 describe('support', () => {
-  it('keeps a local thread when Chatwoot is not set up', async () => {
+  it('keeps the thread in our database', async () => {
     const first = (await (await call('GET', '/v1/support/messages', customer)).json()) as SupportMessage[];
     expect(first).toEqual([expect.objectContaining({ id: 'welcome', from: 'agent' })]);
     const after = (await (await call('POST', '/v1/support/messages', customer, { text: 'My eSIM won’t install' })).json()) as SupportMessage[];
     expect(after.map((item) => [item.from, item.text]).slice(1)).toEqual([['user', 'My eSIM won’t install']]);
     expect((await call('POST', '/v1/support/messages', customer, { text: '   ' })).status).toBe(400);
-  });
-
-  it('talks to Chatwoot with a verified contact, one conversation per traveller', async () => {
-    const requests: { method: string; url: string; body: unknown }[] = [];
-    const fake = (async (url: string, init?: RequestInit) => {
-      const body = init?.body ? JSON.parse(String(init.body)) : null;
-      requests.push({ method: init?.method ?? 'GET', url, body });
-      if (url.endsWith('/contacts')) return Response.json({ source_id: 'src-1' });
-      if (url.endsWith('/conversations') && init?.method === 'POST') return Response.json({ id: 42 });
-      if (url.endsWith('/messages') && init?.method === 'POST') return Response.json({ id: 9 });
-      return Response.json([
-        { id: 1, content: 'Hello', message_type: 0, created_at: 1_800_000_000 },
-        { id: 2, content: 'Hi! Try restarting your phone.', message_type: 1, created_at: 1_800_000_060 },
-        { id: 3, content: 'Conversation assigned', message_type: 2, created_at: 1_800_000_061 },
-      ]);
-    }) as typeof fetch;
-    const env = loadEnv({
-      DATABASE_URL: 'postgres://x',
-      ENCRYPTION_KEY: testKey,
-      BETTER_AUTH_SECRET: 'x'.repeat(32),
-      CHATWOOT_URL: 'https://chat.example.com',
-      CHATWOOT_INBOX_IDENTIFIER: 'inbox-abc',
-      CHATWOOT_HMAC_TOKEN: 'hmac-secret',
-    });
-    const desk = createSupportDesk(env, db, silentLogger, fake);
-    const traveller = { id: 'user-chatwoot-1', name: 'Asha', email: null, phone: '+919800000000', language: 'en' };
-
-    const thread = await desk.thread(traveller);
-    expect(thread.map((item) => [item.from, item.text])).toEqual([
-      ['agent', expect.stringContaining('vela support')],
-      ['user', 'Hello'],
-      ['agent', 'Hi! Try restarting your phone.'],
-    ]);
-    await desk.send(traveller, 'Thanks');
-    const contacts = requests.filter((item) => item.url.endsWith('/contacts'));
-    expect(contacts).toHaveLength(1);
-    expect(contacts[0]?.body).toMatchObject({
-      identifier: 'user-chatwoot-1',
-      identifier_hash: createHmac('sha256', 'hmac-secret').update('user-chatwoot-1').digest('hex'),
-      phone_number: '+919800000000',
-    });
-    expect(requests.filter((item) => item.url.endsWith('/conversations') && item.method === 'POST')).toHaveLength(1);
-    expect(requests.find((item) => item.method === 'POST' && item.url.endsWith('/conversations/42/messages'))?.body).toEqual({ content: 'Thanks' });
-    const [stored] = await db.select().from(supportContact).where(eq(supportContact.userId, 'user-chatwoot-1'));
-    expect(stored).toMatchObject({ sourceId: 'src-1', conversationId: 42 });
   });
 });
 

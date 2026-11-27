@@ -61,3 +61,11 @@ export function referralMessage(locale: Locale, amount: string) {
   const entry = referral[locale];
   return { title: fill(entry.title, { amount }), body: fill(entry.body, { amount }) };
 }
+
+const supportReply: Record<Locale, string> = { en: 'vela support replied', ar: 'ردّ فريق دعم vela' };
+
+/** The push a customer gets when staff answer in the support chat. */
+export function supportReplyMessage(locale: Locale, text: string) {
+  const body = text.replace(/\s+/g, ' ').trim();
+  return { title: supportReply[locale], body: body.length > 140 ? `${body.slice(0, 139)}…` : body };
+}

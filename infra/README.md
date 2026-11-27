@@ -36,6 +36,19 @@ CI builds `ghcr.io/halalsam/vela-server:<sha>` on every push to `main` and runs
 Manual deploy or rollback: `./deploy.sh production <older-sha>`. Migrations must stay compatible
 with the previous release so a rollback never needs a down migration.
 
+## Image uploads
+
+Images uploaded in the admin (blog covers, social images) go to an S3-compatible bucket when
+`S3_BUCKET`, `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` are set. The bucket (or `S3_PUBLIC_URL`, e.g. a
+CDN or R2 custom domain) must be publicly readable, because pages link to the files directly. For
+Cloudflare R2 set `S3_ENDPOINT=https://<account>.r2.cloudflarestorage.com` and leave `S3_REGION=auto`;
+for MinIO also set `S3_FORCE_PATH_STYLE=true`.
+
+Without S3, or when an S3 upload fails, the API saves the file in the `uploads` volume and serves it at
+`API_PUBLIC_URL/v1/uploads/...`. That volume is not in the nightly Postgres backup, so use S3 in
+production or back the volume up separately. Caddy allows 10 MB bodies for uploads only; the API's own
+limit is `UPLOAD_MAX_MB` (8).
+
 ## Backups
 
 The `backup` service dumps Postgres every night at `BACKUP_HOUR_UTC`:30 UTC (default 21:30, which is

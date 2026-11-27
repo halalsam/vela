@@ -1,4 +1,4 @@
-import { boolean, index, jsonb, pgTable, primaryKey, real, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, jsonb, pgTable, primaryKey, real, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { blogStatus, contentLocale } from './enums';
 
 // Blog posts for the website. One row per language: an English post and its Arabic version are two rows, linked by
@@ -82,3 +82,23 @@ export const seoSetting = pgTable('seo_setting', {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+// Images uploaded from the admin. The file lives in S3 or on the server's disk (driver); url is what pages use.
+export const upload = pgTable(
+  'upload',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    key: text().notNull(),
+    url: text().notNull(),
+    driver: text().notNull(),
+    contentType: text().notNull(),
+    bytes: integer().notNull(),
+    width: integer(),
+    height: integer(),
+    originalName: text().notNull().default(''),
+    alt: text().notNull().default(''),
+    createdBy: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('upload_key_idx').on(table.key), index('upload_created_idx').on(table.createdAt)],
+);

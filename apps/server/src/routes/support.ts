@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi';
-import { invoiceLinkSchema, supportMessageSchema } from '@vela/api';
+import { invoiceLinkSchema, supportMessageSchema, supportRatingStatusSchema } from '@vela/api';
 import { and, eq } from 'drizzle-orm';
 import { requireUser } from '../auth/middleware';
 import { creditNote, invoice, order } from '../db/schema';
@@ -31,6 +31,31 @@ const sendRoute = createRoute({
   responses: { 200: json(z.array(supportMessageSchema), 'The conversation including the new message'), 401: failure('Not signed in') },
 });
 
+const ratingStatusRoute = createRoute({
+  method: 'get',
+  path: '/v1/support/rating',
+  tags: ['support'],
+  ...signedIn,
+  responses: { 200: json(supportRatingStatusSchema, 'Whether support resolved the chat and asks for a rating'), 401: failure('Not signed in') },
+});
+
+const rateRoute = createRoute({
+  method: 'post',
+  path: '/v1/support/rating',
+  tags: ['support'],
+  ...signedIn,
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({ score: z.number().int().min(1).max(5), comment: z.string().trim().max(500).nullable().default(null) }),
+        },
+      },
+    },
+  },
+  responses: { 204: { description: 'Rating saved (ignored when none was asked for)' }, 401: failure('Not signed in') },
+});
+
 const invoiceRoute = createRoute({
   method: 'get',
   path: '/v1/orders/{id}/invoice',
@@ -52,6 +77,12 @@ async function supportFor(c: { var: AppEnv['Variables'] }) {
 export const supportRoutes = new OpenAPIHono<AppEnv>()
   .openapi(threadRoute, async (c) => c.json(await c.var.deps.support.thread(await supportFor(c)), 200))
   .openapi(sendRoute, async (c) => c.json(await c.var.deps.support.send(await supportFor(c), c.req.valid('json').text), 200))
+  .openapi(ratingStatusRoute, async (c) => c.json({ asked: await c.var.deps.support.ratingAsked(await supportFor(c)) }, 200))
+  .openapi(rateRoute, async (c) => {
+    const body = c.req.valid('json');
+    await c.var.deps.support.rate(await supportFor(c), body.score, body.comment || null);
+    return c.body(null, 204);
+  })
   .openapi(invoiceRoute, async (c) => {
     const { db, env } = c.var.deps;
     const id = c.req.valid('param').id;

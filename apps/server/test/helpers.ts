@@ -41,7 +41,7 @@ export function createTestApp(db: Database, overrides: { payments?: PaymentProvi
   const queue = memoryQueue();
   const payments = overrides.payments ?? createMockPayments();
   const auth = createAuth({ db, env: testEnv, logger: silentLogger, sms });
-  const support = overrides.support ?? createSupportDesk(testEnv, db, silentLogger);
+  const support = overrides.support ?? createSupportDesk(db);
   const app = createApp({ db, env, logger: silentLogger, version: 'test', auth, payments, queue, support, esimProvider: createMockProvider() });
   return { app, auth, sms, queue, payments };
 }

@@ -7,6 +7,8 @@ import { catalogRoutes } from './routes/catalog';
 import { adminRoutes } from './routes/admin';
 import { blogRoutes } from './routes/blog';
 import { seoRoutes } from './routes/seo';
+import { uploadRoutes } from './routes/uploads';
+import { createStorage } from './modules/uploads/storage';
 import { deviceRoutes } from './routes/devices';
 import { esimWebhookRoutes } from './routes/esimWebhooks';
 import { meRoutes } from './routes/me';
@@ -16,7 +18,8 @@ import { systemRoutes } from './routes/system';
 import { captureError } from './sentry';
 import type { AppDeps, AppEnv } from './types';
 
-export function createApp(deps: AppDeps) {
+export function createApp(input: AppDeps) {
+  const deps: AppDeps = { ...input, storage: input.storage ?? createStorage(input.env, input.logger) };
   const app = new OpenAPIHono<AppEnv>({
     defaultHook: (result, c) => {
       if (!result.success) {
@@ -30,6 +33,12 @@ export function createApp(deps: AppDeps) {
   });
 
   app.use('*', requestId());
+  // Uploaded images are shown on the website and in the app, which are other origins. Registered before
+  // secureHeaders so this runs after it and wins over its same-origin default.
+  app.use('/v1/uploads/*', async (c, next) => {
+    await next();
+    if (c.res.ok) c.res.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  });
   app.use('*', secureHeaders());
   app.use(
     '*',
@@ -57,6 +66,7 @@ export function createApp(deps: AppDeps) {
   app.route('/', catalogRoutes);
   app.route('/', blogRoutes);
   app.route('/', seoRoutes);
+  app.route('/', uploadRoutes);
   app.route('/', meRoutes);
   app.route('/', orderRoutes);
   app.route('/', deviceRoutes);

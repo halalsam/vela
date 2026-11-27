@@ -157,11 +157,22 @@ source of truth. Resolved as follows:
   any credit used), create and end coupons, and grant goodwill credit. Every staff action is written
   to `audit_log`. The website has `/admin` (orders, order detail, coupons), English only and not
   indexed; it uses the same sign-in as the account page.
-- Support: the app's chat now talks to `/v1/support/messages`. With `CHATWOOT_URL` and
-  `CHATWOOT_INBOX_IDENTIFIER` set, the server uses Chatwoot's public inbox API with one contact (HMAC
-  identity check when `CHATWOOT_HMAC_TOKEN` is set) and one conversation per traveller, and the app
-  polls every 5 seconds. Without Chatwoot, messages are stored in `support_message` so the screen
-  works on staging, but nobody can reply to them.
+- Support and CRM (2026-11-27): Chatwoot is gone; support runs on our own database and the
+  `/admin` panel. The app's chat still talks to `/v1/support/messages` and polls every 5 seconds.
+  Each traveller has one conversation (`support_conversation`): **open** waits on staff,
+  **pending** waits on the customer (set by a staff reply), **resolved** is done; a new customer
+  message reopens it. `/admin/inbox` lists conversations (longest wait first), with private notes
+  the customer never sees, assignment to staff, saved replies (only admins delete them) and a
+  header with queue sizes, median first reply over 7 days and the 30-day rating. A staff reply
+  queues `support.reply`, which the worker sends as a push in the device's language and which
+  opens the chat when tapped. Resolving asks the customer for a 1 to 5 rating in the app (only if
+  staff replied; one rating per resolve). `/admin/customers` searches and filters customers (staff
+  and deleted accounts excluded) by tag, language, country bought and activity, and each profile
+  shows orders, eSIMs, credit, devices, ratings and staff actions, with tags and (admins only)
+  travel credit. `/admin/broadcasts` sends a push, optionally with Arabic copy, to a filtered
+  group; only admins send, the audience counts customers with a registered device, and the
+  `crm.broadcast` job has no retries so nobody gets the same push twice. Tag, conversation and
+  broadcast changes go to `audit_log`.
 - B1 (2026-11-24): eSIM Access is the provider (no minimum order, prepaid wallet). The adapter
   uses `RT-AccessCode` auth, sells fixed-data day plans only, maps multi-country packages onto our
   regions (or a new region named after the package), fetches top-up packs once per coverage area,

@@ -2,7 +2,8 @@
 
 import { blogPosts as sampleBlogPosts } from '@vela/api/mocks';
 import { emptySeoSite, type SeoPage, type SeoSite } from '@vela/api';
-import type { AdminBlogPost, AdminCoupon, AdminOrder, AdminOrderRow } from './adminApi';
+import { demoCrm } from './adminCrmMock';
+import type { AdminBlogPost, AdminCoupon, AdminOrder, AdminOrderRow, AdminUpload } from './adminApi';
 
 const HOUR = 3_600_000;
 const STATUSES = ['fulfilled', 'fulfilled', 'fulfilled', 'fulfilled', 'awaiting_payment', 'refunded', 'provisioning_failed', 'expired', 'paid'] as const;
@@ -159,6 +160,32 @@ class DemoError extends Error {
 }
 
 let seoSite: SeoSite = emptySeoSite();
+const uploads: AdminUpload[] = [];
+
+/** Demo uploads stay in this browser tab as object URLs. */
+export async function demoUpload(file: File, alt: string): Promise<AdminUpload> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const url = URL.createObjectURL(file);
+  const size = await new Promise<{ width: number | null; height: number | null }>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onerror = () => resolve({ width: null, height: null });
+    image.src = url;
+  });
+  const created: AdminUpload = {
+    id: crypto.randomUUID(),
+    url,
+    driver: 'demo',
+    content_type: file.type,
+    bytes: file.size,
+    ...size,
+    original_name: file.name,
+    alt,
+    created_at: new Date().toISOString(),
+  };
+  uploads.unshift(created);
+  return created;
+}
 const seoPages: SeoPage[] = [];
 
 const blog: AdminBlogPost[] = [
@@ -244,6 +271,10 @@ export async function demoAdmin(path: string, init: { method?: string; body?: un
   const body = (init.body ?? {}) as Record<string, unknown>;
 
   if (url.pathname === '/v1/admin/me') return { user_id: 'staff_demo', role: 'admin' };
+  const crm = demoCrm(orders, url, method, body, (status, message) => {
+    throw new DemoError(status, message);
+  });
+  if (crm !== undefined || /^\/v1\/admin\/(saved-replies\/|customers\/.+\/credit|users\/.+\/credit)/.test(url.pathname)) return crm;
   if (url.pathname === '/v1/admin/orders' && method === 'GET') {
     const status = url.searchParams.get('status');
     const q = url.searchParams.get('q')?.toLowerCase();
@@ -321,6 +352,12 @@ export async function demoAdmin(path: string, init: { method?: string; body?: un
       blog.splice(blog.indexOf(post), 1);
       return undefined;
     }
+  }
+  if (url.pathname === '/v1/admin/uploads' && method === 'GET') return uploads;
+  if (parts[2] === 'uploads' && parts[3] && method === 'DELETE') {
+    const index = uploads.findIndex((item) => item.id === parts[3]);
+    if (index >= 0) uploads.splice(index, 1);
+    return undefined;
   }
   if (url.pathname === '/v1/admin/seo' && method === 'GET') return { site: seoSite, pages: seoPages };
   if (url.pathname === '/v1/admin/seo/site' && method === 'PUT') {

@@ -18,8 +18,26 @@ import {
   type AdminDeps,
   type StaffRole,
 } from '../modules/admin/admin';
+import { createBroadcast, listBroadcasts } from '../modules/crm/broadcasts';
+import { ACTIVITIES, allTags, audienceSize, customerDetail, listCustomers, setTags } from '../modules/crm/customers';
+import {
+  CONVERSATION_STATUSES,
+  conversationDetail,
+  createSavedReply,
+  deleteSavedReply,
+  listConversations,
+  listSavedReplies,
+  listStaff,
+  staffReply,
+  supportStats,
+  updateConversation,
+  updateSavedReply,
+} from '../modules/crm/inbox';
 import { createPost, deletePost, getPost, listPosts, SLUG_PATTERN, updatePost } from '../modules/blog/blog';
 import { listSeoPages, resetSeoPage, saveSeoPage, saveSiteSettings, SEO_KEY_PATTERN, siteSettings } from '../modules/seo/seo';
+import { bodyLimit } from 'hono/body-limit';
+import { createStorage } from '../modules/uploads/storage';
+import { deleteUpload, listUploads, saveUpload } from '../modules/uploads/uploads';
 import type { AppEnv } from '../types';
 
 type AdminEnv = AppEnv & { Variables: AppEnv['Variables'] & { role: StaffRole } };
@@ -57,11 +75,14 @@ const couponBody = z.object({
   ends_at: isoDate.default(null),
 });
 
+// https links, site paths, and plain-http localhost (local uploads saved by a dev API).
+const isImageUrl = (value: string) => value.startsWith('/') || /^https:\/\//.test(value) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(value);
+
 const optionalUrl = z
   .string()
   .trim()
   .max(500)
-  .refine((value) => value.startsWith('/') || /^https:\/\//.test(value), 'Use an https:// URL or a path starting with /')
+  .refine(isImageUrl, 'Use an https:// URL or a path starting with /')
   .nullable();
 const textList = (max: number, each: number) => z.array(z.string().trim().min(1).max(each)).max(max);
 const slug = z.string().trim().min(3).max(100).regex(SLUG_PATTERN, 'Use lowercase letters, numbers and single hyphens');
@@ -125,7 +146,7 @@ const seoImage = z
   .string()
   .trim()
   .max(500)
-  .refine((value) => value.startsWith('/') || /^https:\/\//.test(value), 'Use an https:// URL or a path starting with /')
+  .refine(isImageUrl, 'Use an https:// URL or a path starting with /')
   .nullable()
   .default(null);
 const jsonLd = z
@@ -222,6 +243,38 @@ const seoTarget = (c: { req: { param: (name: string) => string } }) =>
     locale: c.req.param('locale'),
   });
 
+const tagValue = z.string().trim().toLowerCase().max(30);
+const segmentFields = z
+  .object({
+    q: z.string().trim().max(80).optional(),
+    tag: tagValue.optional(),
+    language: z.enum(['en', 'ar']).optional(),
+    activity: z.enum(ACTIVITIES).optional(),
+    country: z
+      .string()
+      .regex(/^[A-Za-z]{2}$/)
+      .transform((value) => value.toUpperCase())
+      .optional(),
+  })
+  .strict();
+const withoutBlanks = (value: unknown) =>
+  value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).filter(([, item]) => item !== '' && item !== null)) : value;
+const segment = z.preprocess(withoutBlanks, segmentFields);
+
+// Query strings send empty values for unset filters.
+const dropEmpty = (value: Record<string, string>) => Object.fromEntries(Object.entries(value).filter(([, item]) => item !== ''));
+
+const pushText = (max: number) => z.string().trim().min(1).max(max);
+const broadcastBody = z.object({
+  title: pushText(65),
+  body: pushText(178),
+  title_ar: pushText(65).nullable().default(null),
+  body_ar: pushText(178).nullable().default(null),
+  segment,
+});
+
+const replyBody = z.object({ title: z.string().trim().min(1).max(60), body: z.string().trim().min(1).max(2000) });
+
 const deps = (c: { var: AdminEnv['Variables'] }): AdminDeps => ({
   db: c.var.deps.db,
   env: c.var.deps.env,
@@ -307,5 +360,111 @@ export const adminRoutes = new Hono<AdminEnv>()
     const target = seoTarget(c);
     await resetSeoPage(c.var.deps.db, c.var.user.id, target.key, target.locale);
     return c.body(null, 204);
+  })
+  .post(
+    '/v1/admin/uploads',
+    // A little over the image limit, for the multipart wrapping.
+    (c, next) =>
+      bodyLimit({
+        maxSize: c.var.deps.env.UPLOAD_MAX_MB * 1024 * 1024 + 64 * 1024,
+        onError: () => {
+          throw new HttpError(413, 'too_large', `Images can be up to ${c.var.deps.env.UPLOAD_MAX_MB} MB`);
+        },
+      })(c, next),
+    async (c) => {
+      const form = await c.req.parseBody().catch(() => null);
+      const file = form?.file;
+      if (!(file instanceof File)) throw new HttpError(400, 'invalid_request', 'Send the image as a "file" form field');
+      const alt = typeof form?.alt === 'string' ? form.alt.trim() : '';
+      const saved = await saveUpload(
+        { db: c.var.deps.db, storage: c.var.deps.storage ?? createStorage(c.var.deps.env, c.var.logger) },
+        c.var.user.id,
+        { bytes: new Uint8Array(await file.arrayBuffer()), name: file.name, alt },
+        c.var.deps.env.UPLOAD_MAX_MB * 1024 * 1024,
+      );
+      return c.json(saved, 201);
+    },
+  )
+  .get('/v1/admin/uploads', async (c) => {
+    const query = parse(
+      z.object({ limit: z.coerce.number().int().min(1).max(200).default(60), before: z.iso.datetime({ offset: true }).optional() }),
+      c.req.query(),
+    );
+    return c.json(await listUploads(c.var.deps.db, { limit: query.limit, before: query.before ? new Date(query.before) : undefined }));
+  })
+  .delete('/v1/admin/uploads/:id', adminOnly, async (c) => {
+    await deleteUpload({ db: c.var.deps.db, storage: c.var.deps.storage ?? createStorage(c.var.deps.env, c.var.logger) }, c.var.user.id, c.req.param('id'));
+    return c.body(null, 204);
+  })
+  .get('/v1/admin/staff', async (c) => c.json(await listStaff(c.var.deps.db)))
+  .get('/v1/admin/conversations', async (c) => {
+    const query = parse(
+      z.object({
+        status: z.enum([...CONVERSATION_STATUSES, 'all']).default('open'),
+        assignee: z.enum(['me', 'unassigned', 'any']).default('any'),
+        q: z.string().max(80).optional(),
+        tag: tagValue.optional(),
+        limit: z.coerce.number().int().min(1).max(200).default(100),
+      }),
+      dropEmpty(c.req.query()),
+    );
+    return c.json(await listConversations(c.var.deps.db, c.var.user.id, query));
+  })
+  .get('/v1/admin/conversations/stats', async (c) => c.json(await supportStats(c.var.deps.db)))
+  .get('/v1/admin/conversations/:userId', async (c) =>
+    c.json(await conversationDetail(c.var.deps.db, c.req.param('userId'), { markRead: c.req.query('read') !== '0' })),
+  )
+  .post('/v1/admin/conversations/:userId/messages', async (c) => {
+    const body = parse(
+      z.object({ text: z.string().trim().min(1).max(2000), internal: z.boolean().default(false), status: z.enum(CONVERSATION_STATUSES).optional() }),
+      await c.req.json().catch(() => null),
+    );
+    return c.json(await staffReply({ db: c.var.deps.db, queue: c.var.deps.queue }, c.var.user.id, c.req.param('userId'), body), 201);
+  })
+  .patch('/v1/admin/conversations/:userId', async (c) => {
+    const body = parse(
+      z.object({ status: z.enum(CONVERSATION_STATUSES).optional(), assignee_id: z.string().max(64).nullable().optional() }),
+      await c.req.json().catch(() => null),
+    );
+    return c.json(await updateConversation(c.var.deps.db, c.var.user.id, c.req.param('userId'), body));
+  })
+  .get('/v1/admin/saved-replies', async (c) => c.json(await listSavedReplies(c.var.deps.db)))
+  .post('/v1/admin/saved-replies', async (c) => {
+    const body = parse(replyBody, await c.req.json().catch(() => null));
+    return c.json(await createSavedReply(c.var.deps.db, c.var.user.id, body), 201);
+  })
+  .patch('/v1/admin/saved-replies/:id', async (c) => {
+    const body = parse(replyBody.partial(), await c.req.json().catch(() => null));
+    return c.json(await updateSavedReply(c.var.deps.db, c.req.param('id'), body));
+  })
+  .delete('/v1/admin/saved-replies/:id', adminOnly, async (c) => {
+    await deleteSavedReply(c.var.deps.db, c.req.param('id'));
+    return c.body(null, 204);
+  })
+  .get('/v1/admin/customers', async (c) => {
+    const query = parse(
+      segmentFields.extend({
+        before: z.iso.datetime({ offset: true }).optional(),
+        limit: z.coerce.number().int().min(1).max(200).default(50),
+      }),
+      dropEmpty(c.req.query()),
+    );
+    return c.json(await listCustomers(c.var.deps.db, { ...query, before: query.before ? new Date(query.before) : undefined }));
+  })
+  .get('/v1/admin/customers/:id', async (c) => c.json(await customerDetail(c.var.deps.db, c.req.param('id'))))
+  .put('/v1/admin/customers/:id/tags', async (c) => {
+    const body = parse(z.object({ tags: z.array(z.string().max(40)).max(12) }), await c.req.json().catch(() => null));
+    return c.json({ tags: await setTags(c.var.deps.db, c.var.user.id, c.req.param('id'), body.tags) });
+  })
+  .get('/v1/admin/tags', async (c) => c.json(await allTags(c.var.deps.db)))
+  .get('/v1/admin/broadcasts', async (c) => c.json(await listBroadcasts(c.var.deps.db)))
+  .post('/v1/admin/broadcasts/audience', async (c) => {
+    const body = parse(z.object({ segment }), await c.req.json().catch(() => null));
+    return c.json(await audienceSize(c.var.deps.db, body.segment));
+  })
+  .post('/v1/admin/broadcasts', adminOnly, async (c) => {
+    const body = parse(broadcastBody, blankDeep(await c.req.json().catch(() => null)));
+    if ((body.title_ar === null) !== (body.body_ar === null)) throw new HttpError(400, 'invalid_request', 'Give both the Arabic title and text, or neither');
+    return c.json(await createBroadcast({ db: c.var.deps.db, queue: c.var.deps.queue }, c.var.user.id, body), 201);
   })
   .get('/v1/admin/audit', async (c) => c.json(await recentAudit(c.var.deps.db, c.req.query('target'))));

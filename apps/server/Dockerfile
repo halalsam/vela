@@ -22,6 +22,8 @@ WORKDIR /app
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/package.json ./package.json
 COPY --from=build /repo/apps/server/dist ./dist
+# Image uploads when S3 isn't used. A named volume mounted here takes this owner on first use.
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
 USER node
 EXPOSE 8787
 CMD ["node", "--enable-source-maps", "dist/server.js"]

@@ -37,6 +37,9 @@ services:
   api:
     <<: *app
     command: ['node', '--enable-source-maps', 'dist/server.js']
+    # Uploaded images when S3 isn't set (or is down). Shared by every API replica.
+    volumes:
+      - uploads:/app/uploads
     deploy:
       replicas: ${API_REPLICAS:-2}
     healthcheck:
@@ -78,6 +81,7 @@ services:
 volumes:
   postgres: {}
   backup-status: {}
+  uploads: {}
 
 networks:
   edge:

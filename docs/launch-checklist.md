@@ -37,7 +37,6 @@ on earlier ones. Settings named in `code` go in `infra/env/production.env` on th
 | Firebase | Project, Android app, service account | `FCM_SERVICE_ACCOUNT`; `GOOGLE_SERVICES_JSON` for the Android build |
 | MSG91 | Account, DLT-approved OTP template | `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID` |
 | Twilio | Account, sending number | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` |
-| Chatwoot | API inbox (HMAC identity on) | `CHATWOOT_URL`, `CHATWOOT_INBOX_IDENTIFIER`, `CHATWOOT_HMAC_TOKEN` |
 | Resend | Verified sending domain, API key | `EMAIL_ROUTE=live`, `RESEND_API_KEY`, `EMAIL_FROM` |
 | eSIM Access webhooks | Webhook URL `/v1/webhooks/esimaccess?token=…` set in their developer console | `ESIM_ACCESS_WEBHOOK_TOKEN`, `ESIM_ACCESS_WEBHOOK_IP_CHECK=true` |
 | Sentry | Project | `SENTRY_DSN` |
@@ -89,7 +88,8 @@ Use one or two cheap plans and refund them afterwards.
 - [ ] Download the GST invoice; check it with the accountant.
 - [ ] Failure path: switch eSIM Access off (empty wallet) and confirm the order is filled by eSIM Go;
       switch both off and confirm the customer is refunded automatically.
-- [ ] Support chat reply from the Chatwoot dashboard reaches the app.
+- [ ] A reply from `/admin/inbox` reaches the app as a push and opens the chat; resolving shows the rating card.
+- [ ] A test broadcast to a tag with only staff test devices arrives in English and Arabic.
 - [ ] Admin: search, refund, coupon, goodwill credit; every action appears in the audit log.
 
 ## 6. Soft launch

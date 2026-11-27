@@ -17,6 +17,7 @@ import {
   regionSchema,
   rewardsSchema,
   supportMessageSchema,
+  supportRatingStatusSchema,
   topUpPackSchema,
   type Currency,
 } from './schemas';
@@ -51,6 +52,8 @@ export const httpServedMethods = [
   'getOrders',
   'getSupportThread',
   'sendSupportMessage',
+  'getSupportRating',
+  'rateSupport',
   'getBlogPosts',
   'getBlogPost',
   'getSeo',
@@ -127,6 +130,10 @@ export function createHttpApi(options: HttpApiOptions): VelaApi {
     getInvoice: (orderId) => get(`/v1/orders/${encodeURIComponent(orderId)}/invoice`, invoiceLinkSchema),
     getSupportThread: () => get('/v1/support/messages', z.array(supportMessageSchema)),
     sendSupportMessage: (text) => send('/v1/support/messages', z.array(supportMessageSchema), { method: 'POST', body: { text } }),
+    getSupportRating: () => get('/v1/support/rating', supportRatingStatusSchema),
+    rateSupport: async (score, comment = null) => {
+      await send('/v1/support/rating', z.unknown(), { method: 'POST', body: { score, comment } });
+    },
     getDailyUsage: (iccid) => get(`/v1/esims/${encodeURIComponent(iccid)}/usage/daily`, z.array(dailyUsageSchema)),
   };
 }

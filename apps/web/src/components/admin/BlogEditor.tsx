@@ -19,9 +19,11 @@ import {
   wordCount,
   type SeoCheck,
 } from '@/lib/blogSeo';
+import { isImageUrl } from '@/lib/adminApi';
 import { siteUrl } from '@/lib/site';
 import { cn, type } from '@/lib/type';
 import { useStaffRole } from './AdminShell';
+import { ImageField } from './ImageField';
 import { scoreTone } from './BlogListView';
 
 type Form = {
@@ -130,7 +132,7 @@ function problems(form: Form): string[] {
     ['Cover image', form.cover_image],
     ['Social image', form.og_image],
   ] as const)
-    if (value && !(value.startsWith('/') || /^https:\/\//.test(value))) out.push(`${label} must be an https:// URL or a path starting with /.`);
+    if (value && !isImageUrl(value)) out.push(`${label} must be an https:// URL or a path starting with /.`);
   return out;
 }
 
@@ -363,7 +365,14 @@ export function BlogEditor({ id }: { id?: string }) {
           <Panel title="Cover">
             <div className="grid gap-4 md:grid-cols-[1fr_220px]">
               <div className="flex flex-col gap-4">
-                <TextField label="Image URL" value={form.cover_image} onChange={set('cover_image')} placeholder="https://… or /images/…" hint="1600×900 or larger. Leave empty for a drawn cover from the first country." />
+                <ImageField
+                  label="Cover image"
+                  value={form.cover_image}
+                  onValue={(url) => setForm((current) => ({ ...current, cover_image: url }))}
+                  onAlt={(alt) => setForm((current) => (current.cover_alt ? current : { ...current, cover_alt: alt }))}
+                  hint="1600×900 or larger. Leave empty for a drawn cover from the first country."
+                  recommend={{ width: 1600, height: 900 }}
+                />
                 <TextField label="Alt text" value={form.cover_alt} onChange={set('cover_alt')} placeholder="A traveller checking a map on their phone at Shibuya crossing" />
               </div>
               <PostCover post={{ cover_image: form.cover_image || null, cover_alt: form.cover_alt, country_codes: countries }} ratio="aspect-[16/10]" />
@@ -386,7 +395,15 @@ export function BlogEditor({ id }: { id?: string }) {
                 <textarea value={form.meta_description} onChange={set('meta_description')} rows={3} maxLength={200} dir={rtl ? 'rtl' : 'ltr'} placeholder={form.excerpt} className={cn(input, 'h-auto py-3')} />
               </label>
               <TextField label="Keywords" value={form.keywords} onChange={set('keywords')} placeholder="install esim iphone, travel esim" hint="Comma separated. The first is the focus keyword for the checks." />
-              <TextField label="Social image URL" value={form.og_image} onChange={set('og_image')} placeholder="https://…" hint="1200×630. Empty uses the cover, then a generated card." />
+              <div className="md:col-span-2">
+                <ImageField
+                  label="Social image"
+                  value={form.og_image}
+                  onValue={(url) => setForm((current) => ({ ...current, og_image: url }))}
+                  hint="1200×630. Empty uses the cover, then a generated card."
+                  recommend={{ width: 1200, height: 630 }}
+                />
+              </div>
               <TextField label="Canonical URL" value={form.canonical_url} onChange={set('canonical_url')} placeholder="https://…" hint="Only when this post first appeared on another site." />
               <label className={cn('flex items-start gap-3 self-end rounded-button border border-line bg-surface-1 px-4 py-3')}>
                 <input type="checkbox" checked={form.noindex} onChange={set('noindex')} className="mt-1 h-4 w-4 accent-[#C8B285]" />

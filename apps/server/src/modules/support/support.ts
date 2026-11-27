@@ -1,17 +1,17 @@
-import { createHmac } from 'node:crypto';
 import type { SupportMessage } from '@vela/api';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client';
-import { profile, supportContact, supportMessage } from '../../db/schema';
-import type { Env } from '../../env';
-import type { Logger } from '../../logger';
+import { profile, supportConversation, supportMessage, supportRating } from '../../db/schema';
 
 export type SupportUser = { id: string; name: string; email: string | null; phone: string | null; language: string };
 
 export type SupportDesk = {
-  name: 'chatwoot' | 'local';
+  name: 'local';
   thread(user: SupportUser): Promise<SupportMessage[]>;
   send(user: SupportUser, text: string): Promise<SupportMessage[]>;
+  /** Whether staff resolved the chat and are waiting for a 1 to 5 rating. */
+  ratingAsked(user: SupportUser): Promise<boolean>;
+  rate(user: SupportUser, score: number, comment: string | null): Promise<void>;
 };
 
 const GREETING = {
@@ -40,9 +40,25 @@ export async function supportUser(db: Database, userId: string, fallback: { name
   };
 }
 
-function localDesk(db: Database): SupportDesk {
+/** Records a customer message on the conversation: it now waits on staff, and any rating request is dropped. */
+export async function touchFromCustomer(db: Database, userId: string, at = new Date()) {
+  await db
+    .insert(supportConversation)
+    .values({ userId, status: 'open', lastMessageAt: at, lastCustomerAt: at, createdAt: at })
+    .onConflictDoUpdate({
+      target: supportConversation.userId,
+      set: { status: 'open', lastMessageAt: at, lastCustomerAt: at, resolvedAt: null, ratingRequestedAt: null },
+    });
+}
+
+/** Staff and the app both talk to our own database. Staff answer from the admin inbox. */
+export function createSupportDesk(db: Database): SupportDesk {
   async function thread(user: SupportUser): Promise<SupportMessage[]> {
-    const rows = await db.select().from(supportMessage).where(eq(supportMessage.userId, user.id)).orderBy(asc(supportMessage.createdAt));
+    const rows = await db
+      .select()
+      .from(supportMessage)
+      .where(and(eq(supportMessage.userId, user.id), eq(supportMessage.internal, false)))
+      .orderBy(asc(supportMessage.createdAt));
     return [
       greeting(user, rows[0]?.createdAt ?? new Date()),
       ...rows.map((row) => ({
@@ -54,91 +70,30 @@ function localDesk(db: Database): SupportDesk {
       })),
     ];
   }
+
   return {
     name: 'local',
     thread,
     async send(user, text) {
-      await db.insert(supportMessage).values({ userId: user.id, sender: 'user', text });
+      const [row] = await db.insert(supportMessage).values({ userId: user.id, sender: 'user', text }).returning();
+      await touchFromCustomer(db, user.id, row?.createdAt);
       return thread(user);
     },
-  };
-}
-
-type ChatwootMessage = { id: number; content: string | null; message_type: number; created_at: number };
-
-function chatwootDesk(env: Env, db: Database, logger: Logger, request: typeof fetch): SupportDesk {
-  const base = `${(env.CHATWOOT_URL ?? '').replace(/\/$/, '')}/public/api/v1/inboxes/${env.CHATWOOT_INBOX_IDENTIFIER}`;
-
-  async function call<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
-    const response = await request(`${base}${path}`, {
-      method: init.method ?? 'GET',
-      headers: { 'content-type': 'application/json', accept: 'application/json' },
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
-    });
-    if (!response.ok) {
-      logger.warn({ status: response.status, path }, 'Chatwoot request failed');
-      throw new Error(`Chatwoot ${path} failed with ${response.status}`);
-    }
-    return (await response.json()) as T;
-  }
-
-  async function conversation(user: SupportUser): Promise<{ sourceId: string; conversationId: number; since: Date }> {
-    let [contact] = await db.select().from(supportContact).where(eq(supportContact.userId, user.id));
-    if (!contact) {
-      const created = await call<{ source_id: string }>('/contacts', {
-        method: 'POST',
-        body: {
-          identifier: user.id,
-          ...(env.CHATWOOT_HMAC_TOKEN ? { identifier_hash: createHmac('sha256', env.CHATWOOT_HMAC_TOKEN).update(user.id).digest('hex') } : {}),
-          name: user.name,
-          ...(user.email ? { email: user.email } : {}),
-          ...(user.phone ? { phone_number: user.phone } : {}),
-          custom_attributes: { vela_user_id: user.id, language: user.language },
-        },
-      });
-      [contact] = await db
-        .insert(supportContact)
-        .values({ userId: user.id, sourceId: created.source_id })
-        .onConflictDoUpdate({ target: supportContact.userId, set: { sourceId: created.source_id } })
-        .returning();
-    }
-    if (!contact) throw new Error('Support contact could not be stored');
-    if (contact.conversationId === null) {
-      const created = await call<{ id: number }>(`/contacts/${encodeURIComponent(contact.sourceId)}/conversations`, { method: 'POST', body: {} });
-      await db.update(supportContact).set({ conversationId: created.id }).where(eq(supportContact.userId, user.id));
-      return { sourceId: contact.sourceId, conversationId: created.id, since: contact.createdAt };
-    }
-    return { sourceId: contact.sourceId, conversationId: contact.conversationId, since: contact.createdAt };
-  }
-
-  async function thread(user: SupportUser): Promise<SupportMessage[]> {
-    const { sourceId, conversationId, since } = await conversation(user);
-    const messages = await call<ChatwootMessage[]>(`/contacts/${encodeURIComponent(sourceId)}/conversations/${conversationId}/messages`);
-    return [
-      greeting(user, since),
-      ...messages
-        .filter((item) => item.content && (item.message_type === 0 || item.message_type === 1 || item.message_type === 3))
-        .map((item) => ({
-          id: String(item.id),
-          from: item.message_type === 0 ? ('user' as const) : ('agent' as const),
-          text: item.content ?? '',
-          sent_at: new Date(item.created_at * 1000).toISOString(),
-          install_step: null,
-        })),
-    ];
-  }
-
-  return {
-    name: 'chatwoot',
-    thread,
-    async send(user, text) {
-      const { sourceId, conversationId } = await conversation(user);
-      await call(`/contacts/${encodeURIComponent(sourceId)}/conversations/${conversationId}/messages`, { method: 'POST', body: { content: text } });
-      return thread(user);
+    async ratingAsked(user) {
+      const [row] = await db
+        .select({ asked: supportConversation.ratingRequestedAt })
+        .from(supportConversation)
+        .where(eq(supportConversation.userId, user.id));
+      return Boolean(row?.asked);
+    },
+    async rate(user, score, comment) {
+      const [claimed] = await db
+        .update(supportConversation)
+        .set({ ratingRequestedAt: null })
+        .where(and(eq(supportConversation.userId, user.id), sql`${supportConversation.ratingRequestedAt} is not null`))
+        .returning({ assigneeId: supportConversation.assigneeId });
+      if (!claimed) return;
+      await db.insert(supportRating).values({ userId: user.id, score, comment, staffId: claimed.assigneeId });
     },
   };
-}
-
-export function createSupportDesk(env: Env, db: Database, logger: Logger, request: typeof fetch = fetch): SupportDesk {
-  return env.CHATWOOT_URL && env.CHATWOOT_INBOX_IDENTIFIER ? chatwootDesk(env, db, logger, request) : localDesk(db);
 }

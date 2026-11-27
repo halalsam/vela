@@ -19,10 +19,12 @@ import {
   type SeoDefaults,
   type SeoGroup,
 } from '@/lib/seoCore';
+import { isImageUrl } from '@/lib/adminApi';
 import { siteUrl } from '@/lib/site';
 import { cn, type } from '@/lib/type';
 import { useStaffRole } from './AdminShell';
 import { Check, input, Label, Panel, TextField } from './BlogEditor';
+import { ImageField } from './ImageField';
 import { scoreTone } from './BlogListView';
 
 export type SeoAdminDefaults = {
@@ -389,7 +391,7 @@ function toRow(form: PageForm, key: string, locale: Locale): SeoPage {
 function pageProblems(form: PageForm): string[] {
   const out: string[] = [];
   if (form.canonical_url && !/^https:\/\//.test(form.canonical_url)) out.push('The canonical URL must start with https://.');
-  if (form.og_image && !(form.og_image.startsWith('/') || /^https:\/\//.test(form.og_image))) out.push('The social image must be an https:// URL or a path starting with /.');
+  if (form.og_image && !isImageUrl(form.og_image)) out.push('The social image must be an https:// URL or a path starting with /.');
   if (form.structured_data.trim()) {
     try {
       const parsed: unknown = JSON.parse(form.structured_data);
@@ -571,7 +573,17 @@ function PageEditor({
           <Panel title="Social sharing">
             <div className="grid gap-4 md:grid-cols-2">
               <TextField label="Social title" value={form.og_title} onChange={set('og_title')} placeholder={fallback.ogTitle} hint="Empty uses the meta title." />
-              <TextField label="Social image URL" value={form.og_image} onChange={set('og_image')} placeholder={fallback.image} hint="1200×630 JPG or PNG." />
+              <div className="md:col-span-2">
+                <ImageField
+                  label="Social image"
+                  value={form.og_image}
+                  onValue={(url) => setForm((current) => ({ ...current, og_image: url }))}
+                  onAlt={(alt) => setForm((current) => (current.og_image_alt ? current : { ...current, og_image_alt: alt }))}
+                  placeholder={fallback.image}
+                  hint="1200×630 JPG or PNG. Empty uses the default."
+                  recommend={{ width: 1200, height: 630 }}
+                />
+              </div>
               <label className="flex flex-col gap-2 md:col-span-2">
                 <Label hint="Empty uses the meta description.">Social description</Label>
                 <textarea value={form.og_description} onChange={set('og_description')} rows={3} maxLength={320} dir={rtl ? 'rtl' : 'ltr'} placeholder={fallback.ogDescription} className={cn(input, 'h-auto min-h-[96px] py-3')} />
@@ -889,7 +901,16 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
             </label>
             <div className="grid gap-4 md:grid-cols-2">
               <TextField label="Title template" value={text(form.title_template)} onChange={setTop('title_template')} placeholder={DEFAULT_TITLE_TEMPLATE} hint={`Preview: ${template.replace('%s', 'Help centre')}`} />
-              <TextField label="Default social image" value={text(form.default_og_image)} onChange={setTop('default_og_image')} placeholder="/og.png" hint="1200×630. Used when a page has none." />
+              <div className="md:col-span-2">
+                <ImageField
+                  label="Default social image"
+                  value={text(form.default_og_image)}
+                  onValue={(url) => setForm((current) => ({ ...current, default_og_image: nul(url) }))}
+                  placeholder="/og.png"
+                  hint="1200×630. Used when a page has none."
+                  recommend={{ width: 1200, height: 630 }}
+                />
+              </div>
               <TextField label="X handle" value={text(form.twitter_site)} onChange={setTop('twitter_site')} placeholder="@vela" />
               <label className="flex flex-col gap-2">
                 <Label hint="One path per line, e.g. /en/internal. Checkout, account, success and admin are always blocked.">Extra robots.txt blocks</Label>
@@ -911,7 +932,16 @@ function SiteEditor({ site, onSaved }: { site: SeoSite; onSaved: (site: SeoSite)
             <div className="grid gap-4 md:grid-cols-2">
               <TextField label="Brand name" value={text(form.organization.name)} onChange={setOrg('name')} placeholder="vela" />
               <TextField label="Legal name" value={text(form.organization.legal_name)} onChange={setOrg('legal_name')} placeholder="Company name as registered" />
-              <TextField label="Logo URL" value={text(form.organization.logo)} onChange={setOrg('logo')} placeholder="/icon-512.png" hint="Square, at least 512×512." />
+              <div className="md:col-span-2">
+                <ImageField
+                  label="Logo"
+                  value={text(form.organization.logo)}
+                  onValue={(url) => setForm((current) => ({ ...current, organization: { ...current.organization, logo: nul(url) } }))}
+                  placeholder="/icon-512.png"
+                  hint="Square, at least 512×512. Shown by Google next to the brand."
+                  recommend={{ width: 512, height: 512 }}
+                />
+              </div>
               <TextField label="Support email" value={text(form.organization.email)} onChange={setOrg('email')} placeholder="support@…" />
               <TextField label="Support phone" value={text(form.organization.phone)} onChange={setOrg('phone')} placeholder="+91…" />
               <label className="flex flex-col gap-2">

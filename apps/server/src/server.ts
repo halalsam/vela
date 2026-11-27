@@ -27,7 +27,7 @@ boss.on('error', (error) => {
 await boss.start();
 await ensureQueue(boss, provisionJob);
 const payments = createPaymentProvider(env);
-const support = createSupportDesk(env, db, logger);
+const support = createSupportDesk(db);
 const app = createApp({
   db,
   env,

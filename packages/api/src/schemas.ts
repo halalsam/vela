@@ -174,6 +174,11 @@ export const supportMessageSchema = z.object({
   install_step: z.number().int().min(1).max(4).nullable(),
 });
 
+export const supportRatingStatusSchema = z.object({
+  /** Staff resolved the chat and would like a 1 to 5 rating. */
+  asked: z.boolean(),
+});
+
 export const profileSchema = z.object({
   name: z.string(),
   email: z.string().nullable(),
@@ -192,6 +197,7 @@ export type InvoiceLink = z.infer<typeof invoiceLinkSchema>;
 export type Referral = z.infer<typeof referralSchema>;
 export type Rewards = z.infer<typeof rewardsSchema>;
 export type SupportMessage = z.infer<typeof supportMessageSchema>;
+export type SupportRatingStatus = z.infer<typeof supportRatingStatusSchema>;
 export type Profile = z.infer<typeof profileSchema>;
 
 export const blogLocaleSchema = z.enum(['en', 'ar']);

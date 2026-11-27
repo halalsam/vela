@@ -522,7 +522,12 @@
     "reply3": "Send screenshot",
     "agentReply": "Thanks. I'm checking your line now and will reply here in a minute.",
     "installCard": "Turn on Data Roaming",
-    "installCardBody": "Install guide · step {{step}}"
+    "installCardBody": "Install guide · step {{step}}",
+    "rateTitle": "How did we do?",
+    "rateBody": "We marked this chat as solved. Rate your help so we can keep getting better.",
+    "rateStar": "{{count}} out of 5",
+    "rateThanks": "Thanks for the rating.",
+    "rateLater": "Not now"
   },
   "notifications": {
     "channel": "Trip updates"

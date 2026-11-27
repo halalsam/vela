@@ -8,7 +8,13 @@
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		-Server
 	}
-	request_body {
+	# Image uploads get more room; everything else stays small.
+	@upload path /v1/admin/uploads
+	request_body @upload {
+		max_size 10MB
+	}
+	@other not path /v1/admin/uploads
+	request_body @other {
 		max_size 1MB
 	}
 }

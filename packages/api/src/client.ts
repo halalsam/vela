@@ -12,6 +12,7 @@ import {
   profileSchema,
   rewardsSchema,
   supportMessageSchema,
+  supportRatingStatusSchema,
   countrySchema,
   dailyUsageSchema,
   esimSchema,
@@ -32,6 +33,7 @@ import {
   type Profile,
   type Rewards,
   type SupportMessage,
+  type SupportRatingStatus,
   type Country,
   type Currency,
   type DailyUsage,
@@ -74,6 +76,9 @@ export type VelaApi = {
   getRewards(): Promise<Rewards>;
   getSupportThread(): Promise<SupportMessage[]>;
   sendSupportMessage(text: string): Promise<SupportMessage[]>;
+  /** Whether support resolved the chat and asks for a rating. */
+  getSupportRating(): Promise<SupportRatingStatus>;
+  rateSupport(score: number, comment?: string | null): Promise<void>;
   redeemCoupon(code: string): Promise<Coupon>;
   createOrder(input: CreateOrderInput): Promise<Checkout>;
   confirmPayment(orderId: string, result: PaymentResult): Promise<Order>;
@@ -199,6 +204,10 @@ export function createMockApi({ latencyMs = 450, scenario = () => 'default' }: M
     sendSupportMessage: async (text) => {
       thread.push({ id: `u${thread.length + 1}`, from: 'user', text, sent_at: new Date().toISOString(), install_step: null });
       return respond(z.array(supportMessageSchema), () => thread);
+    },
+    getSupportRating: () => respond(supportRatingStatusSchema, () => ({ asked: false })),
+    rateSupport: async () => {
+      await wait(latencyMs);
     },
     redeemCoupon: async (code) => respond(couponSchema, () => findCoupon(code)),
     createOrder: async ({ planId, couponCode }) =>

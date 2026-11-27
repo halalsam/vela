@@ -85,6 +85,20 @@
       "when": 1795611243423,
       "tag": "0011_seo",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795756569241,
+      "tag": "0012_uploads",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795757069630,
+      "tag": "0013_crm",
+      "breakpoints": true
     }
   ]
 }

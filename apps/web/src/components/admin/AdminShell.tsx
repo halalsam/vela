@@ -15,8 +15,11 @@ export const useStaffRole = () => useContext(RoleContext);
 type Access = { state: 'loading' } | { state: 'denied'; message: string } | { state: 'ready'; role: StaffRole };
 
 const links = [
+  { href: '/admin/inbox', label: 'Inbox' },
+  { href: '/admin/customers', label: 'Customers' },
   { href: '/admin', label: 'Orders' },
   { href: '/admin/coupons', label: 'Coupons' },
+  { href: '/admin/broadcasts', label: 'Broadcasts' },
   { href: '/admin/blog', label: 'Blog' },
   { href: '/admin/seo', label: 'SEO' },
 ];
@@ -48,7 +51,7 @@ function Frame({ role, demo = false, children }: { role: StaffRole; demo?: boole
       <header className="border-b border-line">
         <Container className="flex h-16 max-w-[1600px] items-center gap-6">
           <span className={type.title}>vela admin</span>
-          <nav className="flex gap-1" aria-label="Admin">
+          <nav className="flex gap-1 overflow-x-auto" aria-label="Admin">
             {links.map((link) => {
               const active = link.href === '/admin' ? pathname === '/admin' || pathname.startsWith('/admin/orders') : pathname.startsWith(link.href);
               return (

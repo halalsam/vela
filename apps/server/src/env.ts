@@ -64,13 +64,25 @@ const envSchema = z.object({
   SELLER_STATE: z.string().default(''),
   INVOICE_PREFIX: z.string().regex(/^[A-Z]{1,6}$/).default('VL'),
   INVOICE_SAC: z.string().default('9984'),
-  CHATWOOT_URL: optional,
-  CHATWOOT_INBOX_IDENTIFIER: optional,
-  CHATWOOT_HMAC_TOKEN: optional,
   RAZORPAY_KEY_ID: optional,
   RAZORPAY_KEY_SECRET: optional,
   RAZORPAY_WEBHOOK_SECRET: optional,
   PRICING_MARGIN_PERCENT: z.coerce.number().min(0).max(300).default(40),
+  // Image uploads. "auto" uses S3 when a bucket and keys are set and the server's disk otherwise; an S3 upload that
+  // fails also falls back to disk. Works with AWS S3, Cloudflare R2, Backblaze B2 and MinIO.
+  STORAGE_DRIVER: z.enum(['auto', 's3', 'disk']).default('auto'),
+  S3_BUCKET: optional,
+  S3_REGION: z.string().default('auto'),
+  /** Leave empty for AWS. R2: https://<account>.r2.cloudflarestorage.com. MinIO: its URL. */
+  S3_ENDPOINT: optional,
+  S3_ACCESS_KEY_ID: optional,
+  S3_SECRET_ACCESS_KEY: optional,
+  /** Public base URL for uploaded files (CDN, r2.dev or custom domain). Empty uses the bucket URL. */
+  S3_PUBLIC_URL: optional,
+  /** Path-style URLs (endpoint/bucket/key). MinIO needs this; AWS and R2 don't. */
+  S3_FORCE_PATH_STYLE: z.stringbool().default(false),
+  UPLOAD_DIR: z.string().default('./uploads'),
+  UPLOAD_MAX_MB: z.coerce.number().min(1).max(50).default(8),
 });
 
 const checkedEnvSchema = envSchema.superRefine((env, context) => {
@@ -106,6 +118,11 @@ const checkedEnvSchema = envSchema.superRefine((env, context) => {
   }
   if (env.SMS_ROUTE === 'live' && !(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_FROM)) {
     context.addIssue({ code: 'custom', path: ['TWILIO_ACCOUNT_SID'], message: 'live SMS needs Twilio for non-Indian numbers' });
+  }
+  const s3Partly = env.S3_BUCKET || env.S3_ACCESS_KEY_ID || env.S3_SECRET_ACCESS_KEY;
+  const s3Fully = env.S3_BUCKET && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY;
+  if ((env.STORAGE_DRIVER === 's3' || s3Partly) && env.STORAGE_DRIVER !== 'disk' && !s3Fully) {
+    context.addIssue({ code: 'custom', path: ['S3_BUCKET'], message: 'S3 uploads need S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY' });
   }
   if (env.SMS_ROUTE === 'live' && !(env.MSG91_AUTH_KEY && env.MSG91_TEMPLATE_ID)) {
     context.addIssue({ code: 'custom', path: ['MSG91_AUTH_KEY'], message: 'live SMS needs MSG91 for Indian numbers' });

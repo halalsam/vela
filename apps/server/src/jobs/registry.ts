@@ -8,6 +8,10 @@ import type { EsimProvider } from '../modules/esims/provider';
 import { queueTrackedEsims, syncEsimUsage } from '../modules/esims/usage';
 import type { EmailSender } from '../modules/notifications/email';
 import type { PushSender } from '../modules/notifications/push';
+import { sendBroadcast, type BroadcastJob } from '../modules/crm/broadcasts';
+import type { SupportReplyJob } from '../modules/crm/inbox';
+import { supportReplyMessage } from '../modules/notifications/messages';
+import { notifyUser } from '../modules/notifications/notify';
 import { provisionOrder, refundOrder } from '../modules/orders/fulfil';
 import { expireStaleOrders } from '../modules/orders/service';
 import type { PaymentProvider } from '../modules/payments/provider';
@@ -111,7 +115,27 @@ export const fxJob: JobDefinition = {
   },
 };
 
-export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob, usageOneJob, fxJob] as JobDefinition[];
+export const supportReplyJob: JobDefinition<SupportReplyJob> = {
+  name: JOB.supportReply,
+  retryLimit: 2,
+  handle: async (jobs, context) => {
+    for (const job of jobs) {
+      const sent = await notifyUser(context, job.data.userId, (locale) => supportReplyMessage(locale, job.data.text), { kind: 'support' });
+      context.logger.info({ userId: job.data.userId, sent }, 'support reply push');
+    }
+  },
+};
+
+// No retries: a retry after a partial send would push the same message twice.
+export const broadcastJob: JobDefinition<BroadcastJob> = {
+  name: JOB.broadcast,
+  retryLimit: 0,
+  handle: async (jobs, context) => {
+    for (const job of jobs) await sendBroadcast(context, job.data.broadcastId);
+  },
+};
+
+export const jobs = [heartbeat, catalogSync, provisionJob, refundJob, expireOrdersJob, usageJob, usageOneJob, fxJob, supportReplyJob, broadcastJob] as JobDefinition[];
 
 export async function ensureQueue(boss: PgBoss, definition: Pick<JobDefinition, 'name' | 'retryLimit'>) {
   if (await boss.getQueue(definition.name)) return;
